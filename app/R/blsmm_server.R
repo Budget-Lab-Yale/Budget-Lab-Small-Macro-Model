@@ -25,7 +25,7 @@ server <- function(input, output, session) {
       ready = "READY",
       dirty = "DIRTY",
       running = "RUNNING",
-      solved = "SOLVED",
+      solved = "Complete",
       error = "ERROR",
       "READY"
     )
@@ -52,12 +52,12 @@ server <- function(input, output, session) {
         zero = "#6c757d",
         legend_bg = "rgba(31, 38, 48, 0.85)",
         zero_line = "#adb5bd",
-        line_baseline = "#3B528B",
-        line_scenario = "#5DC863",
-        line_secondary = "#FDE725",
-        bar_baseline = "#5499C7",
-        bar_scenario = "#7DCEA0",
-        debt_fill = "rgba(93, 200, 99, 0.28)"
+        line_baseline = "#4A90E2",
+        line_scenario = "#F5A623",
+        line_secondary = "#B08AE8",
+        bar_baseline = "#4A90E2",
+        bar_scenario = "#F5A623",
+        debt_fill = "rgba(245, 166, 35, 0.25)"
       )
     } else {
       list(
@@ -69,12 +69,12 @@ server <- function(input, output, session) {
         zero = "#ced4da",
         legend_bg = "rgba(255, 255, 255, 0.9)",
         zero_line = "#6c757d",
-        line_baseline = "#3B528B",
-        line_scenario = "#5DC863",
-        line_secondary = "#440154",
-        bar_baseline = "#3498DB",
-        bar_scenario = "#52BE80",
-        debt_fill = "rgba(93, 200, 99, 0.2)"
+        line_baseline = "#0052A5",
+        line_scenario = "#E87722",
+        line_secondary = "#7B61C7",
+        bar_baseline = "#0052A5",
+        bar_scenario = "#E87722",
+        debt_fill = "rgba(232, 119, 34, 0.2)"
       )
     }
   })
@@ -280,7 +280,7 @@ server <- function(input, output, session) {
 
         table_state[[id]] <- update_table_level_row(hot_data)
 
-        # Ignore startup no-op table events so initial status remains SOLVED.
+        # Ignore startup no-op table events so initial status remains Complete.
         parsed <- parse_table_deltas(hot_data, N_PERIODS)
         has_nonzero_delta <- any(abs(parsed$values) > 1e-9, na.rm = TRUE)
         has_invalid_delta <- length(parsed$invalid_idx) > 0

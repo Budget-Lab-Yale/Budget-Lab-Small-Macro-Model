@@ -47,7 +47,7 @@ output$plot_unemployment <- renderPlotly({
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -82,7 +82,7 @@ output$plot_inflation <- renderPlotly({
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent (GDP deflator)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -127,7 +127,7 @@ output$plot_real_gdp_indexed <- renderPlotly({
         zerolinecolor = th$zero
       ),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -184,7 +184,7 @@ output$plot_10yr_yield <- renderPlotly({
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -237,7 +237,7 @@ output$plot_federal_funds <- renderPlotly({
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -282,11 +282,11 @@ output$plot_budget_balance <- renderPlotly({
       showlegend = FALSE
     ) %>%
     layout(
-      title = "Budget balance % of nominal GDP",
+      title = "Budget Balance % of GDP",
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP (negative = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -321,7 +321,7 @@ output$plot_debt <- renderPlotly({
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -362,7 +362,7 @@ output$plot_avg_interest_rate <- renderPlotly({
         zerolinecolor = th$zero
       ),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -404,11 +404,11 @@ output$plot_total_receipts <- renderPlotly({
       hovertemplate = paste0("%{x}<br>Receipts: %{y:.2f}% of GDP<extra></extra>")
     ) %>%
     layout(
-      title = "Total Receipts, % of nominal GDP",
+      title = "Total Receipts % of GDP",
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -444,11 +444,11 @@ output$plot_total_outlays <- renderPlotly({
       hovertemplate = paste0("%{x}<br>Outlays: %{y:.2f}% of GDP<extra></extra>")
     ) %>%
     layout(
-      title = "Total Outlays, % of nominal GDP",
+      title = "Total Outlays % of GDP",
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -483,11 +483,11 @@ output$plot_primary_outlays <- renderPlotly({
       hovertemplate = paste0("%{x}<br>Primary Outlays: %{y:.2f}% of GDP<extra></extra>")
     ) %>%
     layout(
-      title = "Primary Outlays, % of nominal GDP",
+      title = "Primary Outlays % of GDP",
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -531,7 +531,7 @@ output$plot_real_gdp_growth <- renderPlotly({
         zerolinecolor = th$zero
       ),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)
@@ -569,11 +569,11 @@ output$plot_primary_balance <- renderPlotly({
       showlegend = FALSE
     ) %>%
     layout(
-      title = "Primary budget balance % of nominal GDP",
+      title = "Primary Budget Balance % of GDP",
       xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP (negative = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
-      legend = list(orientation = "h", x = 0.5, y = -0.35, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
       font = list(color = th$font)

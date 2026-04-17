@@ -7,22 +7,22 @@ ui <- fluidPage(
     tags$style(HTML("
       /* Yellow highlight for editable row (User Delta row = row 2) */
       .handsontable tbody tr:nth-child(2) td {
-        background-color: #FFFFCC !important;
+        background-color: #FFF9E6 !important;
         font-weight: normal;
       }
 
       /* Gray background for read-only rows (Baseline = row 1, Level = row 3) */
       .handsontable tbody tr:nth-child(1) td,
       .handsontable tbody tr:nth-child(3) td {
-        background-color: #F0F0F0 !important;
-        color: #666;
+        background-color: #F9FAFB !important;
+        color: #6B7280;
       }
 
       /* Keep first column (Row labels) readable */
       .handsontable tbody tr td:first-child {
-        background-color: #E8E8E8 !important;
+        background-color: #F3F4F6 !important;
         font-weight: bold;
-        color: #333;
+        color: #374151;
       }
 
       /* Green highlight for deviation tables */
@@ -34,9 +34,9 @@ ui <- fluidPage(
       .sse-display {
         font-size: 16px;
         font-weight: bold;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 5px;
+        padding: 8px;
+        margin: 8px 0;
+        border-radius: 8px;
         border: 2px solid #ddd;
       }
 
@@ -83,17 +83,17 @@ ui <- fluidPage(
 
       /* Dark mode table styling (all input/output tables) */
       html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(2) td {
-        background-color: #5c4d1f !important;
-        color: #f8f9fa !important;
+        background-color: #6B5D2F !important;
+        color: #FEFCE8 !important;
       }
       html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(1) td,
       html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(3) td {
-        background-color: #2b3138 !important;
-        color: #e9ecef !important;
+        background-color: #1F2937 !important;
+        color: #D1D5DB !important;
       }
       html[data-bs-theme='dark'] .handsontable tbody tr td:first-child {
-        background-color: #3a424a !important;
-        color: #f8f9fa !important;
+        background-color: #374151 !important;
+        color: #F3F4F6 !important;
       }
       html[data-bs-theme='dark'] .handsontable td,
       html[data-bs-theme='dark'] .handsontable th {
@@ -135,11 +135,11 @@ ui <- fluidPage(
 
       /* Fiscal year note */
       .fy-note {
-        font-size: 0.85em;
+        font-size: 0.875em;
         color: #666;
         font-style: italic;
-        margin-top: -10px;
-        margin-bottom: 10px;
+        margin-top: -8px;
+        margin-bottom: 8px;
       }
       html[data-bs-theme='dark'] .fy-note {
         color: #9ca3af;
@@ -148,10 +148,10 @@ ui <- fluidPage(
       /* Run status pill */
       .run-status {
         font-family: monospace;
-        font-size: 13px;
+        font-size: 0.875em;
         font-weight: 700;
         border-radius: 999px;
-        padding: 6px 10px;
+        padding: 8px 16px;
         display: inline-block;
         border: 1px solid transparent;
       }
@@ -233,7 +233,7 @@ ui <- fluidPage(
       /* SSE Display Box */
       .sse-box {
         font-family: monospace;
-        font-size: 14px;
+        font-size: 0.875em;
         padding: 8px;
         background: #f5f5f5;
         border-radius: 4px;
@@ -287,6 +287,25 @@ ui <- fluidPage(
         border-color: #ca8a04;
       }
 
+      /* Sidebar section styling for visual separation */
+      .sidebar-section {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+      }
+      html[data-bs-theme='dark'] .sidebar-section {
+        background-color: #1f2937;
+        border-color: #374151;
+      }
+
+      .sidebar-section h4 {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 1.125em;
+      }
+
       /* Accessibility helpers */
       .skip-link {
         position: absolute;
@@ -295,12 +314,12 @@ ui <- fluidPage(
         z-index: 9999;
         background: #ffffff;
         color: #000000;
-        padding: 8px 12px;
+        padding: 8px 16px;
         border: 2px solid #000;
       }
       .skip-link:focus {
-        left: 10px;
-        top: 10px;
+        left: 8px;
+        top: 8px;
       }
       button:focus-visible,
       a:focus-visible,
@@ -399,7 +418,7 @@ ui <- fluidPage(
       width = 3,
 
       # SSE Display - simplified
-      div(style = "position: sticky; top: 10px; z-index: 100; background: var(--bs-body-bg); padding-bottom: 10px;",
+      div(style = "position: sticky; top: 8px; z-index: 100; background: var(--bs-body-bg); padding-bottom: 8px;",
           h4("Solver Status"),
           div(class = "sse-box",
               textOutput("sse_display", inline = TRUE))
@@ -411,67 +430,64 @@ ui <- fluidPage(
         uiOutput("run_status_bar")
       ),
 
-      hr(),
-
       # Main action buttons
-      h4("Simulation Controls"),
-      actionButton("run_sim",
-                   "Run Simulation (SOLVE)",
-                   icon = icon("play"),
-                   class = "btn-primary btn-lg",
-                   style = "width: 100%; margin-bottom: 10px;"),
+      div(class = "sidebar-section",
+        h4("Simulation Controls"),
+        actionButton("run_sim",
+                     "Run Simulation",
+                     icon = icon("play"),
+                     class = "btn-primary btn-lg",
+                     style = "width: 100%; margin-bottom: 8px;"),
 
-      actionButton("reset_inputs",
-                   "Reset to Defaults",
-                   icon = icon("rotate-right"),
-                   class = "btn-secondary",
-                   style = "width: 100%; margin-bottom: 20px;"),
+        actionButton("reset_inputs",
+                     "Reset to Defaults",
+                     icon = icon("rotate-right"),
+                     class = "btn-secondary",
+                     style = "width: 100%; margin-bottom: 16px;"),
 
-      helpText("Configure shocks in the Inputs tab, then click Run Simulation."),
-      helpText("Keyboard shortcuts: Alt+R = Run | Alt+D = Reset"),
-
-      hr(),
+        helpText("Configure shocks in the Inputs tab, then click Run Simulation."),
+        helpText("Keyboard shortcuts: Alt+R = Run | Alt+D = Reset")
+      ),
 
       # Preset Scenarios
-      h4("Preset Scenarios"),
-      p("Quick-start common scenarios:", class = "text-muted-custom", style = "font-size: 0.85em;"),
+      div(class = "sidebar-section",
+        h4("Preset Scenarios"),
+        p("Quick-start common scenarios:", class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 16px;"),
 
-      actionButton("preset_deficit",
-                   "Deficit Increase",
-                   class = "btn-outline-danger btn-sm",
-                   style = "width: 100%; margin-bottom: 5px;"),
-      helpText("-2% GDP receipts, 5 years", style = "margin-top: -8px; font-size: 0.75em;"),
+        actionButton("preset_deficit",
+                     "Deficit Increase",
+                     class = "btn-outline-danger btn-sm",
+                     style = "width: 100%; margin-bottom: 8px;"),
+        helpText("Reduces federal receipts by 2% of GDP for 5 years", style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
 
-      actionButton("preset_austerity",
-                   "Deficit Decrease",
-                   class = "btn-outline-success btn-sm",
-                   style = "width: 100%; margin-bottom: 5px;"),
-      helpText("-1.5% GDP outlays, 5 years", style = "margin-top: -8px; font-size: 0.75em;"),
+        actionButton("preset_austerity",
+                     "Deficit Decrease",
+                     class = "btn-outline-success btn-sm",
+                     style = "width: 100%; margin-bottom: 8px;"),
+        helpText("Reduces federal outlays by 1.5% of GDP for 5 years", style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
 
-      actionButton("preset_growth_shock",
-                   "Growth Slowdown",
-                   class = "btn-outline-warning btn-sm",
-                   style = "width: 100%; margin-bottom: 5px;"),
-      helpText("-0.5pp productivity, 5 years", style = "margin-top: -8px; font-size: 0.75em;"),
-
-      hr(),
+        actionButton("preset_growth_shock",
+                     "Growth Slowdown",
+                     class = "btn-outline-warning btn-sm",
+                     style = "width: 100%; margin-bottom: 8px;"),
+        helpText("Reduces productivity growth by 0.5pp for 5 years", style = "margin-top: -4px; font-size: 0.875em;")
+      ),
 
       # Export section
-      h4("Export Results"),
-      downloadButton("download_csv",
-                    "Export to CSV",
-                    class = "btn-outline-primary",
-                    style = "width: 100%; margin-bottom: 8px;"),
+      div(class = "sidebar-section",
+        h4("Export Results"),
+        downloadButton("download_csv",
+                      "Export to CSV",
+                      class = "btn-outline-primary",
+                      style = "width: 100%; margin-bottom: 8px;"),
 
-      downloadButton("download_excel",
-                    "Export to Excel",
-                    class = "btn-outline-primary",
-                    style = "width: 100%;"),
+        downloadButton("download_excel",
+                      "Export to Excel",
+                      class = "btn-outline-primary",
+                      style = "width: 100%;")
+      ),
 
-      br(),
-      br(),
-
-      div(class = "text-muted-custom", style = "text-align: center; font-size: 0.85em;",
+      div(class = "text-muted-custom", style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
           "Updated: April 2026")
     ),
 
@@ -493,15 +509,16 @@ ui <- fluidPage(
           br(),
 
           # Streamlined Introduction
-          p(style = "font-size: 1.1em; margin-bottom: 20px;",
+          p(style = "font-size: 1.1em; margin-bottom: 16px;",
             strong("Enter policy changes below."), " Edit yellow cells to create your scenario. ",
             strong("Zeros = no change from baseline."),
-            " Click 'Run Simulation (SOLVE)' when ready."
+            " Click 'Run Simulation' when ready."
           ),
 
-          p(class = "text-muted-custom", style = "margin-bottom: 25px;",
+          p(class = "text-muted-custom", style = "margin-bottom: 24px;",
             icon("info-circle"), " ",
-            strong("New users:"), " Start with Primary Budget Balance to simulate a tax or spending policy."
+            strong("New users:"), " Start with Primary Budget Balance to simulate a tax or spending policy. ",
+            strong("Note:"), " \"pp\" = percentage points (e.g., a change from 2.0% to 2.5% is +0.5 pp)."
           ),
 
           # Sub-tabs for organizing inputs by category
@@ -516,15 +533,15 @@ ui <- fluidPage(
               br(),
 
               p(strong("What this does: "), "Adjust long-run economic growth by changing labor force and productivity growth rates.", style = "font-size: 1.05em;"),
-              p(icon("info-circle"), " Changes here automatically affect the neutral interest rate (r*) and government spending.", class = "text-muted-custom", style = "margin-bottom: 20px;"),
+              p(icon("info-circle"), " Changes here automatically affect the neutral interest rate (r*) and government spending.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
 
-              h4("Potential Labor Force Growth Delta (pp)"),
-              p(strong("Example:"), " +0.1 means labor force grows 0.1 percentage points faster per year"),
+              h4("Potential Productivity Growth Delta (pp)"),
+              p(strong("Example:"), " +0.20 increases productivity (GDP per worker) growth by 0.2 percentage points per year"),
               rHandsontableOutput("table_lf_growth", height = "180px"),
               br(),
 
-              h4("Potential Productivity Growth Delta (pp)"),
-              p(strong("Example:"), " +0.2 means productivity (GDP per worker) grows 0.2 percentage points faster per year"),
+              h4("Potential Labor Force Growth Delta (pp)"),
+              p(strong("Example:"), " +0.10 increases labor force growth rate by 0.1 percentage points per year"),
               rHandsontableOutput("table_productivity", height = "180px")
             ),
 
@@ -535,15 +552,16 @@ ui <- fluidPage(
               br(),
 
               p(strong("What this does: "), "Simulate tax and spending policies by changing federal receipts and outlays as a percent of GDP.", style = "font-size: 1.05em;"),
-              p(icon("arrow-right"), " ", strong("Example use: "), "Tax increase = positive receipts. Spending increase = positive outlays.", class = "text-muted-custom", style = "margin-bottom: 20px;"),
+              p(icon("arrow-right"), " ", strong("How to use: "), "Enter positive values to increase receipts or outlays, negative values to decrease them.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
 
               h4("Federal Receipts Delta (pp of GDP)"),
-              p(strong("Example:"), " +1.0 means a tax increase equal to 1% of GDP. -1.0 means a tax cut of 1% of GDP."),
+              p(strong("Example:"), " +1.00 = tax increase of 1% of GDP | -1.00 = tax cut of 1% of GDP"),
               rHandsontableOutput("table_receipts", height = "180px"),
               br(),
 
               h4("Federal Primary Outlays Delta (pp of GDP)"),
-              p(strong("Example:"), " +1.0 means spending increases by 1% of GDP. Primary outlays exclude interest on the debt."),
+              p(strong("Example:"), " +1.00 = spending increase of 1% of GDP | -1.00 = spending cut of 1% of GDP"),
+              p(class = "text-muted-custom", style = "font-size: 0.875em; margin-top: -8px;", icon("info-circle"), " Primary outlays exclude interest payments on the debt"),
               rHandsontableOutput("table_outlays", height = "180px"),
               br(),
               br(),
@@ -568,10 +586,10 @@ ui <- fluidPage(
               br(),
 
               p(strong("What this does: "), "Change the neutral interest rate - the rate that neither stimulates nor restrains the economy.", style = "font-size: 1.05em;"),
-              p(icon("info-circle"), " Use this to model structural changes like demographic shifts or global savings trends.", class = "text-muted-custom", style = "margin-bottom: 20px;"),
+              p(icon("info-circle"), " Use this to model structural changes like demographic shifts or global savings trends.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
 
               h4("Real Neutral Federal Funds Rate Direct Delta (pp)"),
-              p(strong("Example:"), " +0.25 means r* rises by 0.25 percentage points"),
+              p(strong("Example:"), " +0.25 increases r* by 0.25 percentage points | -0.25 decreases r* by 0.25 pp"),
               rHandsontableOutput("table_rfstar", height = "180px"),
               br(),
 
@@ -590,7 +608,7 @@ ui <- fluidPage(
               br(),
 
               h4("Inflation Target Delta (pp)"),
-              p(strong("Example:"), " +0.50 means Fed raises inflation target from 2% to 2.5%"),
+              p(strong("Example:"), " +0.50 = Fed raises target from 2.0% to 2.5% | -0.50 = Fed lowers target to 1.5%"),
               rHandsontableOutput("table_inflation_target", height = "180px"),
               br(),
               checkboxInput("expectations_speed",
@@ -600,9 +618,9 @@ ui <- fluidPage(
 
               hr(),
 
-              h4("Monetary Policy Rule Shock Delta (pp)"),
+              h4("Fed Interest Rate Adjustment (pp)"),
               p("Sets interest rates higher or lower than the Fed would normally choose based on economic conditions. Use this to model unusual Fed actions like forward guidance."),
-              p(strong("Example:"), " +0.50 means the Fed funds rate is 0.5 percentage points above where it would normally be"),
+              p(strong("Example:"), " +0.50 = Fed Funds rate is 0.5 pp higher than normal | -0.50 = 0.5 pp lower than normal"),
               rHandsontableOutput("table_monetary_rule", height = "180px")
             ),
 
@@ -613,7 +631,7 @@ ui <- fluidPage(
               br(),
               h4("Output Gap Shock Delta (pp)"),
               p("Model changes in private sector demand (consumer/business confidence, wealth effects from stock markets)."),
-              p(strong("Example:"), " +2.0 means a positive demand shock pushing output 2 percentage points above potential"),
+              p(strong("Example:"), " +2.00 = positive demand shock pushing output 2 pp above potential | -2.00 = negative demand shock"),
               rHandsontableOutput("table_output_gap", height = "180px")
             ),
 
@@ -639,9 +657,8 @@ ui <- fluidPage(
           tagList(icon("list-check"), " User Deltas Summary"),
           br(),
 
-          h3("Consolidated View of All User Inputs"),
-          p("This table consolidates all your inputs from the Input tab. ",
-            "All values are read-only references. If any value is non-zero, that scenario is active."),
+          h4("Consolidated View of All User Inputs"),
+          helpText("This table consolidates all your inputs from the Inputs tab. All values are read-only. If any value is non-zero, that scenario is active."),
 
           br(),
 
@@ -657,7 +674,9 @@ ui <- fluidPage(
           br(),
 
           div(class = "alert alert-secondary",
-              strong("How to read this dashboard: "),
+              strong("Getting started: "),
+              "Configure your inputs in the sidebar and click 'Run Simulation' to see results. ",
+              strong("How to read: "),
               "All charts compare Baseline (dashed) vs Scenario (solid). ",
               "Rates and inflation are percentage points; debt and balances are percent of GDP. ",
               "For budget charts, more negative values indicate larger deficits."
@@ -686,37 +705,37 @@ ui <- fluidPage(
 
           # All 13 Charts from BLSMM_v1_8_UI.pdf specification
           fluidRow(
-            column(6, plotlyOutput("plot_unemployment", height = "350px")),
-            column(6, plotlyOutput("plot_inflation", height = "350px"))
+            column(6, plotlyOutput("plot_unemployment", height = "400px")),
+            column(6, plotlyOutput("plot_inflation", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("plot_real_gdp_indexed", height = "350px")),
-            column(6, plotlyOutput("plot_10yr_yield", height = "350px"))
+            column(6, plotlyOutput("plot_real_gdp_indexed", height = "400px")),
+            column(6, plotlyOutput("plot_10yr_yield", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("plot_federal_funds", height = "350px")),
-            column(6, plotlyOutput("plot_budget_balance", height = "350px"))
+            column(6, plotlyOutput("plot_federal_funds", height = "400px")),
+            column(6, plotlyOutput("plot_budget_balance", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("plot_debt", height = "350px")),
-            column(6, plotlyOutput("plot_avg_interest_rate", height = "350px"))
+            column(6, plotlyOutput("plot_debt", height = "400px")),
+            column(6, plotlyOutput("plot_avg_interest_rate", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("plot_total_receipts", height = "350px")),
-            column(6, plotlyOutput("plot_total_outlays", height = "350px"))
+            column(6, plotlyOutput("plot_total_receipts", height = "400px")),
+            column(6, plotlyOutput("plot_total_outlays", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("plot_primary_outlays", height = "350px")),
-            column(6, plotlyOutput("plot_real_gdp_growth", height = "350px"))
+            column(6, plotlyOutput("plot_primary_outlays", height = "400px")),
+            column(6, plotlyOutput("plot_real_gdp_growth", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("plot_primary_balance", height = "350px"))
+            column(6, plotlyOutput("plot_primary_balance", height = "400px"))
           )
         ),
 
@@ -742,23 +761,23 @@ ui <- fluidPage(
           br(),
 
           fluidRow(
-            column(6, plotlyOutput("dev_plot_output_gap", height = "350px")),
-            column(6, plotlyOutput("dev_plot_unemployment", height = "350px"))
+            column(6, plotlyOutput("dev_plot_output_gap", height = "400px")),
+            column(6, plotlyOutput("dev_plot_unemployment", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("dev_plot_real_gdp_growth", height = "350px")),
-            column(6, plotlyOutput("dev_plot_inflation", height = "350px"))
+            column(6, plotlyOutput("dev_plot_real_gdp_growth", height = "400px")),
+            column(6, plotlyOutput("dev_plot_inflation", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("dev_plot_debt", height = "350px")),
-            column(6, plotlyOutput("dev_plot_federal_funds", height = "350px"))
+            column(6, plotlyOutput("dev_plot_debt", height = "400px")),
+            column(6, plotlyOutput("dev_plot_federal_funds", height = "400px"))
           ),
 
           fluidRow(
-            column(6, plotlyOutput("dev_plot_10yr_yield", height = "350px")),
-            column(6, plotlyOutput("dev_plot_primary_balance", height = "350px"))
+            column(6, plotlyOutput("dev_plot_10yr_yield", height = "400px")),
+            column(6, plotlyOutput("dev_plot_primary_balance", height = "400px"))
           ),
 
           br(),
@@ -792,7 +811,7 @@ ui <- fluidPage(
             ),
 
             tabPanel(
-              tagList(icon("circle-dot"), " Alternative"),
+              tagList(icon("circle-dot"), " Scenario"),
               br(),
               DTOutput("scenario_table")
             ),
@@ -812,107 +831,97 @@ ui <- fluidPage(
           tagList(icon("info-circle"), " About"),
           br(),
 
-          h3("The Budget Lab's Small Macro Model (BLSMM)"),
+          h3("The Budget Lab's Small Macro Model"),
 
-          div(class = "bg-info-light", style = "font-size: 1.05em; padding: 20px; border-radius: 5px; margin-bottom: 20px;",
-              p(strong("What is BLSMM?")),
-              p("BLSMM is an interactive tool for exploring how fiscal and monetary policies affect the economy over 10 years. It simulates the complex interactions between government spending, taxation, Federal Reserve policy, economic growth, interest rates, and national debt."),
+          div(class = "bg-info-light", style = "font-size: 1.05em; padding: 24px; border-radius: 8px; margin-bottom: 24px;",
+              p(strong("What is BLSMM?"), style = "margin-bottom: 8px;"),
+              p("An interactive tool for exploring how fiscal and monetary policies affect the economy over 10 years. Simulate the interactions between government spending, taxation, Federal Reserve policy, economic growth, interest rates, and national debt.", style = "margin-bottom: 16px;"),
 
-              p(strong("Who should use it:")),
-              tags$ul(
+              p(strong("Who should use it:"), style = "margin-bottom: 8px;"),
+              tags$ul(style = "margin-bottom: 16px;",
                 tags$li("Policy analysts studying tax and spending proposals"),
                 tags$li("Researchers exploring fiscal-monetary interactions"),
                 tags$li("Students learning macroeconomic policy dynamics")
               ),
 
-              p(strong("What it helps you understand:")),
-              tags$ul(
+              p(strong("What you can learn:"), style = "margin-bottom: 8px;"),
+              tags$ul(style = "margin-bottom: 0;",
                 tags$li("How policy changes affect growth, unemployment, inflation, and debt"),
                 tags$li("Automatic economic responses (e.g., Fed reacts to inflation, interest costs rise with debt)"),
-                tags$li("Trade-offs and unintended consequences of policy choices")
+                tags$li("Trade-offs and side effects of policy choices")
               )
           ),
 
-          hr(),
+          h4(icon("rocket"), " Quick Start: Your First Simulation", style = "margin-top: 32px; margin-bottom: 16px;"),
 
-          h4(icon("rocket"), " Quick Start: Your First Simulation"),
-
-          div(class = "card bg-blue-light", style = "padding: 20px; margin-bottom: 25px;",
+          div(class = "card bg-blue-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
               tags$ol(style = "line-height: 2;",
                 tags$li(strong("Go to the Inputs tab"), " (first tab at top)"),
-                tags$li(strong("Click 'Primary Budget Balance'"), " sub-tab (it should be selected by default)"),
+                tags$li(strong("Click 'Primary Budget Balance'"), " sub-tab (selected by default)"),
                 tags$li(strong("Click on a yellow cell"), " in the Receipts table (e.g., FY2027 column)"),
-                tags$li(strong("Type: 1.0"), " and press Enter (this simulates a 1% of GDP tax increase)"),
-                tags$li(strong("Click 'Run Simulation (SOLVE)'"), " in the left sidebar"),
-                tags$li(strong("Wait for the SSE indicator"), " to show 'Converged' with green checkmark"),
+                tags$li(strong("Type: 1.0"), " and press Enter (simulates a 1% of GDP tax increase)"),
+                tags$li(strong("Click 'Run Simulation'"), " in the left sidebar"),
+                tags$li(strong("Wait for 'Complete'"), " status"),
                 tags$li(strong("Explore results:"),
                   tags$ul(
-                    tags$li("Dashboard tab - see all economic variables over time"),
-                    tags$li("Deviations tab - see how your scenario differs from baseline")
+                    tags$li("Dashboard tab - all economic variables over time"),
+                    tags$li("Deviations tab - how your scenario differs from baseline")
                   )
                 )
               ),
-              p(style = "margin-top: 15px; font-style: italic; margin-bottom: 0;",
-                icon("check-circle"), " Congratulations! You've just simulated a tax increase and seen its effects on the economy.")
+              p(style = "margin-top: 16px; font-style: italic; margin-bottom: 0;",
+                icon("check-circle"), " Success! You've simulated a tax increase and seen its economic effects.")
           ),
 
-          hr(),
+          h4("How to Use", style = "margin-top: 32px; margin-bottom: 16px;"),
 
-          h4("How to Use"),
-
-          tags$ol(style = "line-height: 1.8;",
-            tags$li(strong("Inputs tab:"), " Enter policy changes (remember: zeros = no change from baseline)"),
-            tags$li(strong("SOLVE:"), " Click the button in sidebar and wait for green 'Converged' indicator"),
+          tags$ol(style = "line-height: 1.8; margin-bottom: 16px;",
+            tags$li(strong("Inputs tab:"), " Enter policy changes (zeros = no change from baseline)"),
+            tags$li(strong("Run Simulation:"), " Click button in sidebar and wait for 'Complete' status"),
             tags$li(strong("Dashboard:"), " View all economic variables over time"),
             tags$li(strong("Deviations:"), " See how your scenario differs from baseline"),
             tags$li(strong("Export:"), " Download results as CSV or Excel")
           ),
 
-          p(icon("info-circle"), " ", strong("Tip: "), "Most scenarios only need 1-2 input categories. Start with Primary Budget Balance for fiscal policy.", class = "text-link"),
+          p(icon("info-circle"), " ", strong("Tip: "), "Most scenarios only need 1-2 input categories. Start with Primary Budget Balance for fiscal policy.", class = "text-link", style = "margin-bottom: 32px;"),
 
-          hr(),
+          h4("Example Use Cases", style = "margin-bottom: 16px;"),
 
-          h4("Example Use Cases"),
-
-          div(class = "bg-yellow-light", style = "padding: 15px; border-radius: 5px; margin-bottom: 20px;",
+          div(class = "bg-yellow-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
               tags$ul(style = "line-height: 1.8; margin-bottom: 0;",
                 tags$li(strong("Tax Reform Analysis:"), " Model a corporate tax cut and see effects on growth, deficits, and interest rates"),
                 tags$li(strong("Fiscal Consolidation:"), " Test different paths to reduce debt-to-GDP (spending cuts vs. tax increases vs. growth)"),
                 tags$li(strong("Fed Policy Changes:"), " Explore higher inflation targets or unconventional monetary policy"),
                 tags$li(strong("Growth Scenarios:"), " Study effects of productivity slowdowns or labor force changes"),
-                tags$li(strong("Policy Interactions:"), " See how fiscal and monetary policy work together or in opposition")
+                tags$li(strong("Policy Interactions:"), " See how fiscal and monetary policies work together or in opposition")
               )
           ),
 
-          hr(),
+          h4("Understanding Your Results", style = "margin-bottom: 16px;"),
 
-          h4("Understanding Your Results"),
+          p("After running a simulation, here's what to look for:", style = "margin-bottom: 16px;"),
 
-          p("After running a simulation, here's what to look for in the Dashboard and Deviations tabs:"),
-
-          div(class = "bg-blue-pale", style = "padding: 15px; border-radius: 5px; margin-bottom: 15px;",
-              p(strong("Key Variables to Watch:")),
+          div(class = "bg-blue-pale", style = "padding: 24px; border-radius: 8px; margin-bottom: 16px;",
+              p(strong("Key Variables to Watch:"), style = "margin-bottom: 8px;"),
               tags$ul(style = "margin-bottom: 0; line-height: 1.8;",
-                tags$li(strong("Output Gap:"), " Positive = economy overheating (above potential). Negative = economic slack. The Fed tries to close this gap."),
+                tags$li(strong("Output Gap:"), " Positive = economy overheating. Negative = economic slack. The Fed tries to close this gap."),
                 tags$li(strong("Unemployment:"), " How your policy affects jobs. Connected to output gap through Okun's Law."),
                 tags$li(strong("Inflation:"), " Higher than baseline means your policy is inflationary. Watch how it evolves over time."),
                 tags$li(strong("Debt/GDP:"), " The key long-run fiscal indicator. Rising debt means policy worsens the fiscal outlook."),
                 tags$li(strong("Interest Rates:"), " Shows Fed response and market rates. Higher rates can dampen stimulus effects."),
-                tags$li(strong("Primary Balance:"), " Deficit before interest costs. Compare to Debt/GDP to assess sustainability.")
+                tags$li(strong("Primary Balance:"), " Deficit before interest costs. Compare to Debt/GDP for sustainability.")
               )
           ),
 
-          div(class = "bg-red-light", style = "padding: 15px; border-radius: 5px; margin-bottom: 20px;",
-              p(strong("Warning Signs to Watch For:"), class = "text-warning-custom"),
+          div(class = "bg-red-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
+              p(strong("Warning Signs:"), class = "text-warning-custom", style = "margin-bottom: 8px;"),
               tags$ul(style = "margin-bottom: 0; line-height: 1.8;",
-                tags$li("Debt/GDP rising sharply and continuously without stabilizing"),
-                tags$li("Inflation persistently far above or below the Fed's 2% target"),
+                tags$li("Debt/GDP rising sharply without stabilizing"),
+                tags$li("Inflation persistently far from the Fed's 2% target"),
                 tags$li("Interest rates hitting zero (model has limitations at zero lower bound)"),
                 tags$li("Unrealistic combinations (e.g., large deficits with no interest rate response)")
               )
           ),
-
-          hr(),
 
           tags$details(
             tags$summary(strong("Advanced: Technical Details"), class = "text-muted-custom", style = "cursor: pointer; font-size: 1.1em;"),
