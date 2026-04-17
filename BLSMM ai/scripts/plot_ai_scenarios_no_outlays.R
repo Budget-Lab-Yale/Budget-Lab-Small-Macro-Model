@@ -30,7 +30,7 @@ cat("✓ Results loaded\n\n")
 # ==============================================================================
 # CREATE OUTPUT DIRECTORY
 # ==============================================================================
-dir.create("figures/ai_scenarios_no_outlays", recursive = TRUE, showWarnings = FALSE)
+dir.create("BLSMM ai/figures_no_outlays", recursive = TRUE, showWarnings = FALSE)
 
 # ==============================================================================
 # PREPARE DATA FOR PLOTTING
@@ -166,7 +166,7 @@ p1 <- ggplot(data_debt, aes(x = Year, y = Value, color = Scenario, linetype = Sc
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/debt_gdp.png", p1, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/debt_gdp.png", p1, width = 8, height = 5, dpi = 300)
 cat("  ✓ Debt/GDP chart saved\n")
 
 # 2. Budget Balance as % of GDP
@@ -185,7 +185,7 @@ p2 <- ggplot(data_budget, aes(x = Year, y = Value, color = Scenario, linetype = 
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/budget_balance.png", p2, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/budget_balance.png", p2, width = 8, height = 5, dpi = 300)
 cat("  ✓ Budget balance chart saved\n")
 
 # 3. Real GDP
@@ -204,7 +204,7 @@ p3 <- ggplot(data_gdp, aes(x = Year, y = Value, color = Scenario, linetype = Sce
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/real_gdp.png", p3, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/real_gdp.png", p3, width = 8, height = 5, dpi = 300)
 cat("  ✓ Real GDP chart saved\n")
 
 # 4. Unemployment Rate
@@ -222,7 +222,7 @@ p4 <- ggplot(data_unemp, aes(x = Year, y = Value, color = Scenario, linetype = S
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/unemployment.png", p4, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/unemployment.png", p4, width = 8, height = 5, dpi = 300)
 cat("  ✓ Unemployment chart saved\n")
 
 # 5. Inflation
@@ -241,7 +241,7 @@ p5 <- ggplot(data_infl, aes(x = Year, y = Value, color = Scenario, linetype = Sc
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/inflation.png", p5, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/inflation.png", p5, width = 8, height = 5, dpi = 300)
 cat("  ✓ Inflation chart saved\n")
 
 # 6. Fed Funds Rate
@@ -259,7 +259,7 @@ p6 <- ggplot(data_ff, aes(x = Year, y = Value, color = Scenario, linetype = Scen
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/fed_funds.png", p6, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/fed_funds.png", p6, width = 8, height = 5, dpi = 300)
 cat("  ✓ Fed Funds chart saved\n")
 
 # 7. 10-Year Treasury Yield
@@ -277,7 +277,7 @@ p7 <- ggplot(data_r10, aes(x = Year, y = Value, color = Scenario, linetype = Sce
   ) +
   theme_ai
 
-ggsave("figures/ai_scenarios_no_outlays/treasury_10y.png", p7, width = 8, height = 5, dpi = 300)
+ggsave("BLSMM ai/figures_no_outlays/treasury_10y.png", p7, width = 8, height = 5, dpi = 300)
 cat("  ✓ 10-Year Treasury chart saved\n")
 
 # ==============================================================================
@@ -294,7 +294,7 @@ combined_plot <- grid.arrange(
   top = "AI Scenario Analysis: Baseline vs 2 Alternative Scenarios (FY2026-FY2035)"
 )
 
-ggsave("figures/ai_scenarios_no_outlays/combined_all_variables.png", combined_plot,
+ggsave("BLSMM ai/figures_no_outlays/combined_all_variables.png", combined_plot,
        width = 16, height = 12, dpi = 300)
 
 cat("  ✓ Combined figure saved\n\n")
@@ -306,7 +306,7 @@ cat("===========================================================================
 cat("  Visualization Complete!\n")
 cat("================================================================================\n\n")
 
-cat("Individual charts saved to figures/ai_scenarios_no_outlays/:\n")
+cat("Individual charts saved to BLSMM ai/figures_no_outlays/:\n")
 cat("  - debt_gdp.png\n")
 cat("  - budget_balance.png\n")
 cat("  - real_gdp.png\n")
