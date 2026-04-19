@@ -50,28 +50,30 @@ Clone or download this repository to your local machine.
 setwd("path/to/Small Macro Model")
 
 # Launch the app (choose one method):
-source("app.R")                 # Method 1
-shiny::runApp(".")              # Method 2
+source("app.R")                 # Method 1: Direct execution
+shiny::runApp(".")              # Method 2: Using shiny
+# Or in RStudio: Open app.R and click "Run App" button
 ```
 
-The application will open in your web browser.
+The application will open instantly in your web browser thanks to baseline caching.
 
-### Current Folder Layout
+**Note:** First-time users should run `source("cache_baseline.R")` to pre-compute the baseline scenario for instant app loading.
 
-```         
+### Project Structure
+
+```
 Small Macro Model/
-├── app.R                          # App launcher
-├── README.md
-├── HOW_TO_LAUNCH_APP.md
-├── Small Macro Model.Rproj
-├── app/
+├── app.R                          # Main Shiny app launcher
+├── cache_baseline.R               # Baseline pre-computation script
+├── README.md                      # This file
+├── app/                           # Shiny app components
 │   └── R/
-│       ├── blsmm_helpers.R        # Helper functions
-│       ├── blsmm_ui.R             # User interface
-│       ├── blsmm_server.R         # Server logic
-│       └── blsmm_plots_v1_8.R     # All 13 dashboard charts
+│       ├── blsmm_ui.R             # User interface definition
+│       ├── blsmm_server.R         # Server logic (with caching)
+│       ├── blsmm_plots_v1_8.R     # All 13 dashboard charts
+│       └── blsmm_helpers.R        # Helper functions
 ├── model/
-│   └── v1_8/                      # Modular model implementation
+│   └── v1_8/                      # Core model implementation
 │       ├── simulation.R           # Main simulation engine
 │       ├── solver.R               # Equation solver
 │       ├── equations.R            # Core equations

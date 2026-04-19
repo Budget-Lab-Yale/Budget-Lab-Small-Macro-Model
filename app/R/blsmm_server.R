@@ -350,13 +350,48 @@ server <- function(input, output, session) {
     )
   }
 
-  # Store baseline solution (run once at startup)
-  baseline_v1_8 <- run_baseline_v1_8(
-    n_periods = N_PERIODS,
-    params = NULL,
-    expectations_speed = FALSE,
-    verbose = FALSE
-  )
+  # Store baseline solution (load from cache if available, otherwise compute)
+  cache_file <- "data/baseline_v1_8_cached.rds"
+
+  if (file.exists(cache_file)) {
+    # Load cached baseline (used in deployment and local runs)
+    cached_baseline <- readRDS(cache_file)
+    baseline_v1_8 <- cached_baseline$data
+    cat("Loaded cached baseline from", cache_file,
+        "(computed", format(cached_baseline$timestamp, "%Y-%m-%d %H:%M"), ")\n")
+  } else {
+    # Compute baseline if no cache exists
+    cat("No baseline cache found. Computing baseline scenario...\n")
+    start_time <- Sys.time()
+
+    baseline_v1_8 <- run_baseline_v1_8(
+      n_periods = N_PERIODS,
+      params = NULL,
+      expectations_speed = FALSE,
+      verbose = FALSE
+    )
+
+    end_time <- Sys.time()
+    computation_time <- as.numeric(difftime(end_time, start_time, units = "secs"))
+    cat("Baseline computed in", round(computation_time, 2), "seconds\n")
+
+    # Try to save to cache (will fail on read-only file systems like shinyapps.io, but that's okay)
+    tryCatch({
+      cached_baseline <- list(
+        data = baseline_v1_8,
+        timestamp = Sys.time(),
+        n_periods = N_PERIODS,
+        computation_time = computation_time,
+        cache_version = "1.0"
+      )
+      saveRDS(cached_baseline, cache_file)
+      cat("Baseline cached to", cache_file, "\n")
+    }, error = function(e) {
+      cat("Note: Could not save baseline cache (read-only file system)\n")
+      cat("This is normal on deployment platforms like shinyapps.io\n")
+    })
+  }
+
   baseline_v1_8$fy_label <- fy_labels[1:nrow(baseline_v1_8)]
 
   # Helper to convert results to app display structure
