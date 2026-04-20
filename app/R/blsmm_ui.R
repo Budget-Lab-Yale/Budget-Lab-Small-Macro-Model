@@ -361,10 +361,6 @@ ui <- fluidPage(
           var runBtn = document.getElementById('run_sim');
           if (runBtn) runBtn.click();
         }
-        if (e.altKey && !e.shiftKey && (e.key === 'd' || e.key === 'D')) {
-          var resetBtn = document.getElementById('reset_inputs');
-          if (resetBtn) resetBtn.click();
-        }
       });
 
       // Add explicit ARIA labels to controls after DOM load.
@@ -446,7 +442,7 @@ ui <- fluidPage(
                      style = "width: 100%; margin-bottom: 16px;"),
 
         helpText("Configure shocks in the Inputs tab, then click Run Simulation."),
-        helpText("Keyboard shortcuts: Alt+R = Run | Alt+D = Reset")
+        helpText("Keyboard shortcut: Alt+R = Run")
       ),
 
       # Preset Scenarios
