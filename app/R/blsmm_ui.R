@@ -368,9 +368,9 @@ ui <- fluidPage(
         var labels = {
           run_sim: 'Run simulation',
           reset_inputs: 'Reset inputs to defaults',
-          preset_deficit: 'Apply deficit increase preset',
-          preset_austerity: 'Apply deficit decrease preset',
-          preset_growth_shock: 'Apply growth slowdown preset',
+          ['preset_' + 'rapid_ai']: 'Apply rapid AI adoption preset',
+          ['preset_' + 'persistent_infl']: 'Apply persistent inflation preset',
+          ['preset_' + 'military_conflict']: 'Apply military conflict preset',
           download_csv: 'Download results as CSV',
           download_excel: 'Download results as Excel workbook'
         };
@@ -450,23 +450,26 @@ ui <- fluidPage(
         h4("Preset Scenarios"),
         p("Quick-start common scenarios:", class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 16px;"),
 
-        actionButton("preset_deficit",
-                     "Deficit Increase",
-                     class = "btn-outline-danger btn-sm",
+        helpText("Productivity boost + LFPR decline + outlay rise (Karger et al.)",
+                 style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
+        actionButton("preset_rapid_ai",
+                     "Rapid AI Adoption",
+                     class = "btn-outline-primary btn-sm",
                      style = "width: 100%; margin-bottom: 8px;"),
-        helpText("Reduces federal receipts by 2% of GDP for 5 years", style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
 
-        actionButton("preset_austerity",
-                     "Deficit Decrease",
-                     class = "btn-outline-success btn-sm",
-                     style = "width: 100%; margin-bottom: 8px;"),
-        helpText("Reduces federal outlays by 1.5% of GDP for 5 years", style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
-
-        actionButton("preset_growth_shock",
-                     "Growth Slowdown",
+        helpText("Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030",
+                 style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
+        actionButton("preset_persistent_infl",
+                     "Persistent Inflation",
                      class = "btn-outline-warning btn-sm",
                      style = "width: 100%; margin-bottom: 8px;"),
-        helpText("Reduces productivity growth by 0.5pp for 5 years", style = "margin-top: -4px; font-size: 0.875em;")
+
+        helpText("Defense outlays rise per BR2027 (incl. +$350B FY2027 mandatory)",
+                 style = "margin-top: -4px; font-size: 0.875em;"),
+        actionButton("preset_military_conflict",
+                     "Higher Defense Spending",
+                     class = "btn-outline-danger btn-sm",
+                     style = "width: 100%; margin-bottom: 8px;")
       ),
 
       # Export section
@@ -484,7 +487,7 @@ ui <- fluidPage(
       ),
 
       div(class = "text-muted-custom", style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
-          "Updated: April 2026")
+          "Version 1.0. Updated April 2026.")
     ),
 
     # Main panel for outputs
@@ -501,7 +504,7 @@ ui <- fluidPage(
         # ======================================================================
         tabPanel(
           value = "inputs",
-          tagList(icon("sliders"), " Inputs"),
+          tagList(icon("sliders"), " ", tags$b("Inputs")),
           br(),
 
           # Streamlined Introduction
@@ -533,12 +536,12 @@ ui <- fluidPage(
 
               h4("Potential Productivity Growth Delta (pp)"),
               p(strong("Example:"), " +0.20 increases productivity (GDP per worker) growth by 0.2 percentage points per year"),
-              rHandsontableOutput("table_lf_growth", height = "180px"),
+              rHandsontableOutput("table_productivity", height = "180px"),
               br(),
 
               h4("Potential Labor Force Growth Delta (pp)"),
               p(strong("Example:"), " +0.10 increases labor force growth rate by 0.1 percentage points per year"),
-              rHandsontableOutput("table_productivity", height = "180px")
+              rHandsontableOutput("table_lf_growth", height = "180px")
             ),
 
             # Sub-tab 2: Primary Budget Balance
@@ -641,24 +644,22 @@ ui <- fluidPage(
               p("Model temporary supply shocks like oil price spikes or pandemic disruptions. These are one-time events."),
               p(strong("Example:"), " +1.00 means inflation is 1 percentage point higher than baseline for that year"),
               rHandsontableOutput("table_inflation_shock", height = "180px")
+            ),
+
+            # Sub-tab 7: User Deltas Summary
+            tabPanel(
+              value = "user_deltas_summary",
+              tagList(icon("list-check"), " User Deltas Summary"),
+              br(),
+
+              h4("Consolidated View of All User Inputs"),
+              helpText("This table consolidates all your inputs from the Inputs tab. All values are read-only. If any value is non-zero, that scenario is active."),
+
+              br(),
+
+              DTOutput("summary_all_deltas")
             )
           )
-        ),
-
-        # ======================================================================
-        # TAB 2: USER DELTAS SUMMARY
-        # ======================================================================
-        tabPanel(
-          value = "user_deltas_summary",
-          tagList(icon("list-check"), " User Deltas Summary"),
-          br(),
-
-          h4("Consolidated View of All User Inputs"),
-          helpText("This table consolidates all your inputs from the Inputs tab. All values are read-only. If any value is non-zero, that scenario is active."),
-
-          br(),
-
-          DTOutput("summary_all_deltas")
         ),
 
         # ======================================================================
@@ -666,7 +667,7 @@ ui <- fluidPage(
         # ======================================================================
         tabPanel(
           value = "dashboard",
-          tagList(icon("gauge-high"), " Dashboard"),
+          tagList(icon("gauge-high"), " ", tags$b("Dashboard")),
           br(),
 
           div(class = "alert alert-secondary",
@@ -788,34 +789,6 @@ ui <- fluidPage(
             column(6,
                    h4("Deviation Summary Statistics"),
                    verbatimTextOutput("deviation_summary")
-            )
-          )
-        ),
-
-        # ======================================================================
-        # TAB 5: DETAILED RESULTS
-        # ======================================================================
-        tabPanel(
-          tagList(icon("database"), " Detailed Results"),
-          br(),
-
-          tabsetPanel(
-            tabPanel(
-              tagList(icon("circle"), " Baseline"),
-              br(),
-              DTOutput("baseline_table")
-            ),
-
-            tabPanel(
-              tagList(icon("circle-dot"), " Scenario"),
-              br(),
-              DTOutput("scenario_table")
-            ),
-
-            tabPanel(
-              tagList(icon("circle-half-stroke"), " All Deviations"),
-              br(),
-              DTOutput("all_deviations_table")
             )
           )
         ),

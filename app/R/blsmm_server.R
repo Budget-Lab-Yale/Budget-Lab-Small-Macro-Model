@@ -120,8 +120,8 @@ server <- function(input, output, session) {
   # ============================================================================
   table_specs <- list(
     # Growth input tables (baseline from exog)
-    table_lf_growth = list(source = "exog", column = "glqstar", label = "Potential LF Growth"),
-    table_productivity = list(source = "exog", column = "glfstar", label = "Potential Productivity Growth"),
+    table_lf_growth = list(source = "exog", column = "glfstar", label = "Potential LF Growth"),
+    table_productivity = list(source = "exog", column = "glqstar", label = "Potential Productivity Growth"),
 
     # Fiscal input tables (baseline from exog)
     table_receipts = list(source = "exog", column = "rgfr_star", label = "Federal Receipts Delta"),
@@ -575,19 +575,42 @@ server <- function(input, output, session) {
     set_run_state("dirty", "Preset applied. Press Run to update results")
   }
 
-  # Preset 1: Deficit Increase (-2% GDP receipts for 5 years = tax cut)
-  observeEvent(input$preset_deficit, {
-    apply_single_preset("table_receipts", c(-2, -2, -2, -2, -2, 0, 0, 0, 0, 0))
+  # Preset 1: Rapid AI Adoption
+  # Source: BLSMM_1_8_20260326_links_rapidAI.xlsm
+  # Three simultaneous shocks: productivity boost, LFPR decline, outlay rise
+  observeEvent(input$preset_rapid_ai, {
+    apply_multi_preset(list(
+      table_productivity = c(1.60, 1.50, 1.50, 1.60, 1.60,
+                             1.70, 1.70, 1.80, 1.80, 1.80),
+      table_lf_growth    = c(-0.40, -0.40, -0.40, -0.40, -0.40,
+                              0.00,  0.00,  0.00,  0.00,  0.00),
+      table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40,
+                             0.40, 0.40, 0.40, 0.40, 0.40)
+    ))
   })
 
-  # Preset 2: Deficit Decrease (-1.5% GDP outlays for 5 years = spending cut)
-  observeEvent(input$preset_austerity, {
-    apply_single_preset("table_outlays", c(-1.5, -1.5, -1.5, -1.5, -1.5, 0, 0, 0, 0, 0))
+  # Preset 2: Persistent Inflation
+  # Source: BLSMM_1_8_20260326_links_persistentinflation.xlsm
+  # Front-loaded inflation shock (3 nonzero years)
+  observeEvent(input$preset_persistent_infl, {
+    apply_single_preset(
+      "table_inflation_shock",
+      c(0.0, 0.1, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    )
   })
 
-  # Preset 3: Growth Slowdown (-0.5pp productivity for 5 years)
-  observeEvent(input$preset_growth_shock, {
-    apply_single_preset("table_productivity", c(-0.5, -0.5, -0.5, -0.5, -0.5, 0, 0, 0, 0, 0))
+  # Preset 3: Military Conflict
+  # Source: defense_outlays_data.xlsx, "Primary Outlays Delta" col
+  # Defense outlay path including +$350B FY2027 mandatory spending
+  observeEvent(input$preset_military_conflict, {
+    apply_single_preset(
+      "table_outlays",
+      c(0.05926643923051801, 1.4648663376827828,
+        0.6024768143143505,  0.7583951483560541,
+        0.7938454047864912,  0.8164223748813694,
+        0.785826175398481,   0.7236216101604063,
+        0.6726591880611538,  0.6147969334429797)
+    )
   })
 
   # ============================================================================
@@ -1276,98 +1299,6 @@ server <- function(input, output, session) {
   })
 
   # ============================================================================
-  # DETAILED RESULT TABLES
-  # ============================================================================
-
-  # Baseline table (model variables - frozen reference)
-  output$baseline_table <- renderDT({
-    req(simulation_results())
-
-    baseline <- simulation_results()$baseline
-
-    # Select key model variables
-    data <- baseline %>%
-      select(fy_label, xgap, U, PI, PIE, RF, R10, D_pct_GDP, NI, rbudp_star, rfstar, rbar10)
-
-    # Rename for display
-    names(data) <- c("Fiscal Year", "Output Gap (%)", "Unemployment (%)", "Inflation (%)",
-                     "Expected Inflation (%)", "Fed Funds (%)", "10yr Rate (%)",
-                     "Debt/GDP (%)", "Net Interest ($B 2017$)", "Primary Balance (% of GDP)", "r* (FF) (%)", "r* (10yr) (%)")
-
-    datatable(
-      data,
-      options = list(
-        scrollX = TRUE,
-        paging = FALSE,
-        info = FALSE,
-        dom = 't'
-      ),
-      rownames = FALSE
-    ) %>%
-      formatRound(columns = 2:ncol(data), digits = 2)
-  })
-
-  # Scenario table (model variables - user scenario results)
-  output$scenario_table <- renderDT({
-    req(simulation_results())
-
-    scenario <- simulation_results()$scenario
-
-    # Select key model variables
-    data <- scenario %>%
-      select(fy_label, xgap, U, PI, PIE, RF, R10, D_pct_GDP, NI, rbudp_star, rfstar, rbar10)
-
-    # Rename for display
-    names(data) <- c("Fiscal Year", "Output Gap (%)", "Unemployment (%)", "Inflation (%)",
-                     "Expected Inflation (%)", "Fed Funds (%)", "10yr Rate (%)",
-                     "Debt/GDP (%)", "Net Interest ($B 2017$)", "Primary Balance (% of GDP)", "r* (FF) (%)", "r* (10yr) (%)")
-
-    datatable(
-      data,
-      options = list(
-        scrollX = TRUE,
-        paging = FALSE,
-        info = FALSE,
-        dom = 't'
-      ),
-      rownames = FALSE
-    ) %>%
-      formatRound(columns = 2:ncol(data), digits = 2)
-  })
-
-  # All deviations table
-  output$all_deviations_table <- renderDT({
-    req(simulation_results())
-
-    data <- simulation_results()$deviations %>%
-      select(fy_label, starts_with("d_"))
-    pal <- dt_deviation_palette()
-
-    datatable(
-      data,
-      options = list(
-        scrollX = TRUE,
-        paging = FALSE,
-        info = FALSE,
-        dom = 't'
-      ),
-      rownames = FALSE
-    ) %>%
-      formatRound(columns = 2:ncol(data), digits = 3) %>%
-      formatStyle(
-        columns = 2:ncol(data),
-        backgroundColor = styleInterval(
-          cuts = c(-0.001, 0.001),
-          values = c(pal$neg_bg, pal$zero_bg, pal$pos_bg)
-        ),
-        color = styleInterval(
-          cuts = c(-0.001, 0.001),
-          values = c(pal$neg_fg, pal$zero_fg, pal$pos_fg)
-        )
-      )
-  })
-
-  # ============================================================================
   # USER DELTAS SUMMARY TABLE (BLSMM) - CONSOLIDATED
   # ============================================================================
 
@@ -1512,11 +1443,6 @@ server <- function(input, output, session) {
   # ============================================================================
   # This ensures all outputs update immediately when simulations run,
   # regardless of which tab is currently visible
-
-  # Detailed results tables
-  outputOptions(output, "baseline_table", suspendWhenHidden = FALSE)
-  outputOptions(output, "scenario_table", suspendWhenHidden = FALSE)
-  outputOptions(output, "all_deviations_table", suspendWhenHidden = FALSE)
 
   # Deviation plots
   outputOptions(output, "dev_plot_output_gap", suspendWhenHidden = FALSE)
