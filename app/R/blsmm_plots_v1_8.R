@@ -540,16 +540,11 @@ output$plot_total_receipts <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # Need to calculate receipts as % of nominal GDP
-  # Receipts = Primary balance + Primary outlays
-  # Or use BUDP + NI to get total budget, then add back NI and outlays
-  # Simpler: Use the fact that BUD = Receipts - Outlays
-  # So Receipts = BUD + Total Outlays
-  # But we need to derive this from what we have
-  # Actually, we need to add receipts calculation to the model output
-  # For now, approximate using primary balance + primary outlays
-  baseline_receipts_pct <- data$baseline$rbudp_star + (data$baseline$BUDP / data$baseline[["GDP$star2"]]) * 100
-  scenario_receipts_pct <- data$scenario$rbudp_star + (data$scenario$BUDP / data$scenario[["GDP$star2"]]) * 100
+  # Calculate total receipts as % of nominal GDP
+  # Convert from % of potential GDP to % of actual GDP using real GDP ratio
+  # Note: Uses GDPstar/GDP ratio for consistency with Excel model
+  baseline_receipts_pct <- data$baseline$rgfr_star * (data$baseline$GDPstar / data$baseline$GDP)
+  scenario_receipts_pct <- data$scenario$rgfr_star * (data$scenario$GDPstar / data$scenario$GDP)
 
   p <- plot_ly()
 
@@ -604,10 +599,13 @@ output$plot_total_outlays <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # Total outlays = Primary outlays + Net interest
-  # As % of nominal GDP
-  baseline_outlays_pct <- ((data$baseline$BUDP + data$baseline$NI) / data$baseline[["GDP$"]]) * 100
-  scenario_outlays_pct <- ((data$scenario$BUDP + data$scenario$NI) / data$scenario[["GDP$"]]) * 100
+  # Calculate total outlays as % of nominal GDP
+  # Total outlays = Primary outlays (converted to % of actual GDP) + Net interest
+  # Note: Uses GDPstar/GDP ratio for consistency with Excel model
+  baseline_outlays_pct <- (data$baseline$rgfop_star * (data$baseline$GDPstar / data$baseline$GDP)) +
+                          ((data$baseline$NI / data$baseline[["GDP$"]]) * 100)
+  scenario_outlays_pct <- (data$scenario$rgfop_star * (data$scenario$GDPstar / data$scenario$GDP)) +
+                          ((data$scenario$NI / data$scenario[["GDP$"]]) * 100)
 
   p <- plot_ly()
 
@@ -662,9 +660,11 @@ output$plot_primary_outlays <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # Primary outlays as % of nominal GDP
-  baseline_outlays_pct <- (data$baseline$BUDP / data$baseline[["GDP$"]]) * 100
-  scenario_outlays_pct <- (data$scenario$BUDP / data$scenario[["GDP$"]]) * 100
+  # Calculate primary outlays as % of nominal GDP
+  # Convert from % of potential GDP to % of actual GDP using real GDP ratio
+  # Note: Uses GDPstar/GDP ratio for consistency with Excel model
+  baseline_outlays_pct <- data$baseline$rgfop_star * (data$baseline$GDPstar / data$baseline$GDP)
+  scenario_outlays_pct <- data$scenario$rgfop_star * (data$scenario$GDPstar / data$scenario$GDP)
 
   p <- plot_ly()
 
@@ -781,6 +781,11 @@ output$plot_primary_balance <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
+  # Calculate primary balance as % of actual GDP
+  # Note: Uses GDPstar/GDP ratio for consistency with Excel model
+  baseline_primary_pct <- data$baseline$rbudp_star * (data$baseline$GDPstar / data$baseline$GDP)
+  scenario_primary_pct <- data$scenario$rbudp_star * (data$scenario$GDPstar / data$scenario$GDP)
+
   p <- plot_ly()
 
   if (baseline_only) {
@@ -788,7 +793,7 @@ output$plot_primary_balance <- renderPlotly({
     p <- p %>%
       add_lines(
         x = data$baseline$fy_label,
-        y = data$baseline$rbudp_star,
+        y = baseline_primary_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
         hovertemplate = paste0("%{x}<br>Primary Balance: %{y:.2f}% of GDP<extra></extra>")
@@ -798,14 +803,14 @@ output$plot_primary_balance <- renderPlotly({
     p <- p %>%
       add_lines(
         x = data$baseline$fy_label,
-        y = data$baseline$rbudp_star,
+        y = baseline_primary_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
         hovertemplate = paste0("%{x}<br>Primary Balance: %{y:.2f}% of GDP<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
-        y = data$scenario$rbudp_star,
+        y = scenario_primary_pct,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
         hovertemplate = paste0("%{x}<br>Primary Balance: %{y:.2f}% of GDP<extra></extra>")

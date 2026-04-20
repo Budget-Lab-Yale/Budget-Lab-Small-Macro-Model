@@ -4,7 +4,7 @@
 
 Interactive policy simulation and analysis tool for U.S. macroeconomic forecasting and fiscal policy analysis.
 
-**Last updated: 2026-04-06**
+**Last updated: 2026-04-20**
 
 ---
 
@@ -856,7 +856,7 @@ A: Endogenously responds to potential growth (κ₁, κ₂) and debt/GDP (κ₃)
 
 **Model technical details:** See `docs/README_Model.md`
 **Project overview:** See `README.md`
-**Quick launch guide:** See `HOW_TO_LAUNCH_APP.md`
+**Quick launch:** See the Quick Start section in the project README.
 
 ---
 

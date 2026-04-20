@@ -1,6 +1,6 @@
 # The Budget Lab's Small Macro Model (BLSMM)
 
-**Yale Budget Lab \| Macroeconomic Policy Analysis Tool** **Last updated: 2026-04-06**
+**Yale Budget Lab \| Macroeconomic Policy Analysis Tool** **Last updated: 2026-04-20**
 
 A structural macroeconomic model for fiscal policy analysis, medium-term forecasting, and scenario simulation.
 
@@ -254,7 +254,7 @@ See `model/v1_8/parameters.R` for complete list with documentation.
 
 1.  **Model equations & functions**: See `docs/README_Model.md`
 2.  **App usage**: See `docs/README_App.md`
-3.  **Quick launch**: See `HOW_TO_LAUNCH_APP.md`
+3.  **Quick launch**: See the Quick Start section above.
 
 ### Common Issues
 
@@ -266,7 +266,9 @@ See `model/v1_8/parameters.R` for complete list with documentation.
 
 ### Support
 
-**Website:** <https://budgetlab.yale.edu> **Email:** [budget.lab\@yale.edu](mailto:budget.lab@yale.edu){.email}
+**Website:** <https://budgetlab.yale.edu>
+
+**Email:** [budget.lab@yale.edu](mailto:budget.lab@yale.edu)
 
 ------------------------------------------------------------------------
 

@@ -38,9 +38,7 @@ bl_line <- function(df, title, subtitle = NULL, ylab = "", y_format = NULL) {
 
 # Multi-panel grid using patchwork
 bl_grid <- function(plots, ncol = 2) {
-  combined <- Reduce(`+`, plots)
-  combined + plot_layout(ncol = ncol, guides = "collect") +
-    plot_annotation(theme = theme(legend.position = "bottom"))
+  wrap_plots(plots, ncol = ncol, guides = "collect")
 }
 
 # Variable transforms

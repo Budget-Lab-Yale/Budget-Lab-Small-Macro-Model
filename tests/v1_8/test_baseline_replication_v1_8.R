@@ -1,8 +1,8 @@
 # ==============================================================================
 # BLSMM v1.8 Baseline Replication Test
 # ==============================================================================
-# Tests that the v1.8 model can exactly replicate the PDF Appendix D baseline
-# Target SSE: < 1.5e-9 (workbook value: 1.535489663206507E-9)
+# Tests that the v1.8 model produces consistent baseline results
+# Compares against reference values stored in data/blsmm_v1_8_baseline_solution.csv
 # ==============================================================================
 
 library(testthat)
@@ -11,7 +11,7 @@ library(testthat)
 setwd("C:/Users/jcg_g/OneDrive/Yale/Budget Lab/Macro Model/Small Macro Model")
 source("model/v1_8/simulation.R")
 
-test_that("v1.8 baseline replicates PDF Appendix D within tolerance", {
+test_that("v1.8 baseline replicates reference values within tolerance", {
 
   # ==========================================================================
   # RUN BASELINE SIMULATION
@@ -20,14 +20,14 @@ test_that("v1.8 baseline replicates PDF Appendix D within tolerance", {
   cat("================================================================================\n")
   cat("  BLSMM v1.8 Baseline Replication Test\n")
   cat("================================================================================\n")
-  cat("Target: Match PDF Appendix D values within 1e-6\n")
-  cat("Target SSE: < 1.5e-9\n")
+  cat("Target: Match reference baseline values within 1e-6\n")
+  cat("Reference: data/blsmm_v1_8_baseline_solution.csv\n")
   cat("================================================================================\n\n")
 
   baseline <- run_baseline_v1_8(n_periods = 10, verbose = TRUE)
 
   # ==========================================================================
-  # LOAD TARGET VALUES FROM PDF APPENDIX D
+  # LOAD REFERENCE VALUES
   # ==========================================================================
   target <- read.csv("data/blsmm_v1_8_baseline_solution.csv", check.names = FALSE)
 
@@ -149,7 +149,7 @@ test_that("v1.8 model components work correctly", {
 
   # Test that debt evolves correctly
   expect_true(all(baseline$D > 0), "Debt should be positive")
-  expect_true(all(diff(baseline$D) < 0), "Debt should increase (BUD is negative)")
+  expect_true(all(diff(baseline$D) > 0), "Debt should increase (BUD is negative)")
 
   # Test that inflation is reasonable
   expect_true(all(baseline$PI > 0), "Inflation should be positive")

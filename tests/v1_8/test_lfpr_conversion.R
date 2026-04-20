@@ -1,7 +1,11 @@
 library(testthat)
 
 # Load the helpers file
-source(file.path("..", "..", "app", "R", "blsmm_helpers.R"))
+helper_path <- file.path("app", "R", "blsmm_helpers.R")
+if (!file.exists(helper_path)) {
+  helper_path <- file.path("..", "..", "app", "R", "blsmm_helpers.R")
+}
+source(helper_path)
 
 # ==============================================================================
 # LFPR CONVERSION TESTS

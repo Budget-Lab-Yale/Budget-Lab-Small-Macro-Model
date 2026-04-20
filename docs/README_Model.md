@@ -3,7 +3,7 @@
 **The Budget Lab's Small Macro Model (BLSMM)**
 Complete technical documentation for the model implementation.
 
-**Last updated: 2026-04-06**
+**Last updated: 2026-04-20**
 
 ---
 

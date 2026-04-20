@@ -1,16 +1,22 @@
-# Target: inflation ~2.5% through FY2029, converging to 2.0% by ~FY2032.
-# Tuned in Phase 6 - Final (Iteration 3)
-# Final shock values produce:
-#   FY2026-2029: ~2.5% (target 2.5%)
-#   FY2030: ~2.4% (target 2.4%)
-#   FY2031: ~2.3% (target 2.3%)
-#   FY2032-2035: converges toward 2.0%
+# Persistent inflation scenario - official shock path
+# Source: BLSMM_1_8_20260326_links_persistentinflation.xlsm
+#         User sheet row 79 ("User delta, in percentage points of
+#         inflation shock"), cols J-S (FY2026-FY2035).
+#
+# Short, front-loaded shock to epspi (3 nonzero years):
+#   FY2026: 0.0      FY2031-FY2035: 0.0
+#   FY2027: +0.1
+#   FY2028: +0.3 (peak)
+#   FY2029: +0.2
+#   FY2030: 0.0
+#
+# This is the official workbook path. Do not recalibrate it in this file.
 scenario <- list(
   id    = "alt_persistent_inflation",
   label = "Inflation scenario",
   color = "#2166AC",
   user_deltas = list(
-    # FY2026-2035 - Final tuned values
-    user_delta_inflshock = c(-0.313, 0.191, 0.31, 0.296, 0.176, 0.115, 0.061, -0.002, -0.053, -0.023)
+    user_delta_inflshock = c(0.0, 0.1, 0.3, 0.2, 0.0,
+                             0.0, 0.0, 0.0, 0.0, 0.0)
   )
 )
