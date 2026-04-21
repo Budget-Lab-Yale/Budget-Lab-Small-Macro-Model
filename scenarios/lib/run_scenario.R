@@ -38,7 +38,14 @@ run_scenario <- function(scenario) {
 
   # Build exog with optional overrides
   exog <- .baseline_exog
+  tp_0_original <- NULL
+
   if (!is.null(scenario$exog_override)) {
+    # Preserve original tp_0 values for baseline comparison if overriding
+    if ("tp_0" %in% names(scenario$exog_override)) {
+      tp_0_original <- exog$tp_0
+    }
+
     for (k in names(scenario$exog_override)) {
       if (!k %in% names(exog)) {
         stop(sprintf("Unknown exog column '%s' in scenario '%s'",
@@ -46,6 +53,11 @@ run_scenario <- function(scenario) {
       }
       stopifnot(length(scenario$exog_override[[k]]) == n)
       exog[[k]] <- scenario$exog_override[[k]]
+    }
+
+    # Provide original tp_0 as baseline reference for gap calculations
+    if (!is.null(tp_0_original)) {
+      exog$tp_0_base <- tp_0_original
     }
   }
 

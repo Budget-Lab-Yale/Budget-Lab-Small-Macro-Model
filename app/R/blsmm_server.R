@@ -584,8 +584,7 @@ server <- function(input, output, session) {
                              1.70, 1.70, 1.80, 1.80, 1.80),
       table_lf_growth    = c(-0.40, -0.40, -0.40, -0.40, -0.40,
                               0.00,  0.00,  0.00,  0.00,  0.00),
-      table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40,
-                             0.40, 0.40, 0.40, 0.40, 0.40)
+      table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40)
     ))
   })
 
@@ -1417,8 +1416,23 @@ server <- function(input, output, session) {
       )
       writeData(wb, "Parameters", params_df)
 
-      # Add user deltas (all 9 input types)
-      table_deltas <- collect_table_deltas(require_valid = FALSE)
+      # Add the input deltas used for the exported simulation result.
+      # Do not read the live editable tables here; they may have changed since
+      # the last run, while simulation_results() still contains the prior solve.
+      table_deltas <- data$shock_spec
+      if (is.null(table_deltas)) {
+        table_deltas <- list(
+          table_lf_growth = rep(0, N_PERIODS),
+          table_productivity = rep(0, N_PERIODS),
+          table_receipts = rep(0, N_PERIODS),
+          table_outlays = rep(0, N_PERIODS),
+          table_rfstar = rep(0, N_PERIODS),
+          table_output_gap = rep(0, N_PERIODS),
+          table_inflation_shock = rep(0, N_PERIODS),
+          table_monetary_rule = rep(0, N_PERIODS),
+          table_inflation_target = rep(0, N_PERIODS)
+        )
+      }
       user_deltas_df <- data.frame(
         FY = create_fy_labels(n_years = N_PERIODS),
         LF_Growth = table_deltas$table_lf_growth,

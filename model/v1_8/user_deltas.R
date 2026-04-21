@@ -126,7 +126,10 @@ compute_user_inclusive_exog <- function(baseline_exog, user_deltas, params, hist
   exog$rgfop_star_base <- baseline_exog$rgfop_star
   exog$rbudp_star_base <- baseline_exog$rbudp_star
   exog$PISTAR_base <- baseline_exog$pistar
-  exog$tp_0_base <- baseline_exog$tp_0
+  # Set tp_0_base unless already provided (e.g., by exog_override scenarios)
+  if (is.null(exog$tp_0_base)) {
+    exog$tp_0_base <- baseline_exog$tp_0
+  }
 
   return(exog)
 }

@@ -104,7 +104,7 @@ scenarios/
 
 1. **Military scenario** - Uses the official defense outlay path documented in `inputs/alt_military_conflict.R`.
 
-2. **Investor confidence R10** - Long rates may fall below baseline after FY2028 because the model's endogenous Fed response offsets the initial term-premium shock.
+2. **Investor confidence** - Implements a persistent +100bp term premium shock that raises both interest rates and debt throughout the forecast horizon.
 
 3. **Package version notices** - R may report package build-version notices. These do not affect scenario outputs.
 

@@ -329,6 +329,35 @@ ui <- fluidPage(
         outline: 3px solid #1f6feb !important;
         outline-offset: 2px;
       }
+
+      /* Emphasize primary tabs (Inputs and Dashboard) */
+      .nav-tabs .nav-link[data-value='inputs'],
+      .nav-tabs .nav-link[data-value='dashboard'] {
+        font-weight: 600;
+        border-bottom: 3px solid transparent;
+      }
+
+      .nav-tabs .nav-link[data-value='inputs'].active,
+      .nav-tabs .nav-link[data-value='dashboard'].active {
+        border-bottom: 3px solid #0066cc;
+      }
+
+      /* Add subtle background highlight to primary tabs */
+      .nav-tabs .nav-link[data-value='inputs']:not(.active),
+      .nav-tabs .nav-link[data-value='dashboard']:not(.active) {
+        background-color: rgba(0, 102, 204, 0.05);
+      }
+
+      /* Dark mode support for primary tabs */
+      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='inputs']:not(.active),
+      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='dashboard']:not(.active) {
+        background-color: rgba(96, 165, 250, 0.1);
+      }
+
+      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='inputs'].active,
+      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='dashboard'].active {
+        border-bottom: 3px solid #60a5fa;
+      }
     ")),
     tags$script(HTML("
       // rhandsontable can mis-measure width when rendered in hidden tabs.
@@ -504,7 +533,7 @@ ui <- fluidPage(
         # ======================================================================
         tabPanel(
           value = "inputs",
-          tagList(icon("sliders"), " ", tags$b("Inputs")),
+          tagList(icon("sliders"), " ", tags$b(tags$u("Inputs"))),
           br(),
 
           # Streamlined Introduction
@@ -667,7 +696,7 @@ ui <- fluidPage(
         # ======================================================================
         tabPanel(
           value = "dashboard",
-          tagList(icon("gauge-high"), " ", tags$b("Dashboard")),
+          tagList(icon("gauge-high"), " ", tags$b(tags$u("Dashboard"))),
           br(),
 
           div(class = "alert alert-secondary",
