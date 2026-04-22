@@ -413,6 +413,45 @@ bl_brand_overrides_block <- function() {
       color: var(--bl-blue) !important;
     }
 
+    /* ---------- Assumptions drawer (offcanvas) ----------
+       Wider than default so 10 columns of handsontable fit comfortably;
+       capped so it never dominates narrow viewports. */
+    .blsmm-assumptions-drawer {
+      width: min(92vw, 680px) !important;
+    }
+    .blsmm-assumptions-drawer .offcanvas-header {
+      border-bottom: 1px solid var(--bl-border);
+      padding: 16px 24px;
+    }
+    .blsmm-assumptions-drawer .offcanvas-body {
+      padding: 20px 24px;
+    }
+    .blsmm-assumptions-drawer .accordion-button {
+      font-weight: 600;
+    }
+    .blsmm-assumptions-drawer .accordion-button:not(.collapsed) {
+      background-color: var(--bl-bg-highlight);
+      color: var(--bl-navy);
+      box-shadow: none;
+    }
+    [data-bs-theme='dark'] .blsmm-assumptions-drawer .accordion-button:not(.collapsed) {
+      background-color: var(--bl-bg-subtle);
+      color: var(--bl-blue);
+    }
+    .blsmm-assumptions-drawer .accordion-item {
+      border-color: var(--bl-border);
+    }
+    .blsmm-assumptions-drawer h5 {
+      font-size: 1rem;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+    .blsmm-assumptions-drawer h6 {
+      font-size: 0.95rem;
+      color: var(--bl-navy);
+      margin-top: 8px;
+    }
+
     /* Preset buttons: active state (sticky highlight until another preset
        is clicked or inputs are reset). Fills the outline variant with its
        own color so the selected scenario reads at a glance. */

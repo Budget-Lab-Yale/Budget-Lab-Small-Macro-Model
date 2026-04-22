@@ -385,6 +385,17 @@ ui <- fluidPage(
         setTimeout(refreshAllHotTables, 80);
       });
 
+      // Refresh handsontables whenever the Assumptions drawer opens, since
+      // offcanvas content has zero width until it slides in.
+      document.addEventListener('shown.bs.offcanvas', function() {
+        setTimeout(refreshAllHotTables, 80);
+      });
+
+      // Also refresh when an accordion panel expands inside the drawer.
+      document.addEventListener('shown.bs.collapse', function() {
+        setTimeout(refreshAllHotTables, 60);
+      });
+
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refreshAllHotTables, 120);
       });
@@ -489,7 +500,20 @@ ui <- fluidPage(
                      class = "btn-secondary blsmm-action-btn",
                      style = "width: 100%; margin-bottom: 16px;"),
 
-        helpText("Configure shocks in the Inputs tab, then click Run Simulation."),
+        # Open the Assumptions drawer (offcanvas defined at bottom of UI)
+        tags$button(
+          id = "open_assumptions",
+          type = "button",
+          class = "btn btn-outline-primary blsmm-action-btn",
+          style = "width: 100%; margin-bottom: 8px;",
+          `data-bs-toggle` = "offcanvas",
+          `data-bs-target` = "#assumptions_drawer",
+          `aria-controls` = "assumptions_drawer",
+          tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
+          tags$span("Adjust Assumptions")
+        ),
+
+        helpText("Open Adjust Assumptions to edit scenario inputs, then click Run Simulation."),
         helpText("Keyboard shortcut: Alt+R = Run")
       ),
 
@@ -545,170 +569,14 @@ ui <- fluidPage(
 
       tabsetPanel(
         id = "main_tabs",
-        selected = "dashboard",
+        selected = "results",
 
         # ======================================================================
-        # TAB 1: INPUTS
+        # INPUTS — removed. The 9 input tables live in an offcanvas drawer
+        # opened by the "Adjust Assumptions" button in the sidebar; see the
+        # drawer definition at the end of this UI. Their rHandsontableOutput
+        # IDs are unchanged, so the server-side render logic still works.
         # ======================================================================
-        tabPanel(
-          value = "inputs",
-          tagList(icon("sliders"), " ", tags$b(tags$u("Inputs"))),
-          br(),
-
-          # Streamlined Introduction
-          p(style = "font-size: 1.1em; margin-bottom: 16px;",
-            strong("Enter policy changes below."), " Edit yellow cells to create your scenario. ",
-            strong("Zeros = no change from baseline."),
-            " Click 'Run Simulation' when ready."
-          ),
-
-          p(class = "text-muted-custom", style = "margin-bottom: 24px;",
-            icon("info-circle"), " ",
-            strong("New users:"), " Start with Primary Budget Balance to simulate a tax or spending policy. ",
-            strong("Note:"), " \"pp\" = percentage points (e.g., a change from 2.0% to 2.5% is +0.5 pp)."
-          ),
-
-          # Sub-tabs for organizing inputs by category
-          tabsetPanel(
-            id = "input_subtabs",
-            selected = "fiscal_policy",
-
-            # Sub-tab 1: Potential Growth
-            tabPanel(
-              value = "potential_growth",
-              "Potential Growth",
-              br(),
-
-              p(strong("What this does: "), "Adjust long-run economic growth by changing labor force and productivity growth rates.", style = "font-size: 1.05em;"),
-              p(icon("info-circle"), " Changes here automatically affect the neutral interest rate (r*) and government spending.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
-
-              h4("Potential Productivity Growth Delta (pp)"),
-              p(strong("Example:"), " +0.20 increases productivity (GDP per worker) growth by 0.2 percentage points per year"),
-              rHandsontableOutput("table_productivity", height = "180px"),
-              br(),
-
-              h4("Potential Labor Force Growth Delta (pp)"),
-              p(strong("Example:"), " +0.10 increases labor force growth rate by 0.1 percentage points per year"),
-              rHandsontableOutput("table_lf_growth", height = "180px")
-            ),
-
-            # Sub-tab 2: Primary Budget Balance
-            tabPanel(
-              value = "fiscal_policy",
-              "Primary Budget Balance",
-              br(),
-
-              p(strong("What this does: "), "Simulate tax and spending policies by changing federal receipts and outlays as a percent of GDP.", style = "font-size: 1.05em;"),
-              p(icon("arrow-right"), " ", strong("How to use: "), "Enter positive values to increase receipts or outlays, negative values to decrease them.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
-
-              h4("Federal Receipts Delta (pp of GDP)"),
-              p(strong("Example:"), " +1.00 = tax increase of 1% of GDP | -1.00 = tax cut of 1% of GDP"),
-              rHandsontableOutput("table_receipts", height = "180px"),
-              br(),
-
-              h4("Federal Primary Outlays Delta (pp of GDP)"),
-              p(strong("Example:"), " +1.00 = spending increase of 1% of GDP | -1.00 = spending cut of 1% of GDP"),
-              p(class = "text-muted-custom", style = "font-size: 0.875em; margin-top: -8px;", icon("info-circle"), " Primary outlays exclude interest payments on the debt"),
-              rHandsontableOutput("table_outlays", height = "180px"),
-              br(),
-              br(),
-
-              tags$details(
-                tags$summary(strong("Advanced: View calculated effects"), class = "text-link", style = "cursor: pointer;"),
-                br(),
-                h5("Additional Outlay Changes from Economic Growth"),
-                p("The model automatically adjusts outlays when economic growth changes:"),
-                verbatimTextOutput("outlays_indirect_display"),
-                br(),
-                h5("Implied Primary Budget Balance Delta"),
-                p("Primary balance = Receipts - Outlays (excluding interest payments)"),
-                verbatimTextOutput("primary_balance_derived")
-              )
-            ),
-
-            # Sub-tab 3: Neutral Rate (r*)
-            tabPanel(
-              value = "neutral_rate",
-              "Neutral Rate (r*)",
-              br(),
-
-              p(strong("What this does: "), "Change the neutral interest rate - the rate that neither stimulates nor restrains the economy.", style = "font-size: 1.05em;"),
-              p(icon("info-circle"), " Use this to model structural changes like demographic shifts or global savings trends.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
-
-              h4("Real Neutral Federal Funds Rate Direct Delta (pp)"),
-              p(strong("Example:"), " +0.25 increases r* by 0.25 percentage points | -0.25 decreases r* by 0.25 pp"),
-              rHandsontableOutput("table_rfstar", height = "180px"),
-              br(),
-
-              tags$details(
-                tags$summary(strong("Advanced: View automatic r* adjustments"), class = "text-link", style = "cursor: pointer;"),
-                br(),
-                p("The neutral rate adjusts automatically based on economic growth and government debt levels:"),
-                verbatimTextOutput("rfstar_indirect_display")
-              )
-            ),
-
-            # Sub-tab 4: Monetary Policy
-            tabPanel(
-              value = "monetary_policy",
-              "Monetary Policy",
-              br(),
-
-              h4("Inflation Target Delta (pp)"),
-              p(strong("Example:"), " +0.50 = Fed raises target from 2.0% to 2.5% | -0.50 = Fed lowers target to 1.5%"),
-              rHandsontableOutput("table_inflation_target", height = "180px"),
-              br(),
-              checkboxInput("expectations_speed",
-                           "Fast Expectations Adjustment",
-                           value = FALSE),
-              helpText("Check this box if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment."),
-
-              hr(),
-
-              h4("Fed Interest Rate Adjustment (pp)"),
-              p("Sets interest rates higher or lower than the Fed would normally choose based on economic conditions. Use this to model unusual Fed actions like forward guidance."),
-              p(strong("Example:"), " +0.50 = Fed Funds rate is 0.5 pp higher than normal | -0.50 = 0.5 pp lower than normal"),
-              rHandsontableOutput("table_monetary_rule", height = "180px")
-            ),
-
-            # Sub-tab 5: Demand Shocks
-            tabPanel(
-              value = "demand_shocks",
-              "Demand Shocks",
-              br(),
-              h4("Output Gap Shock Delta (pp)"),
-              p("Model changes in private sector demand (consumer/business confidence, wealth effects from stock markets)."),
-              p(strong("Example:"), " +2.00 = positive demand shock pushing output 2 pp above potential | -2.00 = negative demand shock"),
-              rHandsontableOutput("table_output_gap", height = "180px")
-            ),
-
-            # Sub-tab 6: Unexpected Shocks
-            tabPanel(
-              value = "unexpected_shocks",
-              "Unexpected Shocks",
-              br(),
-
-              h4("Unexpected Inflation Shock Delta (pp)"),
-              p("Model temporary supply shocks like oil price spikes or pandemic disruptions. These are one-time events."),
-              p(strong("Example:"), " +1.00 means inflation is 1 percentage point higher than baseline for that year"),
-              rHandsontableOutput("table_inflation_shock", height = "180px")
-            ),
-
-            # Sub-tab 7: User Deltas Summary
-            tabPanel(
-              value = "user_deltas_summary",
-              tagList(icon("list-check"), " User Deltas Summary"),
-              br(),
-
-              h4("Consolidated View of All User Inputs"),
-              helpText("This table consolidates all your inputs from the Inputs tab. All values are read-only. If any value is non-zero, that scenario is active."),
-
-              br(),
-
-              DTOutput("summary_all_deltas")
-            )
-          )
-        ),
 
         # ======================================================================
         # TAB: RESULTS (merged Dashboard + Deviations)
@@ -957,6 +825,178 @@ ui <- fluidPage(
           p(em("For questions or support, contact The Budget Lab at Yale.")),
 
           p(strong("Last Updated:"), " April 2026")
+        )
+      )
+    )
+  ),
+
+  # ============================================================================
+  # ASSUMPTIONS DRAWER (Bootstrap 5 offcanvas)
+  # Opened by the "Adjust Assumptions" button in the sidebar. Holds the 9
+  # input tables, organized into three accordion sections plus a read-only
+  # consolidated summary. Slides in from the right so it does not overlap
+  # the left sidebar or obscure the Results view while editing.
+  # ============================================================================
+  tags$div(
+    class = "offcanvas offcanvas-end blsmm-assumptions-drawer",
+    id = "assumptions_drawer",
+    tabindex = "-1",
+    `aria-labelledby` = "assumptions_drawer_label",
+
+    tags$div(
+      class = "offcanvas-header",
+      h4(id = "assumptions_drawer_label", class = "offcanvas-title mb-0",
+         "Adjust Assumptions"),
+      tags$button(
+        type = "button",
+        class = "btn-close",
+        `data-bs-dismiss` = "offcanvas",
+        `aria-label` = "Close"
+      )
+    ),
+
+    tags$div(
+      class = "offcanvas-body",
+
+      p(style = "margin-bottom: 16px;",
+        "Edit yellow cells to create your scenario. Zeros = no change from baseline. ",
+        "Close this drawer and click ", strong("Run Simulation"), " when ready."
+      ),
+      p(class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 20px;",
+        icon("info-circle"), " ",
+        strong("\"pp\""), " = percentage points (e.g., a change from 2.0% to 2.5% is +0.5 pp)."
+      ),
+
+      accordion(
+        id = "assumptions_accordion",
+        multiple = TRUE,
+        open = c("fiscal", "growth"),
+
+        # ---- Growth & Productivity -----------------------------------------
+        accordion_panel(
+          title = "Growth & Productivity",
+          value = "growth",
+          icon = icon("seedling"),
+          p(class = "text-muted-custom", style = "font-size: 0.9em;",
+            strong("What this does:"), " Adjust long-run growth via labor force and productivity. ",
+            "Changes here automatically affect r* and government spending."),
+
+          h5("Potential Productivity Growth Delta (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            strong("Example:"), " +0.20 raises productivity growth by 0.2 pp/year."),
+          rHandsontableOutput("table_productivity", height = "180px"),
+          br(),
+
+          h5("Potential Labor Force Growth Delta (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            strong("Example:"), " +0.10 raises labor force growth by 0.1 pp/year."),
+          rHandsontableOutput("table_lf_growth", height = "180px")
+        ),
+
+        # ---- Fiscal Policy -------------------------------------------------
+        accordion_panel(
+          title = "Fiscal Policy",
+          value = "fiscal",
+          icon = icon("building-columns"),
+          p(class = "text-muted-custom", style = "font-size: 0.9em;",
+            strong("What this does:"), " Simulate tax and spending policies by changing federal receipts and primary outlays as a percent of GDP. ",
+            "Enter positive values to raise receipts or outlays, negative to cut."),
+
+          h5("Federal Receipts Delta (pp of GDP)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            strong("Example:"), " +1.00 = tax increase of 1% of GDP; -1.00 = tax cut of 1% of GDP."),
+          rHandsontableOutput("table_receipts", height = "180px"),
+          br(),
+
+          h5("Federal Primary Outlays Delta (pp of GDP)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            strong("Example:"), " +1.00 = spending increase of 1% of GDP; -1.00 = spending cut of 1% of GDP."),
+          p(class = "text-muted-custom", style = "font-size: 0.8em; font-style: italic;",
+            icon("info-circle"), " Primary outlays exclude interest payments on the debt."),
+          rHandsontableOutput("table_outlays", height = "180px"),
+          br(),
+
+          tags$details(
+            tags$summary(strong("Advanced: calculated effects"),
+                         class = "text-link", style = "cursor: pointer;"),
+            br(),
+            h6("Additional Outlay Changes from Economic Growth"),
+            p(class = "text-muted-custom", style = "font-size: 0.85em;",
+              "The model automatically adjusts outlays when economic growth changes:"),
+            verbatimTextOutput("outlays_indirect_display"),
+            br(),
+            h6("Implied Primary Budget Balance Delta"),
+            p(class = "text-muted-custom", style = "font-size: 0.85em;",
+              "Primary balance = Receipts - Outlays (excluding interest payments)."),
+            verbatimTextOutput("primary_balance_derived")
+          )
+        ),
+
+        # ---- Monetary & Shocks ---------------------------------------------
+        accordion_panel(
+          title = "Monetary & Shocks",
+          value = "monetary",
+          icon = icon("chart-line"),
+          p(class = "text-muted-custom", style = "font-size: 0.9em;",
+            strong("What this does:"), " Override the neutral rate, the Fed's inflation target or rate path, or apply demand and inflation shocks."),
+
+          h5("Neutral Rate (r*) Delta (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            strong("Example:"), " +0.25 raises r* by 0.25 pp; -0.25 lowers it by 0.25 pp."),
+          rHandsontableOutput("table_rfstar", height = "180px"),
+          tags$details(
+            tags$summary(strong("Advanced: automatic r* adjustments"),
+                         class = "text-link", style = "cursor: pointer;"),
+            br(),
+            p(class = "text-muted-custom", style = "font-size: 0.85em;",
+              "The neutral rate adjusts automatically based on growth and debt levels."),
+            verbatimTextOutput("rfstar_indirect_display")
+          ),
+          br(),
+          hr(),
+
+          h5("Inflation Target Delta (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            strong("Example:"), " +0.50 = Fed raises target from 2.0% to 2.5%."),
+          rHandsontableOutput("table_inflation_target", height = "180px"),
+          br(),
+          checkboxInput("expectations_speed",
+                        "Fast Expectations Adjustment",
+                        value = FALSE),
+          helpText("Check if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment."),
+          br(),
+          hr(),
+
+          h5("Fed Interest Rate Adjustment (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            "Sets Fed Funds higher or lower than the rule-based path. Use for forward guidance scenarios. ",
+            strong("Example:"), " +0.50 = 0.5 pp above normal; -0.50 = 0.5 pp below."),
+          rHandsontableOutput("table_monetary_rule", height = "180px"),
+          br(),
+          hr(),
+
+          h5("Output Gap Shock (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            "Private demand shocks (consumer/business confidence, wealth effects). ",
+            strong("Example:"), " +2.00 = output 2 pp above potential; -2.00 = negative shock."),
+          rHandsontableOutput("table_output_gap", height = "180px"),
+          br(),
+          hr(),
+
+          h5("Unexpected Inflation Shock (pp)"),
+          p(class = "text-muted-custom", style = "font-size: 0.85em;",
+            "Temporary supply shocks like oil price spikes or pandemic disruptions (one-time events). ",
+            strong("Example:"), " +1.00 = inflation is 1 pp above baseline that year."),
+          rHandsontableOutput("table_inflation_shock", height = "180px")
+        ),
+
+        # ---- All Deltas Summary --------------------------------------------
+        accordion_panel(
+          title = "All Deltas Summary",
+          value = "summary",
+          icon = icon("list-check"),
+          helpText("Read-only view consolidating every user delta across the three sections above. Non-zero values mean the scenario is active."),
+          DTOutput("summary_all_deltas")
         )
       )
     )
