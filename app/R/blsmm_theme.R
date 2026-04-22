@@ -202,6 +202,23 @@ bl_webfonts_block <- function() {
 # ------------------------------------------------------------------------------
 bl_brand_overrides_block <- function() {
   shiny::tags$style(shiny::HTML("
+    /* Border radius: softer, rounder corners across buttons, cards, inputs,
+       alerts, nav pills. Matches the rounded feel of the Deficits
+       Affordability calculator and the Budget Lab infographic set. */
+    :root {
+      --bs-border-radius: 0.5rem;
+      --bs-border-radius-sm: 0.4rem;
+      --bs-border-radius-lg: 0.75rem;
+      --bs-border-radius-pill: 50rem;
+    }
+    .btn, .card, .form-control, .form-select, .input-group-text,
+    .alert, .modal-content, .offcanvas, .dropdown-menu, .nav-pills .nav-link,
+    .value-box, .bslib-value-box {
+      border-radius: 0.5rem;
+    }
+    .btn-sm { border-radius: 0.4rem; }
+    .btn-lg { border-radius: 0.6rem; }
+
     /* Font stack everywhere, but DO NOT override button text color
        (buttons carry their own white/colored text per variant). */
     body, .form-control, .btn, .nav-link, .navbar, .card,
@@ -350,6 +367,50 @@ bl_brand_overrides_block <- function() {
       font-size: 1.25em;
       flex: 0 0 auto;
       margin: 0;
+    }
+
+    /* ---------- KPI value boxes ----------
+       Light card look: white background, navy left-edge accent, muted
+       uppercase title, big navy value. Clearly non-interactive; navy fill
+       is reserved for action buttons. */
+    .blsmm-kpi-card {
+      background-color: #ffffff !important;
+      border-left: 4px solid var(--bl-navy) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .blsmm-kpi-card .value-box-title {
+      color: var(--bl-muted) !important;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .blsmm-kpi-card .value-box-value {
+      color: var(--bl-navy) !important;
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .blsmm-kpi-card .value-box-showcase,
+    .blsmm-kpi-card .value-box-showcase svg,
+    .blsmm-kpi-card .value-box-showcase .fa {
+      color: var(--bl-navy) !important;
+      opacity: 0.35;
+    }
+    .blsmm-kpi-card p {
+      color: var(--bl-body) !important;
+      margin-top: 6px;
+    }
+    [data-bs-theme='dark'] .blsmm-kpi-card {
+      background-color: var(--bl-bg-subtle) !important;
+      border-left-color: var(--bl-blue) !important;
+    }
+    [data-bs-theme='dark'] .blsmm-kpi-card .value-box-value {
+      color: var(--bl-blue) !important;
+    }
+    [data-bs-theme='dark'] .blsmm-kpi-card .value-box-showcase {
+      color: var(--bl-blue) !important;
     }
 
     /* Preset buttons: active state (sticky highlight until another preset

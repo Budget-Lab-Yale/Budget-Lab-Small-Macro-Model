@@ -727,21 +727,24 @@ ui <- fluidPage(
               "For budget charts, more negative values indicate larger deficits."
           ),
 
-          # KPI Value Boxes (stack under narrow widths)
+          # KPI Value Boxes — light card, navy accent stripe + value.
+          # Clearly non-interactive (navy fill is reserved for buttons).
           layout_column_wrap(
             width = "280px",
             value_box(
               title = "Final Debt Impact",
               value = textOutput("kpi_final_debt"),
               showcase = icon("scale-balanced"),
-              theme = "primary",
+              theme = value_box_theme(bg = "#ffffff", fg = bl_colors$navy),
+              class = "blsmm-kpi-card",
               p("Change in debt/GDP ratio", style = "font-size: 0.85em;")
             ),
             value_box(
               title = "Max Unemployment Effect",
               value = textOutput("kpi_max_unemployment"),
               showcase = icon("users"),
-              theme = "primary",
+              theme = value_box_theme(bg = "#ffffff", fg = bl_colors$navy),
+              class = "blsmm-kpi-card",
               p("Peak change in unemployment", style = "font-size: 0.85em;")
             )
           ),
