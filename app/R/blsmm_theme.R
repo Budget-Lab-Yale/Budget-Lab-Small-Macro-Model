@@ -452,6 +452,44 @@ bl_brand_overrides_block <- function() {
       margin-top: 8px;
     }
 
+    /* ---------- Simple-mode input cards (inside the drawer) ---------- */
+    .blsmm-input-card {
+      margin-bottom: 8px;
+    }
+    .blsmm-input-card h5 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--bl-navy);
+      margin: 4px 0 4px;
+    }
+    .blsmm-input-card .form-group,
+    .blsmm-input-card .form-label,
+    .blsmm-input-card label {
+      font-size: 0.85em;
+      font-weight: 600;
+      color: var(--bl-body);
+      margin-bottom: 4px;
+    }
+    .blsmm-input-preview {
+      font-size: 0.85em;
+      color: var(--bl-muted);
+      font-style: italic;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      min-height: 1.25em;
+    }
+    .blsmm-input-advanced summary {
+      color: var(--bl-blue);
+      font-size: 0.85em;
+      margin-top: 4px;
+    }
+    .blsmm-input-advanced[open] summary {
+      margin-bottom: 8px;
+    }
+    [data-bs-theme='dark'] .blsmm-input-card h5 {
+      color: var(--bl-blue);
+    }
+
     /* Preset buttons: active state (sticky highlight until another preset
        is clicked or inputs are reset). Fills the outline variant with its
        own color so the selected scenario reads at a glance. */

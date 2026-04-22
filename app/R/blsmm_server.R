@@ -542,6 +542,16 @@ server <- function(input, output, session) {
     initialize_tables(force = TRUE)
     refresh_hot_tables()
 
+    # Reset simple-mode inputs too so the drawer UI matches the zeroed
+    # tables. The resulting change-events fire the simple observers, which
+    # write zero deltas into the already-zero tables — harmless.
+    for (k in c("productivity", "lf_growth", "receipts", "outlays",
+                "rfstar", "inflation_target", "monetary_rule",
+                "output_gap", "inflation_shock")) {
+      updateSelectInput(session, paste0("shape_", k), selected = "permanent")
+      updateNumericInput(session, paste0("magnitude_", k), value = 0)
+    }
+
     # Reset checkbox
     updateCheckboxInput(session, "expectations_speed", value = FALSE)
     # Clear active preset so none of the three preset buttons appears selected
@@ -633,6 +643,72 @@ server <- function(input, output, session) {
     )
     active_preset("military_conflict")
   })
+
+  # ============================================================================
+  # SIMPLE-MODE INPUTS
+  # ----------------------------------------------------------------------------
+  # Each input in the Assumptions drawer has a shape picker + magnitude input
+  # (see simple_input_card() in blsmm_helpers.R). When those change we compute
+  # the 10-year delta via build_shape_delta() and write it into the underlying
+  # handsontable via update_table_with_shocks(). The handsontable (under
+  # "Edit year-by-year") remains the single source of truth consumed by the
+  # solver; simple mode is a "quick-fill" overlay.
+  #
+  # Preview text for each input is derived from the table state (not from the
+  # simple inputs), so presets and direct handsontable edits also appear in
+  # the preview.
+  # ============================================================================
+
+  simple_input_keys <- c(
+    "productivity", "lf_growth", "receipts", "outlays",
+    "rfstar", "inflation_target", "monetary_rule",
+    "output_gap", "inflation_shock"
+  )
+
+  for (key in simple_input_keys) {
+    local({
+      k         <- key
+      shape_id  <- paste0("shape_",     k)
+      mag_id    <- paste0("magnitude_", k)
+      prev_id   <- paste0("preview_",   k)
+      tbl_name  <- paste0("table_",     k)
+
+      # Preview: always reflects the current Delta row of the table, so it
+      # stays accurate whether the change came from simple mode, a preset,
+      # or a direct handsontable edit.
+      output[[prev_id]] <- renderText({
+        tbl <- table_state[[tbl_name]]
+        if (is.null(tbl)) return("")
+        fy_cols <- seq(TABLE_FIRST_DATA_COL,
+                       TABLE_FIRST_DATA_COL + N_PERIODS - 1)
+        delta <- suppressWarnings(as.numeric(unlist(
+          tbl[TABLE_ROW_DELTA, fy_cols], use.names = FALSE
+        )))
+        delta[is.na(delta)] <- 0
+        if (all(abs(delta) < 1e-12)) {
+          "No change from baseline."
+        } else {
+          paste0("Applied delta: ", format_shape_preview(delta))
+        }
+      })
+
+      # Observer: write simple-mode delta into the table when user edits
+      # shape or magnitude. Overwrites any previous values (by design —
+      # simple mode is an override layer).
+      observeEvent(
+        list(input[[shape_id]], input[[mag_id]]),
+        ignoreInit = TRUE,
+        {
+          shape <- input[[shape_id]] %||% "permanent"
+          mag   <- input[[mag_id]]
+          delta <- build_shape_delta(shape, mag, N_PERIODS)
+          update_table_with_shocks(tbl_name, delta)
+          set_run_state("dirty",
+                        "Inputs changed. Press Run to update results")
+        }
+      )
+    })
+  }
 
   # ============================================================================
   # SSE CONVERGENCE DISPLAY

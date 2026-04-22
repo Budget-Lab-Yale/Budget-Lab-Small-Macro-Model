@@ -396,6 +396,14 @@ ui <- fluidPage(
         setTimeout(refreshAllHotTables, 60);
       });
 
+      // And when a <details> element toggles open (per-input
+      // Edit-year-by-year disclosure around each handsontable).
+      document.addEventListener('toggle', function(e) {
+        if (e.target && e.target.tagName === 'DETAILS' && e.target.open) {
+          setTimeout(refreshAllHotTables, 60);
+        }
+      }, true);
+
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refreshAllHotTables, 120);
       });
@@ -882,16 +890,17 @@ ui <- fluidPage(
             strong("What this does:"), " Adjust long-run growth via labor force and productivity. ",
             "Changes here automatically affect r* and government spending."),
 
-          h5("Potential Productivity Growth Delta (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            strong("Example:"), " +0.20 raises productivity growth by 0.2 pp/year."),
-          rHandsontableOutput("table_productivity", height = "180px"),
-          br(),
-
-          h5("Potential Labor Force Growth Delta (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            strong("Example:"), " +0.10 raises labor force growth by 0.1 pp/year."),
-          rHandsontableOutput("table_lf_growth", height = "180px")
+          simple_input_card(
+            table_key = "productivity",
+            label     = "Potential Productivity Growth Delta (pp)",
+            example   = "<strong>Example:</strong> +0.20 raises productivity growth by 0.2 pp/year."
+          ),
+          hr(),
+          simple_input_card(
+            table_key = "lf_growth",
+            label     = "Potential Labor Force Growth Delta (pp)",
+            example   = "<strong>Example:</strong> +0.10 raises labor force growth by 0.1 pp/year."
+          )
         ),
 
         # ---- Fiscal Policy -------------------------------------------------
@@ -901,20 +910,21 @@ ui <- fluidPage(
           icon = icon("building-columns"),
           p(class = "text-muted-custom", style = "font-size: 0.9em;",
             strong("What this does:"), " Simulate tax and spending policies by changing federal receipts and primary outlays as a percent of GDP. ",
-            "Enter positive values to raise receipts or outlays, negative to cut."),
+            "Positive values raise receipts or outlays; negative values cut."),
 
-          h5("Federal Receipts Delta (pp of GDP)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            strong("Example:"), " +1.00 = tax increase of 1% of GDP; -1.00 = tax cut of 1% of GDP."),
-          rHandsontableOutput("table_receipts", height = "180px"),
-          br(),
-
-          h5("Federal Primary Outlays Delta (pp of GDP)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            strong("Example:"), " +1.00 = spending increase of 1% of GDP; -1.00 = spending cut of 1% of GDP."),
-          p(class = "text-muted-custom", style = "font-size: 0.8em; font-style: italic;",
-            icon("info-circle"), " Primary outlays exclude interest payments on the debt."),
-          rHandsontableOutput("table_outlays", height = "180px"),
+          simple_input_card(
+            table_key = "receipts",
+            label     = "Federal Receipts Delta (pp of GDP)",
+            units     = "pp of GDP",
+            example   = "<strong>Example:</strong> +1.00 = tax increase of 1% of GDP; -1.00 = tax cut."
+          ),
+          hr(),
+          simple_input_card(
+            table_key = "outlays",
+            label     = "Federal Primary Outlays Delta (pp of GDP)",
+            units     = "pp of GDP",
+            example   = "<strong>Example:</strong> +1.00 = spending increase of 1% of GDP; -1.00 = spending cut.<br><em>Primary outlays exclude interest payments on the debt.</em>"
+          ),
           br(),
 
           tags$details(
@@ -941,10 +951,11 @@ ui <- fluidPage(
           p(class = "text-muted-custom", style = "font-size: 0.9em;",
             strong("What this does:"), " Override the neutral rate, the Fed's inflation target or rate path, or apply demand and inflation shocks."),
 
-          h5("Neutral Rate (r*) Delta (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            strong("Example:"), " +0.25 raises r* by 0.25 pp; -0.25 lowers it by 0.25 pp."),
-          rHandsontableOutput("table_rfstar", height = "180px"),
+          simple_input_card(
+            table_key = "rfstar",
+            label     = "Neutral Rate (r*) Delta (pp)",
+            example   = "<strong>Example:</strong> +0.25 raises r* by 0.25 pp; -0.25 lowers it."
+          ),
           tags$details(
             tags$summary(strong("Advanced: automatic r* adjustments"),
                          class = "text-link", style = "cursor: pointer;"),
@@ -953,42 +964,38 @@ ui <- fluidPage(
               "The neutral rate adjusts automatically based on growth and debt levels."),
             verbatimTextOutput("rfstar_indirect_display")
           ),
-          br(),
           hr(),
 
-          h5("Inflation Target Delta (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            strong("Example:"), " +0.50 = Fed raises target from 2.0% to 2.5%."),
-          rHandsontableOutput("table_inflation_target", height = "180px"),
-          br(),
+          simple_input_card(
+            table_key = "inflation_target",
+            label     = "Inflation Target Delta (pp)",
+            example   = "<strong>Example:</strong> +0.50 = Fed raises target from 2.0% to 2.5%."
+          ),
           checkboxInput("expectations_speed",
                         "Fast Expectations Adjustment",
                         value = FALSE),
           helpText("Check if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment."),
-          br(),
           hr(),
 
-          h5("Fed Interest Rate Adjustment (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            "Sets Fed Funds higher or lower than the rule-based path. Use for forward guidance scenarios. ",
-            strong("Example:"), " +0.50 = 0.5 pp above normal; -0.50 = 0.5 pp below."),
-          rHandsontableOutput("table_monetary_rule", height = "180px"),
-          br(),
+          simple_input_card(
+            table_key = "monetary_rule",
+            label     = "Fed Interest Rate Adjustment (pp)",
+            example   = "Sets Fed Funds higher or lower than the rule-based path. <strong>Example:</strong> +0.50 = 0.5 pp above normal; -0.50 = 0.5 pp below."
+          ),
           hr(),
 
-          h5("Output Gap Shock (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            "Private demand shocks (consumer/business confidence, wealth effects). ",
-            strong("Example:"), " +2.00 = output 2 pp above potential; -2.00 = negative shock."),
-          rHandsontableOutput("table_output_gap", height = "180px"),
-          br(),
+          simple_input_card(
+            table_key = "output_gap",
+            label     = "Output Gap Shock (pp)",
+            example   = "Private demand shocks (confidence, wealth effects). <strong>Example:</strong> +2.00 = output 2 pp above potential."
+          ),
           hr(),
 
-          h5("Unexpected Inflation Shock (pp)"),
-          p(class = "text-muted-custom", style = "font-size: 0.85em;",
-            "Temporary supply shocks like oil price spikes or pandemic disruptions (one-time events). ",
-            strong("Example:"), " +1.00 = inflation is 1 pp above baseline that year."),
-          rHandsontableOutput("table_inflation_shock", height = "180px")
+          simple_input_card(
+            table_key = "inflation_shock",
+            label     = "Unexpected Inflation Shock (pp)",
+            example   = "Temporary supply shocks (oil prices, pandemic disruptions). <strong>Example:</strong> +1.00 = inflation 1 pp above baseline that year."
+          )
         ),
 
         # ---- All Deltas Summary --------------------------------------------

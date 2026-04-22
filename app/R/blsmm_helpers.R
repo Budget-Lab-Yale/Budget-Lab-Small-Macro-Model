@@ -274,6 +274,128 @@ summarise_lfpr_scenario <- function(
 }
 
 # ==============================================================================
+# SIMPLE-MODE INPUT HELPERS
+# ==============================================================================
+
+#' Build a 10-year delta vector from a shape + magnitude
+#'
+#' Simple-mode inputs in the Assumptions drawer let the user pick a shape
+#' ("permanent", "onetime", "ramp", "temporary3") and a magnitude rather
+#' than typing 10 individual values. This function translates that pair
+#' into the year-by-year vector the solver expects.
+#'
+#' @param shape One of "permanent", "onetime", "ramp", "temporary3".
+#' @param magnitude Numeric scalar. If NA or NULL, returns all zeros.
+#' @param n Integer. Horizon length (default N_PERIODS = 10).
+#' @return Numeric vector of length n.
+build_shape_delta <- function(shape, magnitude, n = N_PERIODS) {
+  if (is.null(magnitude) || is.na(magnitude) || !is.finite(magnitude)) {
+    return(rep(0, n))
+  }
+  shape <- shape %||% "permanent"
+  switch(
+    shape,
+    "permanent"   = rep(magnitude, n),
+    "onetime"     = c(magnitude, rep(0, n - 1)),
+    "ramp"        = seq(0, magnitude, length.out = n),
+    "temporary3"  = c(rep(magnitude, min(3, n)), rep(0, max(0, n - 3))),
+    rep(0, n)
+  )
+}
+
+#' Short preview string for a shape+magnitude delta vector.
+#' Example: "0.20, 0.20, 0.20, ... 0.20" for a permanent +0.20.
+format_shape_preview <- function(delta_vec, digits = 2) {
+  if (length(delta_vec) <= 4) {
+    return(paste(sprintf(paste0("%.", digits, "f"), delta_vec), collapse = ", "))
+  }
+  first3 <- sprintf(paste0("%.", digits, "f"), head(delta_vec, 3))
+  last   <- sprintf(paste0("%.", digits, "f"), tail(delta_vec, 1))
+  paste0(paste(first3, collapse = ", "), ", ..., ", last)
+}
+
+# Shape options presented in every simple-mode select input.
+BLSMM_SHAPE_CHOICES <- c(
+  "Permanent shift"     = "permanent",
+  "One-time (year 1)"   = "onetime",
+  "Linear ramp (0 → magnitude)" = "ramp",
+  "Temporary (3 years)" = "temporary3"
+)
+
+#' Render a simple-mode input card for the Assumptions drawer
+#'
+#' Generates the per-input UI block: heading + example text, a shape
+#' selector and magnitude input (side-by-side under wide drawer, stacked
+#' under narrow), a small computed preview, and an expandable
+#' "Edit year-by-year" details block that hosts the existing
+#' rHandsontableOutput so advanced users can tweak individual cells.
+#'
+#' Server inputs created (example for `table_key = "productivity"`):
+#'   input$shape_productivity, input$magnitude_productivity
+#' Server outputs expected:
+#'   output$preview_productivity (text rendering of the computed delta)
+#'   output$table_productivity (handsontable, unchanged)
+#'
+#' @param table_key Short key used to derive input/output ids and the
+#'   rHandsontableOutput id (prefixed "table_").
+#' @param label Heading above the controls.
+#' @param units Short units label placed after "Magnitude".
+#' @param example Short example line shown in muted text.
+simple_input_card <- function(table_key, label, units = "pp", example = NULL) {
+  shape_id <- paste0("shape_",     table_key)
+  mag_id   <- paste0("magnitude_", table_key)
+  prev_id  <- paste0("preview_",   table_key)
+  table_id <- paste0("table_",     table_key)
+
+  shiny::div(
+    class = "blsmm-input-card",
+
+    shiny::h5(label),
+    if (!is.null(example)) {
+      shiny::p(class = "text-muted-custom", style = "font-size: 0.85em; margin-bottom: 10px;",
+               shiny::HTML(example))
+    },
+
+    # Shape + magnitude side-by-side (stack under narrow drawer)
+    bslib::layout_column_wrap(
+      width = "min(200px, 100%)",
+      gap = "12px",
+      shiny::selectInput(
+        inputId = shape_id,
+        label   = "Shape",
+        choices = BLSMM_SHAPE_CHOICES,
+        selected = "permanent",
+        width = "100%"
+      ),
+      shiny::numericInput(
+        inputId = mag_id,
+        label   = paste0("Magnitude (", units, ")"),
+        value   = 0,
+        step    = 0.1,
+        width   = "100%"
+      )
+    ),
+
+    shiny::div(
+      class = "blsmm-input-preview",
+      shiny::textOutput(prev_id, inline = TRUE)
+    ),
+
+    # Advanced: expandable handsontable for year-by-year edits.
+    shiny::tags$details(
+      class = "blsmm-input-advanced",
+      shiny::tags$summary(
+        class = "text-link",
+        style = "cursor: pointer; margin-top: 8px;",
+        "Edit year-by-year"
+      ),
+      shiny::br(),
+      rhandsontable::rHandsontableOutput(table_id, height = "180px")
+    )
+  )
+}
+
+# ==============================================================================
 # USER INTERFACE
 # ==============================================================================
 
