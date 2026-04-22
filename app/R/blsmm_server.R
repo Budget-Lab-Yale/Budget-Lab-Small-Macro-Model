@@ -41,42 +41,32 @@ server <- function(input, output, session) {
     isTRUE(mode) || identical(mode, "dark")
   })
 
+  # Plot theme pulls from Budget Lab design tokens (app/R/blsmm_theme.R).
+  # Baseline series = brand blue, scenario series = brand orange, secondary
+  # series = brand violet, with the Mallory/Source Sans body font carried
+  # through plotly's font config.
   plot_theme <- reactive({
-    if (is_dark_mode()) {
-      list(
-        paper_bg = "#1f2630",
-        plot_bg = "#1f2630",
-        font = "#e9ecef",
-        grid = "#3a424a",
-        grid_secondary = "#2a323a",
-        zero = "#6c757d",
-        legend_bg = "rgba(31, 38, 48, 0.85)",
-        zero_line = "#adb5bd",
-        line_baseline = "#4A90E2",
-        line_scenario = "#F5A623",
-        line_secondary = "#B08AE8",
-        bar_baseline = "#4A90E2",
-        bar_scenario = "#F5A623",
-        debt_fill = "rgba(245, 166, 35, 0.25)"
-      )
-    } else {
-      list(
-        paper_bg = "#ffffff",
-        plot_bg = "#ffffff",
-        font = "#212529",
-        grid = "#e9ecef",
-        grid_secondary = "#f8f9fa",
-        zero = "#ced4da",
-        legend_bg = "rgba(255, 255, 255, 0.9)",
-        zero_line = "#6c757d",
-        line_baseline = "#0052A5",
-        line_scenario = "#E87722",
-        line_secondary = "#7B61C7",
-        bar_baseline = "#0052A5",
-        bar_scenario = "#E87722",
-        debt_fill = "rgba(232, 119, 34, 0.2)"
-      )
-    }
+    pal <- if (is_dark_mode()) bl_colors_dark else bl_colors
+    list(
+      paper_bg       = pal$bg,
+      plot_bg        = pal$bg,
+      font           = pal$body,
+      font_family    = bl_fonts$body,
+      grid           = pal$gridline,
+      grid_secondary = pal$bg_subtle,
+      zero           = pal$border,
+      legend_bg      = if (is_dark_mode()) "rgba(26, 29, 35, 0.85)"
+                       else "rgba(255, 255, 255, 0.9)",
+      zero_line      = pal$muted,
+      line_baseline  = pal$blue,
+      line_scenario  = pal$orange,
+      line_secondary = pal$cat3,
+      bar_baseline   = pal$blue,
+      bar_scenario   = pal$orange,
+      debt_fill      = if (is_dark_mode()) "rgba(245, 166, 35, 0.25)"
+                       else "rgba(242, 142, 43, 0.20)",
+      hover_bg       = pal$navy
+    )
   })
 
   dt_deviation_palette <- reactive({
@@ -810,7 +800,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -844,7 +834,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -881,7 +871,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -915,7 +905,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -952,7 +942,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -986,7 +976,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -1020,7 +1010,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })
@@ -1054,7 +1044,7 @@ server <- function(input, output, session) {
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
   })

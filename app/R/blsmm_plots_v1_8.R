@@ -75,7 +75,7 @@ output$plot_unemployment <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -128,7 +128,7 @@ output$plot_inflation <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -191,7 +191,7 @@ output$plot_real_gdp_indexed <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -275,7 +275,7 @@ output$plot_10yr_yield <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -355,7 +355,7 @@ output$plot_federal_funds <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -415,7 +415,7 @@ output$plot_budget_balance <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -468,7 +468,7 @@ output$plot_debt <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -527,7 +527,7 @@ output$plot_avg_interest_rate <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -586,7 +586,7 @@ output$plot_total_receipts <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -647,7 +647,7 @@ output$plot_total_outlays <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -706,7 +706,7 @@ output$plot_primary_outlays <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -768,7 +768,7 @@ output$plot_real_gdp_growth <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
@@ -826,7 +826,7 @@ output$plot_primary_balance <- renderPlotly({
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
       paper_bgcolor = th$paper_bg,
       plot_bgcolor = th$plot_bg,
-      font = list(color = th$font)
+      font = list(color = th$font, family = th$font_family)
     ) %>%
     config(displayModeBar = FALSE)
 })
