@@ -66,9 +66,12 @@ server <- function(input, output, session) {
   })
 
   # Plot theme pulls from Budget Lab design tokens (app/R/blsmm_theme.R).
-  # Baseline series = brand blue, scenario series = brand orange, secondary
-  # series = brand violet, with the Mallory/Source Sans body font carried
-  # through plotly's font config.
+  #
+  # Line-color rule: baseline and scenario of the SAME variable use the
+  # same color and are distinguished by dash style (baseline = dashed,
+  # scenario = solid). Single-variable plots use blue for both lines.
+  # Two-variable plots (10Y nominal vs real, r* vs Fed Funds) use blue
+  # for the primary pair and forest green for the secondary pair.
   plot_theme <- reactive({
     pal <- if (is_dark_mode()) bl_colors_dark else bl_colors
     list(
@@ -82,16 +85,18 @@ server <- function(input, output, session) {
       legend_bg      = if (is_dark_mode()) "rgba(26, 29, 35, 0.85)"
                        else "rgba(255, 255, 255, 0.9)",
       zero_line      = pal$muted,
+      # Primary variable pair: both baseline and scenario are brand blue.
+      # Dash pattern (baseline = dashed, scenario = solid) distinguishes
+      # them at each chart site.
       line_baseline  = pal$blue,
-      line_scenario  = pal$orange,
-      # Secondary series (e.g., r* on Fed Funds chart, Real 10Y on Treasury
-      # chart) uses teal so it reads as "a different variable on the same
-      # chart" without the aggressive violet from the old palette.
-      line_secondary = pal$cat7,
+      line_scenario  = pal$blue,
+      # Secondary variable pair (2-pair charts only): forest green.
+      line_secondary = pal$cat5,
+      # Bars retain two colors because dash patterns don't apply.
       bar_baseline   = pal$blue,
       bar_scenario   = pal$orange,
-      debt_fill      = if (is_dark_mode()) "rgba(245, 166, 35, 0.25)"
-                       else "rgba(242, 142, 43, 0.20)",
+      debt_fill      = if (is_dark_mode()) "rgba(111, 163, 230, 0.25)"
+                       else "rgba(40, 109, 192, 0.18)",
       hover_bg       = pal$navy
     )
   })
