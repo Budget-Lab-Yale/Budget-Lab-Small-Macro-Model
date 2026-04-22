@@ -446,12 +446,15 @@ ui <- fluidPage(
 
   br(),
 
-  # Sidebar layout
-  sidebarLayout(
-
-    # Sidebar panel - simplified for controls only
-    sidebarPanel(
-      width = 3,
+  # Responsive sidebar layout (bslib).
+  # On narrow screens the sidebar collapses into a toggle button.
+  # fillable = FALSE so the main content scrolls naturally (many plots).
+  layout_sidebar(
+    fillable = FALSE,
+    sidebar = sidebar(
+      width = 280,
+      open = list(desktop = "open", mobile = "closed"),
+      title = "Controls",
 
       # SSE Display - simplified
       div(style = "position: sticky; top: 8px; z-index: 100; background: var(--bs-body-bg); padding-bottom: 8px;",
@@ -530,10 +533,10 @@ ui <- fluidPage(
           "Version 1.0. Updated April 2026.")
     ),
 
-    # Main panel for outputs
-    mainPanel(
+    # Main content area
+    div(
       id = "main-content",
-      width = 9,
+      class = "blsmm-main",
 
       tabsetPanel(
         id = "main_tabs",
@@ -719,9 +722,9 @@ ui <- fluidPage(
               "For budget charts, more negative values indicate larger deficits."
           ),
 
-          # KPI Value Boxes
-          layout_columns(
-            col_widths = c(6, 6),
+          # KPI Value Boxes (stack under narrow widths)
+          layout_column_wrap(
+            width = "min(280px, 100%)",
             value_box(
               title = "Final Debt Impact",
               value = textOutput("kpi_final_debt"),
@@ -740,39 +743,23 @@ ui <- fluidPage(
 
           br(),
 
-          # All 13 Charts from BLSMM_v1_8_UI.pdf specification
-          fluidRow(
-            column(6, plotlyOutput("plot_unemployment", height = "400px")),
-            column(6, plotlyOutput("plot_inflation", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("plot_real_gdp_indexed", height = "400px")),
-            column(6, plotlyOutput("plot_10yr_yield", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("plot_federal_funds", height = "400px")),
-            column(6, plotlyOutput("plot_budget_balance", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("plot_debt", height = "400px")),
-            column(6, plotlyOutput("plot_avg_interest_rate", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("plot_total_receipts", height = "400px")),
-            column(6, plotlyOutput("plot_total_outlays", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("plot_primary_outlays", height = "400px")),
-            column(6, plotlyOutput("plot_real_gdp_growth", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("plot_primary_balance", height = "400px"))
+          # 13 dashboard plots in a responsive grid.
+          # Single column below ~800px container; two columns above.
+          layout_column_wrap(
+            width = "min(400px, 100%)",
+            plotlyOutput("plot_unemployment",       height = "360px"),
+            plotlyOutput("plot_inflation",          height = "360px"),
+            plotlyOutput("plot_real_gdp_indexed",   height = "360px"),
+            plotlyOutput("plot_10yr_yield",         height = "360px"),
+            plotlyOutput("plot_federal_funds",      height = "360px"),
+            plotlyOutput("plot_budget_balance",     height = "360px"),
+            plotlyOutput("plot_debt",               height = "360px"),
+            plotlyOutput("plot_avg_interest_rate",  height = "360px"),
+            plotlyOutput("plot_total_receipts",     height = "360px"),
+            plotlyOutput("plot_total_outlays",      height = "360px"),
+            plotlyOutput("plot_primary_outlays",    height = "360px"),
+            plotlyOutput("plot_real_gdp_growth",    height = "360px"),
+            plotlyOutput("plot_primary_balance",    height = "360px")
           )
         ),
 
@@ -797,24 +784,17 @@ ui <- fluidPage(
 
           br(),
 
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_output_gap", height = "400px")),
-            column(6, plotlyOutput("dev_plot_unemployment", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_real_gdp_growth", height = "400px")),
-            column(6, plotlyOutput("dev_plot_inflation", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_debt", height = "400px")),
-            column(6, plotlyOutput("dev_plot_federal_funds", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_10yr_yield", height = "400px")),
-            column(6, plotlyOutput("dev_plot_primary_balance", height = "400px"))
+          # 8 deviation plots — same responsive pattern as Dashboard
+          layout_column_wrap(
+            width = "min(400px, 100%)",
+            plotlyOutput("dev_plot_output_gap",      height = "360px"),
+            plotlyOutput("dev_plot_unemployment",    height = "360px"),
+            plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),
+            plotlyOutput("dev_plot_inflation",       height = "360px"),
+            plotlyOutput("dev_plot_debt",            height = "360px"),
+            plotlyOutput("dev_plot_federal_funds",   height = "360px"),
+            plotlyOutput("dev_plot_10yr_yield",      height = "360px"),
+            plotlyOutput("dev_plot_primary_balance", height = "360px")
           ),
 
           br(),
