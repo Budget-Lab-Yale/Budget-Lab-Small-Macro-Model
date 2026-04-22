@@ -4,6 +4,11 @@ ui <- fluidPage(
 
   # Custom CSS for Excel-like styling
   tags$head(
+    # Budget Lab design tokens (colors, fonts, spacing) as CSS custom properties
+    bl_webfonts_block(),
+    bl_css_vars_block(),
+    # Brand overrides: body/heading fonts, primary colors
+    bl_brand_overrides_block(),
     tags$style(HTML("
       /* Yellow highlight for editable row (User Delta row = row 2) */
       .handsontable tbody tr:nth-child(2) td {
@@ -411,11 +416,17 @@ ui <- fluidPage(
     "))
   ),
 
-  # Modern theme with dark mode support
+  # Budget Lab-themed bslib theme.
+  # base_font is Source Sans 3 (free). The brand CSS override prepends
+  # "Mallory" to the stack so the app picks it up automatically once
+  # Yale confirms a Mallory CDN URL or woff2 files land in www/fonts/.
   theme = bs_theme(
-    bootswatch = "flatly",
-    base_font = font_google("Inter"),
-    heading_font = font_google("Inter")
+    bootswatch  = "flatly",
+    base_font   = font_google("Source Sans 3"),
+    heading_font = font_google("Source Sans 3"),
+    primary     = bl_colors$navy,
+    success     = "#198754",
+    info        = bl_colors$blue
   ),
 
   tags$a(href = "#main-content", class = "skip-link", "Skip to main content"),

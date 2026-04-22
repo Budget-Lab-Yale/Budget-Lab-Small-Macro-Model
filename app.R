@@ -2,6 +2,10 @@
 # The Budget Lab's Small Macro Model (BLSMM) - Interactive Shiny Application
 # ==============================================================================
 
+# Pin dev port so docs/embed_preview.html has a stable URL across sessions.
+# Change this (and the URL in embed_preview.html) if 8100 conflicts.
+options(shiny.port = 8100)
+
 # Load required libraries
 library(shiny)
 library(bslib)
@@ -29,6 +33,7 @@ baseline_resid_v1_8 <<- read.csv('data/blsmm_v1_8_forecast_resid.csv', check.nam
 hist_data_v1_8 <<- read.csv('data/blsmm_v1_8_historical.csv', check.names = FALSE)
 
 # Source modular app components
+source('app/R/blsmm_theme.R')
 source('app/R/blsmm_helpers.R')
 source('app/R/blsmm_ui.R')
 source('app/R/blsmm_server.R')
