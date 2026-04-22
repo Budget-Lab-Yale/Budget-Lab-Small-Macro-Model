@@ -68,10 +68,10 @@ server <- function(input, output, session) {
   # Plot theme pulls from Budget Lab design tokens (app/R/blsmm_theme.R).
   #
   # Line-color rule: baseline and scenario of the SAME variable use the
-  # same color and are distinguished by dash style (baseline = dashed,
-  # scenario = solid). Single-variable plots use blue for both lines.
-  # Two-variable plots (10Y nominal vs real, r* vs Fed Funds) use blue
-  # for the primary pair and forest green for the secondary pair.
+  # same color; dash style (baseline = dashed, scenario = solid)
+  # distinguishes them. Single-variable plots use blue for both. Two-
+  # variable plots (10Y nominal vs real; r* vs Fed Funds) use blue for
+  # the primary pair and brand amber for the secondary pair.
   plot_theme <- reactive({
     pal <- if (is_dark_mode()) bl_colors_dark else bl_colors
     list(
@@ -85,16 +85,11 @@ server <- function(input, output, session) {
       legend_bg      = if (is_dark_mode()) "rgba(26, 29, 35, 0.85)"
                        else "rgba(255, 255, 255, 0.9)",
       zero_line      = pal$muted,
-      # Primary variable pair: both baseline and scenario are brand blue.
-      # Dash pattern (baseline = dashed, scenario = solid) distinguishes
-      # them at each chart site.
+      # Primary variable pair: both baseline and scenario in brand blue.
       line_baseline  = pal$blue,
       line_scenario  = pal$blue,
-      # Secondary variable pair (2-pair charts only): forest green.
-      line_secondary = pal$cat5,
-      # Bars retain two colors because dash patterns don't apply.
-      bar_baseline   = pal$blue,
-      bar_scenario   = pal$orange,
+      # Secondary variable pair (2-pair charts only): brand amber.
+      line_secondary = pal$orange,
       debt_fill      = if (is_dark_mode()) "rgba(111, 163, 230, 0.25)"
                        else "rgba(40, 109, 192, 0.18)",
       hover_bg       = pal$navy
@@ -832,7 +827,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Budget Balance Deviation from Baseline (pp of GDP)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -866,7 +861,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Unemployment Rate Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -903,7 +898,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Real GDP Growth Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -937,7 +932,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Inflation Rate Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -974,7 +969,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Debt/GDP Deviation from Baseline (pp of GDP)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -1008,7 +1003,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Federal Funds Rate Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -1042,7 +1037,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "10-Year Treasury Yield Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
@@ -1076,7 +1071,7 @@ server <- function(input, output, session) {
       ) %>%
       layout(
         title = "Primary Balance Deviation from Baseline (pp of GDP)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
         paper_bgcolor = th$paper_bg,
