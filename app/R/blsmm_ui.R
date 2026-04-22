@@ -460,12 +460,14 @@ ui <- fluidPage(
       title = "Controls",
 
       # SSE Display - simplified
-      div(style = "position: sticky; top: 8px; z-index: 100; background: var(--bs-body-bg); padding-bottom: 8px;",
+      div(class = "blsmm-solver-status",
+          style = "position: sticky; top: 8px; z-index: 100; background: var(--bs-body-bg); padding-bottom: 8px;",
           h4("Solver Status"),
           div(class = "sse-box",
               textOutput("sse_display", inline = TRUE))
       ),
       div(
+        class = "blsmm-run-status-wrap",
         role = "status",
         `aria-live` = "polite",
         style = "margin-top: 8px;",
@@ -478,13 +480,13 @@ ui <- fluidPage(
         actionButton("run_sim",
                      "Run Simulation",
                      icon = icon("play"),
-                     class = "btn-primary btn-lg",
+                     class = "btn-primary blsmm-action-btn",
                      style = "width: 100%; margin-bottom: 8px;"),
 
         actionButton("reset_inputs",
                      "Reset to Defaults",
                      icon = icon("rotate-right"),
-                     class = "btn-secondary",
+                     class = "btn-secondary blsmm-action-btn",
                      style = "width: 100%; margin-bottom: 16px;"),
 
         helpText("Configure shocks in the Inputs tab, then click Run Simulation."),
@@ -500,21 +502,21 @@ ui <- fluidPage(
                  style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
         actionButton("preset_rapid_ai",
                      "Rapid AI Adoption",
-                     class = "btn-outline-primary btn-sm",
+                     class = "btn-outline-primary btn-sm blsmm-preset-btn",
                      style = "width: 100%; margin-bottom: 8px;"),
 
         helpText("Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030",
                  style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
         actionButton("preset_persistent_infl",
                      "Persistent Inflation",
-                     class = "btn-outline-warning btn-sm",
+                     class = "btn-outline-warning btn-sm blsmm-preset-btn",
                      style = "width: 100%; margin-bottom: 8px;"),
 
         helpText("Defense outlays rise per BR2027 (incl. +$350B FY2027 mandatory)",
                  style = "margin-top: -4px; font-size: 0.875em;"),
         actionButton("preset_military_conflict",
                      "Higher Defense Spending",
-                     class = "btn-outline-danger btn-sm",
+                     class = "btn-outline-danger btn-sm blsmm-preset-btn",
                      style = "width: 100%; margin-bottom: 8px;")
       ),
 
@@ -732,14 +734,14 @@ ui <- fluidPage(
               title = "Final Debt Impact",
               value = textOutput("kpi_final_debt"),
               showcase = icon("scale-balanced"),
-              theme = "secondary",
+              theme = "primary",
               p("Change in debt/GDP ratio", style = "font-size: 0.85em;")
             ),
             value_box(
               title = "Max Unemployment Effect",
               value = textOutput("kpi_max_unemployment"),
               showcase = icon("users"),
-              theme = "secondary",
+              theme = "primary",
               p("Peak change in unemployment", style = "font-size: 0.85em;")
             )
           ),

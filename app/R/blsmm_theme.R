@@ -301,5 +301,80 @@ bl_brand_overrides_block <- function() {
       color: var(--bl-navy);
       border-bottom-color: var(--bl-navy);
     }
+
+    /* ---------- Sidebar-specific layout fixes ---------- */
+
+    /* Enable container queries so sidebar content scales to its width */
+    .bslib-sidebar-layout > .sidebar,
+    .bslib-sidebar-layout .sidebar-content {
+      container-type: inline-size;
+    }
+
+    /* Center the Solver Status / run-status pill inside the sidebar */
+    .blsmm-solver-status,
+    .blsmm-run-status-wrap {
+      text-align: center;
+    }
+    .blsmm-solver-status h4 {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .blsmm-solver-status .sse-box {
+      display: inline-block;
+    }
+
+    /* Run Simulation / Reset buttons:
+       stack icon above text, wrap text cleanly, font size scales to
+       sidebar width via container queries with safe min/max. */
+    .blsmm-action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: normal;
+      line-height: 1.2;
+      padding: 10px 12px;
+      font-weight: 600;
+      min-height: 56px;
+    }
+    #run_sim.blsmm-action-btn {
+      font-size: clamp(0.9rem, 5cqi, 1.05rem);
+    }
+    #reset_inputs.blsmm-action-btn {
+      font-size: clamp(0.82rem, 4.2cqi, 0.95rem);
+    }
+    .blsmm-action-btn > i,
+    .blsmm-action-btn > .fa,
+    .blsmm-action-btn > svg {
+      font-size: 1.25em;
+      flex: 0 0 auto;
+      margin: 0;
+    }
+
+    /* Preset buttons: active state (sticky highlight until another preset
+       is clicked or inputs are reset). Fills the outline variant with its
+       own color so the selected scenario reads at a glance. */
+    .btn-outline-primary.preset-active,
+    .btn-outline-primary.preset-active:focus,
+    .btn-outline-primary.preset-active:hover {
+      background-color: var(--bl-navy) !important;
+      border-color: var(--bl-navy) !important;
+      color: #ffffff !important;
+    }
+    .btn-outline-warning.preset-active,
+    .btn-outline-warning.preset-active:focus,
+    .btn-outline-warning.preset-active:hover {
+      background-color: #b45309 !important;
+      border-color: #b45309 !important;
+      color: #ffffff !important;
+    }
+    .btn-outline-danger.preset-active,
+    .btn-outline-danger.preset-active:focus,
+    .btn-outline-danger.preset-active:hover {
+      background-color: #9b2226 !important;
+      border-color: #9b2226 !important;
+      color: #ffffff !important;
+    }
   "))
 }

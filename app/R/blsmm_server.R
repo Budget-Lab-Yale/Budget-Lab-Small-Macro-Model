@@ -8,6 +8,30 @@ server <- function(input, output, session) {
     if (!is.null(note)) run_state_note(note)
   }
 
+  # Active preset tracking. NULL when no preset is loaded (or inputs have
+  # been reset). Set by each preset observer; cleared by the reset
+  # observer. An observe() below toggles a CSS class on the three preset
+  # buttons so the active one stays visually selected until another
+  # preset is clicked or the user resets. Running a simulation does NOT
+  # clear the active preset.
+  active_preset <- reactiveVal(NULL)
+  preset_button_ids <- c(
+    rapid_ai          = "preset_rapid_ai",
+    persistent_infl   = "preset_persistent_infl",
+    military_conflict = "preset_military_conflict"
+  )
+  observe({
+    ap <- active_preset()
+    for (key in names(preset_button_ids)) {
+      btn_id <- preset_button_ids[[key]]
+      if (!is.null(ap) && identical(ap, key)) {
+        shinyjs::addCssClass(btn_id, "preset-active")
+      } else {
+        shinyjs::removeCssClass(btn_id, "preset-active")
+      }
+    }
+  })
+
   output$run_status_bar <- renderUI({
     state <- run_state()
     state_class <- switch(
@@ -520,6 +544,8 @@ server <- function(input, output, session) {
 
     # Reset checkbox
     updateCheckboxInput(session, "expectations_speed", value = FALSE)
+    # Clear active preset so none of the three preset buttons appears selected
+    active_preset(NULL)
     set_run_state("dirty", "Inputs reset. Press Run to update results")
   })
 
@@ -579,6 +605,7 @@ server <- function(input, output, session) {
                               0.00,  0.00,  0.00,  0.00,  0.00),
       table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40)
     ))
+    active_preset("rapid_ai")
   })
 
   # Preset 2: Persistent Inflation
@@ -589,6 +616,7 @@ server <- function(input, output, session) {
       "table_inflation_shock",
       c(0.0, 0.1, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     )
+    active_preset("persistent_infl")
   })
 
   # Preset 3: Military Conflict
@@ -603,6 +631,7 @@ server <- function(input, output, session) {
         0.785826175398481,   0.7236216101604063,
         0.6726591880611538,  0.6147969334429797)
     )
+    active_preset("military_conflict")
   })
 
   # ============================================================================
