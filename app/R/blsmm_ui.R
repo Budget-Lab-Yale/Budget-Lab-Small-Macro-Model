@@ -485,7 +485,7 @@ ui <- fluidPage(
         uiOutput("run_status_bar")
       ),
 
-      # Main action buttons
+      # Run / Reset only — scenario selection lives in its own section below.
       div(class = "sidebar-section",
         h4("Simulation Controls"),
         actionButton("run_sim",
@@ -498,29 +498,30 @@ ui <- fluidPage(
                      "Reset to Defaults",
                      icon = icon("rotate-right"),
                      class = "btn-secondary blsmm-action-btn",
-                     style = "width: 100%; margin-bottom: 16px;"),
+                     style = "width: 100%; margin-bottom: 8px;"),
 
-        # Open the Assumptions drawer (offcanvas defined at bottom of UI)
+        helpText("Keyboard shortcut: Alt+R = Run")
+      ),
+
+      # Scenario: custom (opens Assumptions drawer) or one of three presets.
+      div(class = "sidebar-section",
+        h4("Scenario"),
+
+        # Custom Scenario — opens the Assumptions drawer (offcanvas at
+        # bottom of UI). Data-bs-* attributes wire the Bootstrap trigger.
         tags$button(
           id = "open_assumptions",
           type = "button",
-          class = "btn btn-outline-primary blsmm-action-btn",
-          style = "width: 100%; margin-bottom: 8px;",
+          class = "btn btn-outline-primary btn-sm blsmm-preset-btn",
+          style = "width: 100%; margin-bottom: 12px;",
           `data-bs-toggle` = "offcanvas",
           `data-bs-target` = "#assumptions_drawer",
           `aria-controls` = "assumptions_drawer",
           tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
-          tags$span("Adjust Assumptions")
+          tags$span(" Custom Scenario")
         ),
 
-        helpText("Open Adjust Assumptions to edit scenario inputs, then click Run Simulation."),
-        helpText("Keyboard shortcut: Alt+R = Run")
-      ),
-
-      # Preset Scenarios
-      div(class = "sidebar-section",
-        h4("Preset Scenarios"),
-        p("Quick-start common scenarios:", class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 16px;"),
+        p("Or start from a preset:", class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 12px;"),
 
         helpText("Productivity boost + LFPR decline + outlay rise (Karger et al.)",
                  style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
@@ -870,7 +871,7 @@ ui <- fluidPage(
       accordion(
         id = "assumptions_accordion",
         multiple = TRUE,
-        open = c("fiscal", "growth"),
+        open = FALSE,
 
         # ---- Growth & Productivity -----------------------------------------
         accordion_panel(
