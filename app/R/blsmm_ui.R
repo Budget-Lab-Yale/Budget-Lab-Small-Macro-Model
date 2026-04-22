@@ -417,16 +417,19 @@ ui <- fluidPage(
   ),
 
   # Budget Lab-themed bslib theme.
-  # base_font is Source Sans 3 (free). The brand CSS override prepends
-  # "Mallory" to the stack so the app picks it up automatically once
-  # Yale confirms a Mallory CDN URL or woff2 files land in www/fonts/.
+  # Bootstrap 5 defaults (no bootswatch). "flatly" brought in a green-teal
+  # accent that clashed with the Budget Lab palette; with flatly dropped we
+  # set brand colors directly.
   theme = bs_theme(
-    bootswatch  = "flatly",
-    base_font   = font_google("Source Sans 3"),
+    version      = 5,
+    base_font    = font_google("Source Sans 3"),
     heading_font = font_google("Source Sans 3"),
-    primary     = bl_colors$navy,
-    success     = "#198754",
-    info        = bl_colors$blue
+    primary      = bl_colors$navy,
+    secondary    = "#6c757d",
+    success      = "#2a7a2a",
+    info         = bl_colors$blue,
+    warning      = "#b45309",
+    danger       = "#9b2226"
   ),
 
   tags$a(href = "#main-content", class = "skip-link", "Skip to main content"),
@@ -724,7 +727,7 @@ ui <- fluidPage(
 
           # KPI Value Boxes (stack under narrow widths)
           layout_column_wrap(
-            width = "min(280px, 100%)",
+            width = "280px",
             value_box(
               title = "Final Debt Impact",
               value = textOutput("kpi_final_debt"),
@@ -746,7 +749,7 @@ ui <- fluidPage(
           # 13 dashboard plots in a responsive grid.
           # Single column below ~800px container; two columns above.
           layout_column_wrap(
-            width = "min(400px, 100%)",
+            width = "400px",
             plotlyOutput("plot_unemployment",       height = "360px"),
             plotlyOutput("plot_inflation",          height = "360px"),
             plotlyOutput("plot_real_gdp_indexed",   height = "360px"),
@@ -786,7 +789,7 @@ ui <- fluidPage(
 
           # 8 deviation plots — same responsive pattern as Dashboard
           layout_column_wrap(
-            width = "min(400px, 100%)",
+            width = "400px",
             plotlyOutput("dev_plot_output_gap",      height = "360px"),
             plotlyOutput("dev_plot_unemployment",    height = "360px"),
             plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),

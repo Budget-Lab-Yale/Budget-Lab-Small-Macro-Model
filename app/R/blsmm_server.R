@@ -60,7 +60,10 @@ server <- function(input, output, session) {
       zero_line      = pal$muted,
       line_baseline  = pal$blue,
       line_scenario  = pal$orange,
-      line_secondary = pal$cat3,
+      # Secondary series (e.g., r* on Fed Funds chart, Real 10Y on Treasury
+      # chart) uses teal so it reads as "a different variable on the same
+      # chart" without the aggressive violet from the old palette.
+      line_secondary = pal$cat7,
       bar_baseline   = pal$blue,
       bar_scenario   = pal$orange,
       debt_fill      = if (is_dark_mode()) "rgba(245, 166, 35, 0.25)"

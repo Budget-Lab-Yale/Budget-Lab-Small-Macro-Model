@@ -298,7 +298,7 @@ output$plot_federal_funds <- renderPlotly({
         x = data$baseline$fy_label,
         y = data$baseline$rfstar,
         name = "r*",
-        line = list(color = "#999999", width = 2.5),
+        line = list(color = th$line_secondary, width = 2.5),
         hovertemplate = paste0("%{x}<br>r*: %{y:.2f}%<extra></extra>")
       ) %>%
       # Federal Funds baseline
@@ -317,7 +317,7 @@ output$plot_federal_funds <- renderPlotly({
         x = data$baseline$fy_label,
         y = data$baseline$rfstar,
         name = "r* (Baseline)",
-        line = list(color = "#999999", dash = "dash", width = 2),
+        line = list(color = th$line_secondary, dash = "dash", width = 2),
         hovertemplate = paste0("%{x}<br>r*: %{y:.2f}%<extra></extra>")
       ) %>%
       # r* scenario
@@ -325,7 +325,7 @@ output$plot_federal_funds <- renderPlotly({
         x = data$scenario$fy_label,
         y = data$scenario$rfstar,
         name = "r* (Scenario)",
-        line = list(color = "#999999", width = 2.5),
+        line = list(color = th$line_secondary, width = 2.5),
         hovertemplate = paste0("%{x}<br>r*: %{y:.2f}%<extra></extra>")
       ) %>%
       # Federal Funds baseline

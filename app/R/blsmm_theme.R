@@ -85,10 +85,12 @@ bl_colors_dark <- list(
   cat7 = "#5abccb"
 )
 
-# Font stacks (Mallory/YaleNew primary, with Source Sans 3 fallback)
+# Font stacks. Sans throughout: Budget Lab's website pairs sans body with
+# serif headings (YaleNew), but in this app both use the same sans stack
+# for a tighter, more data-dashboard feel.
 bl_fonts <- list(
   body     = '"Mallory", system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif',
-  heading  = '"YaleNew", Georgia, "Times New Roman", serif',
+  heading  = '"Mallory", system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif',
   mono     = 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace'
 )
 
@@ -200,8 +202,13 @@ bl_webfonts_block <- function() {
 # ------------------------------------------------------------------------------
 bl_brand_overrides_block <- function() {
   shiny::tags$style(shiny::HTML("
-    body, .form-control, .btn, .nav-link, .navbar, .card {
+    /* Font stack everywhere, but DO NOT override button text color
+       (buttons carry their own white/colored text per variant). */
+    body, .form-control, .btn, .nav-link, .navbar, .card,
+    .dropdown-menu, .modal-content, .offcanvas, .alert, .badge {
       font-family: var(--bl-font-body);
+    }
+    body, .form-control, .card, .offcanvas, .dropdown-menu {
       color: var(--bl-body);
     }
     h1, h2, h3, h4, h5, h6,
@@ -220,21 +227,79 @@ bl_brand_overrides_block <- function() {
     a:hover, a:focus { color: var(--bl-navy); }
     [data-bs-theme='dark'] a:hover,
     [data-bs-theme='dark'] a:focus { color: var(--bl-blue); }
-    .btn-primary {
+
+    /* Primary button: navy with white text */
+    .btn-primary,
+    .btn-primary:disabled {
       background-color: var(--bl-navy);
       border-color: var(--bl-navy);
+      color: #ffffff;
     }
-    .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    .btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+    .btn-primary:not(:disabled):not(.disabled):active,
+    .btn-primary:not(:disabled):not(.disabled).active {
       background-color: var(--bl-blue) !important;
       border-color: var(--bl-blue) !important;
+      color: #ffffff !important;
     }
+
+    /* Outline primary: navy outline + text, navy fill on hover */
     .btn-outline-primary {
       color: var(--bl-navy);
       border-color: var(--bl-navy);
+      background-color: transparent;
     }
-    .btn-outline-primary:hover {
+    .btn-outline-primary:hover, .btn-outline-primary:focus,
+    .btn-outline-primary:active {
       background-color: var(--bl-navy);
       border-color: var(--bl-navy);
+      color: #ffffff;
+    }
+
+    /* Secondary button: soft neutral, not the Flatly gray-green */
+    .btn-secondary {
+      background-color: #6c757d;
+      border-color: #6c757d;
+      color: #ffffff;
+    }
+    .btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active {
+      background-color: #5a6268 !important;
+      border-color: #5a6268 !important;
+      color: #ffffff !important;
+    }
+
+    /* Success/info/warning/danger: keep Bootstrap-ish but aligned with
+       the Budget Lab accent set, and avoid Flatly's teal-green. */
+    .btn-success, .bg-success {
+      background-color: #2a7a2a;
+      border-color: #2a7a2a;
+    }
+    .btn-info, .bg-info {
+      background-color: var(--bl-blue);
+      border-color: var(--bl-blue);
+      color: #ffffff;
+    }
+    .alert-success {
+      background-color: #e8f3e8;
+      border-color: #c4e0c4;
+      color: #155724;
+    }
+    .alert-info {
+      background-color: #e7f0f9;
+      border-color: #b5d1ea;
+      color: #084298;
+    }
+
+    /* Focus ring: use navy, not Flatly's teal */
+    .form-control:focus, .form-select:focus, .btn:focus {
+      border-color: var(--bl-blue);
+      box-shadow: 0 0 0 0.2rem rgba(40, 109, 192, 0.25);
+    }
+
+    /* Nav tabs underline uses navy */
+    .nav-tabs .nav-link.active {
+      color: var(--bl-navy);
+      border-bottom-color: var(--bl-navy);
     }
   "))
 }
