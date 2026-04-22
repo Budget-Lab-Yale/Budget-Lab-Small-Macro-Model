@@ -711,24 +711,23 @@ ui <- fluidPage(
         ),
 
         # ======================================================================
-        # TAB 3: DASHBOARD
+        # TAB: RESULTS (merged Dashboard + Deviations)
         # ======================================================================
         tabPanel(
-          value = "dashboard",
-          tagList(icon("gauge-high"), " ", tags$b(tags$u("Dashboard"))),
+          value = "results",
+          tagList(icon("gauge-high"), " ", tags$b(tags$u("Results"))),
           br(),
 
           div(class = "alert alert-secondary",
               strong("Getting started: "),
               "Configure your inputs in the sidebar and click 'Run Simulation' to see results. ",
               strong("How to read: "),
-              "All charts compare Baseline (dashed) vs Scenario (solid). ",
+              "Charts compare Baseline (dashed) vs Scenario (solid). ",
               "Rates and inflation are percentage points; debt and balances are percent of GDP. ",
               "For budget charts, more negative values indicate larger deficits."
           ),
 
-          # KPI Value Boxes — light card, navy accent stripe + value.
-          # Clearly non-interactive (navy fill is reserved for buttons).
+          # KPI Value Boxes — always visible above the level/deviation toggle.
           layout_column_wrap(
             width = "280px",
             value_box(
@@ -751,72 +750,74 @@ ui <- fluidPage(
 
           br(),
 
-          # 13 dashboard plots in a responsive grid.
-          # Single column below ~800px container; two columns above.
-          layout_column_wrap(
-            width = "400px",
-            plotlyOutput("plot_unemployment",       height = "360px"),
-            plotlyOutput("plot_inflation",          height = "360px"),
-            plotlyOutput("plot_real_gdp_indexed",   height = "360px"),
-            plotlyOutput("plot_10yr_yield",         height = "360px"),
-            plotlyOutput("plot_federal_funds",      height = "360px"),
-            plotlyOutput("plot_budget_balance",     height = "360px"),
-            plotlyOutput("plot_debt",               height = "360px"),
-            plotlyOutput("plot_avg_interest_rate",  height = "360px"),
-            plotlyOutput("plot_total_receipts",     height = "360px"),
-            plotlyOutput("plot_total_outlays",      height = "360px"),
-            plotlyOutput("plot_primary_outlays",    height = "360px"),
-            plotlyOutput("plot_real_gdp_growth",    height = "360px"),
-            plotlyOutput("plot_primary_balance",    height = "360px")
-          )
-        ),
+          # Pill toggle between Levels and Deviations-from-baseline views.
+          navset_pill(
+            id = "results_view",
 
-        # ======================================================================
-        # TAB 4: DEVIATIONS
-        # ======================================================================
-        tabPanel(
-          tagList(icon("chart-line"), " Deviations"),
-          br(),
-
-          # Key Variable Deviations Table
-          h4("Key Variable Deviations"),
-          helpText("Difference between scenario and baseline (Scenario - Baseline)"),
-          DTOutput("deviation_table"),
-
-          br(),
-          hr(),
-
-          # Deviation Charts
-          h4("Impact Analysis"),
-          helpText("Deviations = Scenario - Baseline. Positive means the scenario is higher than baseline; negative means lower."),
-
-          br(),
-
-          # 8 deviation plots — same responsive pattern as Dashboard
-          layout_column_wrap(
-            width = "400px",
-            plotlyOutput("dev_plot_output_gap",      height = "360px"),
-            plotlyOutput("dev_plot_unemployment",    height = "360px"),
-            plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),
-            plotlyOutput("dev_plot_inflation",       height = "360px"),
-            plotlyOutput("dev_plot_debt",            height = "360px"),
-            plotlyOutput("dev_plot_federal_funds",   height = "360px"),
-            plotlyOutput("dev_plot_10yr_yield",      height = "360px"),
-            plotlyOutput("dev_plot_primary_balance", height = "360px")
-          ),
-
-          br(),
-          hr(),
-
-          # Fiscal Multiplier and Summary Statistics
-          fluidRow(
-            column(6,
-                   h4("Fiscal Multiplier"),
-                   verbatimTextOutput("multiplier_display")
+            # Levels view: 13 plots showing absolute values (baseline +
+            # scenario lines on each chart).
+            nav_panel(
+              title = "Levels",
+              br(),
+              layout_column_wrap(
+                width = "400px",
+                plotlyOutput("plot_unemployment",       height = "360px"),
+                plotlyOutput("plot_inflation",          height = "360px"),
+                plotlyOutput("plot_real_gdp_indexed",   height = "360px"),
+                plotlyOutput("plot_10yr_yield",         height = "360px"),
+                plotlyOutput("plot_federal_funds",      height = "360px"),
+                plotlyOutput("plot_budget_balance",     height = "360px"),
+                plotlyOutput("plot_debt",               height = "360px"),
+                plotlyOutput("plot_avg_interest_rate",  height = "360px"),
+                plotlyOutput("plot_total_receipts",     height = "360px"),
+                plotlyOutput("plot_total_outlays",      height = "360px"),
+                plotlyOutput("plot_primary_outlays",    height = "360px"),
+                plotlyOutput("plot_real_gdp_growth",    height = "360px"),
+                plotlyOutput("plot_primary_balance",    height = "360px")
+              )
             ),
-            column(6,
-                   h4("Deviation Summary Statistics"),
-                   verbatimTextOutput("deviation_summary")
+
+            # Deviations view: key variable table, 8 deviation plots,
+            # fiscal multiplier + deviation summary.
+            nav_panel(
+              title = "Deviations from baseline",
+              br(),
+              helpText("Deviations = Scenario - Baseline. Positive means the scenario is higher than baseline; negative means lower."),
+
+              h4("Key Variable Deviations"),
+              DTOutput("deviation_table"),
+
+              br(),
+              hr(),
+
+              h4("Impact Analysis"),
+              br(),
+              layout_column_wrap(
+                width = "400px",
+                plotlyOutput("dev_plot_output_gap",      height = "360px"),
+                plotlyOutput("dev_plot_unemployment",    height = "360px"),
+                plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),
+                plotlyOutput("dev_plot_inflation",       height = "360px"),
+                plotlyOutput("dev_plot_debt",            height = "360px"),
+                plotlyOutput("dev_plot_federal_funds",   height = "360px"),
+                plotlyOutput("dev_plot_10yr_yield",      height = "360px"),
+                plotlyOutput("dev_plot_primary_balance", height = "360px")
+              ),
+
+              br(),
+              hr(),
+
+              layout_column_wrap(
+                width = "280px",
+                div(
+                  h4("Fiscal Multiplier"),
+                  verbatimTextOutput("multiplier_display")
+                ),
+                div(
+                  h4("Deviation Summary Statistics"),
+                  verbatimTextOutput("deviation_summary")
+                )
+              )
             )
           )
         ),
