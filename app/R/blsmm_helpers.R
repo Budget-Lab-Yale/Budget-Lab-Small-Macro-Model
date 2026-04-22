@@ -358,7 +358,7 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL) {
 
     # Shape + magnitude side-by-side (stack under narrow drawer)
     bslib::layout_column_wrap(
-      width = "min(200px, 100%)",
+      width = "200px",
       gap = "12px",
       shiny::selectInput(
         inputId = shape_id,
