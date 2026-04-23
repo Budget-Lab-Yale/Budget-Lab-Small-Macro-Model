@@ -682,11 +682,10 @@ ui <- fluidPage(
           tagList(icon("info-circle"), " About"),
           br(),
 
-          h3("The Budget Lab's Small Macro Model"),
-
           div(class = "bg-info-light", style = "font-size: 1.05em; padding: 24px; border-radius: 8px; margin-bottom: 24px;",
-              p(strong("What is BLSMM?"), style = "margin-bottom: 8px;"),
-              p("An interactive tool for exploring how fiscal and monetary policies affect the U.S. economy over a 10-year horizon (FY2026–FY2035). The model simulates interactions between government spending, taxation, Federal Reserve policy, potential growth, interest rates, and national debt.",
+              p(
+                strong("The Budget Lab Small Macro Model (BLSMM)"),
+                " is an interactive tool for exploring how fiscal and monetary policies affect the U.S. economy over a 10-year horizon (FY2026–FY2035). The model simulates interactions between government spending, taxation, Federal Reserve policy, potential growth, interest rates, and national debt.",
                 style = "margin-bottom: 16px;"),
 
               p(strong("Who should use it:"), style = "margin-bottom: 8px;"),
@@ -704,13 +703,12 @@ ui <- fluidPage(
               )
           ),
 
-          h4(icon("rocket"), " Quick Start: Your First Simulation", style = "margin-top: 32px; margin-bottom: 16px;"),
+          h4("Getting started", style = "margin-top: 32px; margin-bottom: 16px;"),
 
-          div(class = "card bg-blue-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
+          div(class = "bg-info-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
               tags$ol(style = "line-height: 2;",
-                tags$li(strong("Pick a scenario"), " from the ", strong("Scenario"), " section of the Controls sidebar. Start with a preset (Rapid AI Adoption, Persistent Inflation, Higher Defense Spending) or click ", strong("Custom Scenario"), " to build your own."),
-                tags$li("If customizing: the Custom Scenario Builder opens on the right. Expand any section (Growth & Productivity, Fiscal Policy, Monetary & Shocks), pick a shape (e.g., Permanent shift), and set a magnitude (e.g., +1.0 for a 1% of GDP tax increase). Close the builder when done."),
-                tags$li("Click ", strong("Run Simulation"), " and wait for the status pill to read ", strong("Complete"), "."),
+                tags$li("Build a custom scenario in the Controls sidebar or start with a preset (Rapid AI Adoption, Persistent Inflation, Higher Defense Spending)."),
+                tags$li("Click ", strong("Run Simulation"), " and wait for the status indicator to read ", strong("Simulation Complete"), "."),
                 tags$li("Use the ", strong("Levels"), " / ", strong("Deviations from baseline"), " tabs on the Results page to compare baseline and scenario."),
                 tags$li("Download the raw numbers via ", strong("Export Results"), " (CSV or Excel) in the sidebar.")
               ),
@@ -720,7 +718,7 @@ ui <- fluidPage(
 
           h4("Reading the results", style = "margin-top: 32px; margin-bottom: 16px;"),
 
-          div(class = "bg-blue-pale", style = "padding: 24px; border-radius: 8px; margin-bottom: 16px;",
+          div(class = "bg-info-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 16px;",
               p(strong("Chart conventions:"), style = "margin-bottom: 8px;"),
               tags$ul(style = "margin-bottom: 16px; line-height: 1.6;",
                 tags$li("Baseline lines are ", strong("dashed"), "; scenario lines are ", strong("solid"), ". Both use the same color because they represent the same variable."),
@@ -750,7 +748,7 @@ ui <- fluidPage(
 
           h4("Example use cases", style = "margin-bottom: 16px;"),
 
-          div(class = "bg-yellow-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
+          div(class = "bg-info-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
               tags$ul(style = "line-height: 1.8; margin-bottom: 0;",
                 tags$li(strong("Tax Reform Analysis:"), " Model a corporate tax cut and see effects on growth, deficits, and interest rates"),
                 tags$li(strong("Fiscal Consolidation:"), " Test different paths to reduce debt-to-GDP (spending cuts vs. tax increases vs. growth)"),
