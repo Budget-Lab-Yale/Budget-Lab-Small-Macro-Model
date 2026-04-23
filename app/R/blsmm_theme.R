@@ -275,6 +275,133 @@ bl_brand_overrides_block <- function() {
       border-bottom-color: var(--bl-navy);
     }
 
+    /* ---------- Getting started collapsible alert ---------- */
+    .blsmm-getting-started {
+      padding: 10px 14px;
+    }
+    .blsmm-getting-started > summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      color: var(--bl-navy);
+    }
+    .blsmm-getting-started > summary::-webkit-details-marker { display: none; }
+    .blsmm-getting-started > summary::before {
+      content: '\\25B8'; /* right-pointing triangle */
+      font-size: 0.9em;
+      color: var(--bl-muted);
+      transition: transform 0.15s ease;
+      display: inline-block;
+    }
+    .blsmm-getting-started[open] > summary::before {
+      transform: rotate(90deg);
+    }
+    .blsmm-getting-started .blsmm-summary-hint {
+      color: var(--bl-muted);
+      font-weight: 400;
+      font-size: 0.9em;
+    }
+    .blsmm-getting-started[open] {
+      padding-bottom: 14px;
+    }
+
+    /* ---------- Handsontable scroll-shadow hint ----------
+       The 10-column Baseline/Delta/Level tables overflow narrow screens
+       horizontally. Make the right edge shadowy so users know to scroll. */
+    .rhandsontable,
+    .handsontable .wtHolder {
+      position: relative;
+    }
+    .blsmm-assumptions-drawer .rhandsontable::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 24px;
+      pointer-events: none;
+      background: linear-gradient(to right,
+                                  rgba(255, 255, 255, 0) 0%,
+                                  rgba(255, 255, 255, 0.95) 100%);
+      z-index: 4;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    /* Only show the shadow when the drawer is narrow enough that the
+       table actually overflows. ~600px drawer width covers the table. */
+    @media (max-width: 640px) {
+      .blsmm-assumptions-drawer .rhandsontable::after {
+        opacity: 1;
+      }
+      .blsmm-input-advanced[open]::after {
+        content: '\\2192  Scroll horizontally to see all fiscal years';
+        display: block;
+        font-size: 0.78em;
+        color: var(--bl-muted);
+        font-style: italic;
+        margin-top: 6px;
+      }
+    }
+
+    /* ---------- Mobile sidebar: backdrop + trim + labelled toggle ----------
+       Below ~700px the Controls sidebar becomes a slide-in drawer. Make it
+       unmistakably an overlay: semi-transparent backdrop behind the drawer,
+       85vw width so a sliver of Results peeks on the right edge, bigger
+       toggle labelled \"Controls\" so users know what they're opening.
+       bslib's layout_sidebar uses data-collapsible-side and the child
+       .sidebar element carries the open/closed state through attributes. */
+    @media (max-width: 699.98px) {
+      /* Narrower drawer, Results visible on right */
+      .bslib-sidebar-layout > .sidebar {
+        width: 85vw !important;
+        max-width: 360px !important;
+      }
+
+      /* Backdrop behind the open sidebar */
+      .bslib-sidebar-layout[data-open-desktop]:not([data-open-desktop=\"closed\"])
+        .sidebar::before,
+      .bslib-sidebar-layout:has(> .sidebar[data-open-desktop=\"open\"])::after,
+      .bslib-sidebar-layout:has(> .sidebar[aria-expanded=\"true\"])::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 10;
+        pointer-events: auto;
+        animation: blsmmFadeIn 0.18s ease;
+      }
+      @keyframes blsmmFadeIn {
+        from { opacity: 0; } to { opacity: 1; }
+      }
+
+      /* Bigger, labelled toggle button */
+      .bslib-sidebar-layout > .collapse-toggle,
+      .bslib-sidebar-layout .collapse-toggle {
+        padding: 8px 14px !important;
+        background: var(--bl-navy) !important;
+        color: #ffffff !important;
+        border-radius: 0.5rem !important;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      .bslib-sidebar-layout > .collapse-toggle::after,
+      .bslib-sidebar-layout .collapse-toggle::after {
+        content: ' Controls';
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+      }
+
+      /* Ensure the sidebar floats above main content (z-index) when open */
+      .bslib-sidebar-layout > .sidebar {
+        z-index: 20 !important;
+        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.22);
+      }
+    }
+
     /* ---------- Sidebar-specific layout fixes ---------- */
 
     /* Enable container queries so sidebar content scales to its width */

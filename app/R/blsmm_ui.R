@@ -276,15 +276,10 @@ ui <- fluidPage(
 
   tags$a(href = "#main-content", class = "skip-link", "Skip to main content"),
 
-  # Application title
-  div(
-    h2("The Budget Lab's Small Macro Model (BLSMM)"),
-    h4("Interactive Policy Simulation Tool", class = "text-muted-custom"),
-    div(class = "fy-note",
-        "Note: All years are fiscal years (October 1 - September 30)")
-  ),
-
-  br(),
+  # No in-app header: the title, subtitle, and FY note are duplicative of
+  # the Budget Lab website page that embeds this iframe. Fiscal year
+  # context is carried in the Getting Started alert on the Results tab
+  # and in the About tab for anyone who needs it.
 
   # Responsive sidebar layout (bslib).
   # On narrow screens the sidebar collapses into a toggle button.
@@ -405,15 +400,21 @@ ui <- fluidPage(
           tagList(icon("gauge-high"), " ", tags$b(tags$u("Results"))),
           br(),
 
-          div(class = "alert alert-secondary",
-              p(style = "margin-bottom: 8px;",
-                strong("Getting started: "),
-                "Configure your scenario in the Controls sidebar and click 'Run Simulation' to see results."),
-              p(style = "margin-bottom: 0;",
-                strong("How to read: "),
-                "Charts compare Baseline (dashed) vs Scenario (solid). ",
-                "Rates and inflation are percentage points; debt and balances are percent of GDP. ",
-                "For budget charts, more negative values indicate larger deficits.")
+          # Collapsed by default so the first screen is KPIs + charts.
+          # Users open the disclosure for the how-to-use primer.
+          tags$details(class = "alert alert-secondary blsmm-getting-started",
+            tags$summary(strong("Getting started"),
+                         tags$span(class = "blsmm-summary-hint",
+                                   " — how to use this tool")),
+            p(style = "margin: 10px 0 8px;",
+              strong("Getting started: "),
+              "Configure your scenario in the Controls sidebar and click 'Run Simulation' to see results."),
+            p(style = "margin-bottom: 0;",
+              strong("How to read: "),
+              "Charts compare Baseline (dashed) vs Scenario (solid). ",
+              "Rates and inflation are percentage points; debt and balances are percent of GDP. ",
+              "For budget charts, more negative values indicate larger deficits. ",
+              "All years are fiscal years (October 1 – September 30).")
           ),
 
           # KPI Value Boxes — always visible above the level/deviation toggle.
