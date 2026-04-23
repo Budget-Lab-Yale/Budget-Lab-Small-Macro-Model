@@ -359,9 +359,16 @@ bl_brand_overrides_block <- function() {
 
     /* Main content area: flex-grow so it fills remaining width next to
        the inline sidebar at md+. min-width: 0 lets plotly / tables shrink
-       inside the flex container instead of forcing horizontal scroll. */
+       inside the flex container instead of forcing horizontal scroll.
+       Padding gives breathing room between the sidebar/edge and content. */
     .blsmm-main {
       min-width: 0;
+      padding: 16px 20px;
+    }
+    @media (min-width: 768px) {
+      .blsmm-main {
+        padding: 20px 28px;
+      }
     }
 
     /* Mobile-only toggle button: sticky at top so it stays reachable as
