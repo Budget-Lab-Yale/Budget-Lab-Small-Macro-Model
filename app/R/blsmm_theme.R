@@ -442,10 +442,11 @@ bl_brand_overrides_block <- function() {
         overflow: hidden;
       }
       /* Matches Bootstrap's own selector specificity for
-         .offcanvas-md .offcanvas-body so our rules win. */
+         .offcanvas-md .offcanvas-body so our rules win. Top padding
+         mirrors the br() gap above the KPI cards in the main tab. */
       .blsmm-controls-drawer.offcanvas-md .offcanvas-body {
         display: block;
-        padding: 16px 20px;
+        padding: 24px 20px 16px;
         overflow-y: auto;
         background-color: transparent;
       }
@@ -453,9 +454,11 @@ bl_brand_overrides_block <- function() {
 
     /* Body padding at all widths (mobile & desktop). At md+ the rule
        above takes over; below md this applies inside the slide-in
-       drawer. */
+       drawer. Top padding mirrors the br() gap above the KPI cards in
+       the main tab so the first card sits at the same visual offset
+       from its header border. */
     .blsmm-controls-body {
-      padding: 16px 20px;
+      padding: 24px 20px 16px;
     }
 
     /* Controls header: reads as the sidebar/drawer title at every

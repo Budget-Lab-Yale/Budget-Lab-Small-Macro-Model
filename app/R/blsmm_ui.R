@@ -573,7 +573,8 @@ ui <- fluidPage(
             )
           ),
 
-          br(),
+          # br() removed — navset_underline's own top margin gives
+          # enough space; matches the gap above the KPI cards.
 
           # Tab toggle between Levels and Deviations-from-baseline views.
           navset_underline(
