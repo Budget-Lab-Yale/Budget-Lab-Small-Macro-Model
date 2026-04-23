@@ -208,8 +208,8 @@ ui <- fluidPage(
         setTimeout(refreshAllHotTables, 80);
       });
 
-      // Refresh handsontables whenever the Assumptions drawer opens, since
-      // offcanvas content has zero width until it slides in.
+      // Refresh handsontables whenever the Custom Scenario Builder opens,
+      // since offcanvas content has zero width until it slides in.
       document.addEventListener('shown.bs.offcanvas', function() {
         setTimeout(refreshAllHotTables, 80);
       });
@@ -297,9 +297,10 @@ ui <- fluidPage(
       title = "Controls",
 
       # ------------------------------------------------------------------
-      # SCENARIO: Custom (opens the Assumptions drawer) or one of three
-      # presets. Reset to Defaults also lives here since it's a scenario-
-      # level control (wipes the current scenario back to baseline).
+      # SCENARIO: Custom (opens the Custom Scenario Builder drawer) or
+      # one of three presets. Reset to Defaults also lives here since
+      # it's a scenario-level control (wipes the current scenario back
+      # to baseline).
       # ------------------------------------------------------------------
       div(class = "sidebar-section",
         h4("Scenario"),
@@ -478,7 +479,7 @@ ui <- fluidPage(
                 bslib::popover(
                   trigger = tags$button(
                     type  = "button",
-                    class = "btn btn-sm btn-outline-secondary blsmm-preset-info",
+                    class = "blsmm-info-trigger blsmm-info-trigger-inline",
                     `aria-label` = "How to read deviations",
                     tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
                   ),
@@ -557,7 +558,7 @@ ui <- fluidPage(
           div(class = "card bg-blue-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
               tags$ol(style = "line-height: 2;",
                 tags$li(strong("Pick a scenario"), " from the ", strong("Scenario"), " section of the Controls sidebar. Start with a preset (Rapid AI Adoption, Persistent Inflation, Higher Defense Spending) or click ", strong("Custom Scenario"), " to build your own."),
-                tags$li("If customizing: the Assumptions drawer opens on the right. Expand any section (Growth & Productivity, Fiscal Policy, Monetary & Shocks), pick a shape (e.g., Permanent shift), and set a magnitude (e.g., +1.0 for a 1% of GDP tax increase). Close the drawer when done."),
+                tags$li("If customizing: the Custom Scenario Builder opens on the right. Expand any section (Growth & Productivity, Fiscal Policy, Monetary & Shocks), pick a shape (e.g., Permanent shift), and set a magnitude (e.g., +1.0 for a 1% of GDP tax increase). Close the builder when done."),
                 tags$li("Click ", strong("Run Simulation"), " and wait for the status pill to read ", strong("Complete"), "."),
                 tags$li("Use the ", strong("Levels"), " / ", strong("Deviations from baseline"), " tabs on the Results page to compare baseline and scenario."),
                 tags$li("Download the raw numbers via ", strong("Export Results"), " (CSV or Excel) in the sidebar.")
@@ -651,9 +652,10 @@ ui <- fluidPage(
   ),
 
   # ============================================================================
-  # ASSUMPTIONS DRAWER (Bootstrap 5 offcanvas)
-  # Opened by the "Adjust Assumptions" button in the sidebar. Holds the 9
-  # input tables, organized into three accordion sections plus a read-only
+  # CUSTOM SCENARIO BUILDER (Bootstrap 5 offcanvas)
+  # Opened by the "Custom Scenario" button in the sidebar. Holds the 9 input
+  # shape+magnitude controls (with handsontable fallback under Edit year-by-
+  # year), organized into three accordion sections plus a read-only
   # consolidated summary. Slides in from the right so it does not overlap
   # the left sidebar or obscure the Results view while editing.
   # ============================================================================
@@ -666,7 +668,7 @@ ui <- fluidPage(
     tags$div(
       class = "offcanvas-header",
       h4(id = "assumptions_drawer_label", class = "offcanvas-title mb-0",
-         "Adjust Assumptions"),
+         "Custom Scenario Builder"),
       tags$button(
         type = "button",
         class = "btn-close",

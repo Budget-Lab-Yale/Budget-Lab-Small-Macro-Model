@@ -341,22 +341,40 @@ bl_brand_overrides_block <- function() {
       margin: 0;
     }
 
-    /* Preset row: scenario button fills the row, ? info button sits at
-       the right. Info button is a fixed-width square. */
+    /* Preset row: scenario button fills the row, ? info icon sits at
+       the right. The info trigger is a bare icon (no border, no
+       background, no button box) that adopts the nearby muted text
+       color. Sized 1em so it matches the surrounding type. */
     .blsmm-preset-row .blsmm-preset-btn {
       white-space: normal;
       line-height: 1.2;
       min-height: 34px;
     }
-    .blsmm-preset-info {
-      flex: 0 0 auto;
-      width: 34px;
-      padding: 0;
+    .blsmm-info-trigger {
+      background: transparent;
+      border: 0;
+      padding: 2px 4px;
+      margin: 0;
+      color: var(--bl-muted);
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      line-height: 1;
+      flex: 0 0 auto;
     }
-    .blsmm-preset-info i { font-size: 0.95em; }
+    .blsmm-info-trigger:hover,
+    .blsmm-info-trigger:focus {
+      color: var(--bl-navy);
+      outline: 0;
+    }
+    .blsmm-info-trigger i {
+      font-size: 1em;
+    }
+    /* Inline variant next to a heading: match the heading font-size */
+    .blsmm-info-trigger-inline i {
+      font-size: 1.1rem;
+    }
 
     /* ---------- KPI value boxes ----------
        Light card look: white background, navy left-edge accent, muted
@@ -404,7 +422,7 @@ bl_brand_overrides_block <- function() {
       line-height: 1.25;
     }
 
-    /* ---------- Assumptions drawer (offcanvas) ----------
+    /* ---------- Custom Scenario Builder drawer (offcanvas) ----------
        Wider than default so 10 columns of handsontable fit comfortably;
        capped so it never dominates narrow viewports. */
     .blsmm-assumptions-drawer {

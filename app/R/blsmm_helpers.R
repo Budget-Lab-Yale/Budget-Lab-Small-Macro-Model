@@ -409,7 +409,7 @@ preset_row <- function(input_id, label, description) {
     bslib::popover(
       trigger = shiny::tags$button(
         type  = "button",
-        class = "btn btn-sm btn-outline-secondary blsmm-preset-info",
+        class = "blsmm-info-trigger",
         `aria-label` = paste0("About ", label),
         shiny::tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
       ),
