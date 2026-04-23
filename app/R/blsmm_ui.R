@@ -227,6 +227,21 @@ ui <- fluidPage(
         }
       }, true);
 
+      // Safety-net handler for offcanvas dismiss (X close button).
+      // Bootstrap's auto-wiring sometimes misses clicks on .btn-close
+      // inside responsive offcanvases (.offcanvas-md). This delegates
+      // a click listener to the document so the X button always works.
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-bs-dismiss=\"offcanvas\"]');
+        if (!btn) return;
+        var container = btn.closest(
+          '.offcanvas, .offcanvas-md, .offcanvas-sm, .offcanvas-lg, .offcanvas-xl'
+        );
+        if (container && window.bootstrap && bootstrap.Offcanvas) {
+          bootstrap.Offcanvas.getOrCreateInstance(container).hide();
+        }
+      });
+
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refreshAllHotTables, 120);
       });
@@ -299,13 +314,16 @@ ui <- fluidPage(
       tabindex = "-1",
       `aria-labelledby` = "controls_drawer_label",
 
-      # Drawer header: only visible when behaving as an offcanvas (< md).
-      # Hidden at >= md where Controls renders inline as a sidebar.
-      tags$div(class = "offcanvas-header d-md-none",
+      # Drawer header: visible at every width so the sidebar is always
+      # identifiable as "Controls". The close (X) button is hidden at md+
+      # via CSS since the sidebar is always visible there.
+      tags$div(class = "offcanvas-header blsmm-controls-header",
         h4(id = "controls_drawer_label", class = "offcanvas-title mb-0",
            "Controls"),
-        tags$button(type = "button", class = "btn-close",
+        tags$button(type = "button",
+                    class = "btn-close blsmm-controls-close",
                     `data-bs-dismiss` = "offcanvas",
+                    `data-bs-target` = "#controls_drawer",
                     `aria-label` = "Close")
       ),
 

@@ -457,6 +457,30 @@ bl_brand_overrides_block <- function() {
       padding: 16px 20px;
     }
 
+    /* Controls header: reads as the sidebar/drawer title at every
+       width. Bootstrap's default hides .offcanvas-md .offcanvas-header
+       at md+, so we re-show it. The close (X) button is hidden at md+
+       since the sidebar is always visible there (no close needed). */
+    .blsmm-controls-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--bl-border);
+    }
+    .blsmm-controls-header .offcanvas-title {
+      font-family: var(--bl-font-heading);
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--bl-navy);
+      letter-spacing: -0.01em;
+    }
+    @media (min-width: 768px) {
+      .blsmm-controls-drawer.offcanvas-md .blsmm-controls-header {
+        display: flex;
+      }
+      .blsmm-controls-drawer.offcanvas-md .blsmm-controls-close {
+        display: none;
+      }
+    }
+
     /* Center sim-status pills (SSE + run-status) inside the Simulation card */
     .blsmm-sim-status-wrap {
       text-align: center;
