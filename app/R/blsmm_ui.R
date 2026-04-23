@@ -417,11 +417,12 @@ ui <- fluidPage(
           ),
 
           # KPI Value Boxes — always visible above the level/deviation toggle.
-          # 240px min so two fit side-by-side in a 900px iframe's main area.
+          # 200px min so two fit side-by-side in a 900px iframe's main area;
+          # labels wrap to multiple lines inside each card when tight.
           # showcase_left_center pins the icon to a left column that never
-          # wraps above the text block, even at narrow widths.
+          # wraps above the text block.
           layout_column_wrap(
-            width = "240px",
+            width = "200px",
             gap = "12px",
             value_box(
               title = "Final Debt Impact",

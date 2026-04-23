@@ -874,7 +874,7 @@ server <- function(input, output, session) {
         y = budget_deviation,
         name = "Budget Balance Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = full_data$baseline$fy_label,
@@ -909,7 +909,7 @@ server <- function(input, output, session) {
         y = data$d_U,
         name = "Unemployment Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.3f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.3f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -947,7 +947,7 @@ server <- function(input, output, session) {
         y = data$d_real_gdp_growth[valid_idx],
         name = "Real GDP Growth Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.3f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.3f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label[valid_idx],
@@ -982,7 +982,7 @@ server <- function(input, output, session) {
         y = data$d_PI,
         name = "Inflation Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.3f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.3f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -1020,7 +1020,7 @@ server <- function(input, output, session) {
         line = list(color = th$line_scenario, width = 3),
         fill = 'tozeroy',
         fillcolor = th$debt_fill,
-        hovertemplate = paste0("Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -1055,7 +1055,7 @@ server <- function(input, output, session) {
         y = data$d_RF,
         name = "Federal Funds Rate Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -1090,7 +1090,7 @@ server <- function(input, output, session) {
         y = data$d_R10,
         name = "10-Year Yield Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -1125,7 +1125,7 @@ server <- function(input, output, session) {
         y = data$d_rbudp_star,
         name = "Primary Balance Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,

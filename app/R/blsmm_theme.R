@@ -384,26 +384,34 @@ bl_brand_overrides_block <- function() {
       background-color: #ffffff !important;
       border-left: 4px solid var(--bl-navy) !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      overflow: hidden; /* contain inner column backgrounds to card radius */
+      overflow: hidden;
+      /* Opt out of bslib's container queries that flip to column at narrow
+         widths - we want row layout always, with text wrapping to handle
+         tight cards instead. */
+      container-type: normal !important;
     }
-    /* Card body is a two-column row at every width (never wraps). */
+    /* Card body + any bslib inner wrappers must stay a row at every width. */
     .blsmm-kpi-card .card-body,
     .blsmm-kpi-card > .bslib-gap-spacing,
-    .blsmm-kpi-card .bslib-gap-spacing {
+    .blsmm-kpi-card .bslib-gap-spacing,
+    .blsmm-kpi-card .bslib-value-box,
+    .blsmm-kpi-card.bslib-value-box,
+    .blsmm-kpi-card > div {
       padding: 0 !important;
       gap: 0 !important;
       display: flex !important;
       flex-direction: row !important;
       align-items: stretch !important;
       flex-wrap: nowrap !important;
+      container-type: normal !important;
     }
     /* Left: fixed icon column with a subtle divider on the right. */
     .blsmm-kpi-card .value-box-showcase {
       flex: 0 0 auto !important;
-      width: 68px !important;
-      min-width: 68px !important;
-      max-width: 68px !important;
-      padding: 14px 10px !important;
+      width: 60px !important;
+      min-width: 60px !important;
+      max-width: 60px !important;
+      padding: 12px 8px !important;
       margin: 0 !important;
       display: flex !important;
       align-items: center !important;
@@ -416,18 +424,26 @@ bl_brand_overrides_block <- function() {
     .blsmm-kpi-card .value-box-showcase i {
       color: var(--bl-navy) !important;
       opacity: 0.40;
-      font-size: 1.7rem !important;
+      font-size: 1.6rem !important;
     }
-    /* Right: text column with its own padding; label small muted,
-       value big navy bold, caption small muted. */
+    /* Right: text column. Labels are allowed to wrap so narrow cards
+       still fit the content column-wise, instead of pushing the whole
+       card wider than the available space. */
     .blsmm-kpi-card .value-box-area {
       flex: 1 1 auto;
       min-width: 0;
-      padding: 14px 16px 12px !important;
+      padding: 12px 14px 10px !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: center !important;
       gap: 2px !important;
+    }
+    .blsmm-kpi-card .value-box-title,
+    .blsmm-kpi-card .value-box-value,
+    .blsmm-kpi-card p {
+      white-space: normal !important;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
     .blsmm-kpi-card .value-box-title {
       color: var(--bl-muted) !important;
@@ -435,11 +451,12 @@ bl_brand_overrides_block <- function() {
       letter-spacing: 0.05em;
       font-size: 0.72rem;
       font-weight: 600;
+      line-height: 1.2;
       margin: 0 0 2px;
     }
     .blsmm-kpi-card .value-box-value {
       color: var(--bl-navy) !important;
-      font-size: 1.7rem;
+      font-size: 1.55rem;
       font-weight: 700;
       line-height: 1.1;
       margin: 0;
@@ -447,7 +464,7 @@ bl_brand_overrides_block <- function() {
     .blsmm-kpi-card p {
       color: var(--bl-body) !important;
       margin: 4px 0 0;
-      font-size: 0.78em;
+      font-size: 0.75em;
       line-height: 1.25;
     }
 

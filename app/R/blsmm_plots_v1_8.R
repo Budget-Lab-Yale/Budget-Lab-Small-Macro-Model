@@ -45,7 +45,7 @@ output$plot_unemployment <- renderPlotly({
         y = data$baseline$U,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Unemployment: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -55,14 +55,14 @@ output$plot_unemployment <- renderPlotly({
         y = data$baseline$U,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Unemployment: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = data$scenario$U,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Unemployment: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   }
 
@@ -99,7 +99,7 @@ output$plot_inflation <- renderPlotly({
         y = data$baseline$PI,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Inflation: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -109,14 +109,14 @@ output$plot_inflation <- renderPlotly({
         y = data$baseline$PI,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Inflation: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = data$scenario$PI,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Inflation: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   }
 
@@ -157,7 +157,7 @@ output$plot_real_gdp_indexed <- renderPlotly({
         y = baseline_index,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Real GDP: %{y:.1f} index<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.1f} index<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -168,7 +168,7 @@ output$plot_real_gdp_indexed <- renderPlotly({
         y = baseline_index,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Baseline: %{y:.1f} index<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.1f} index<extra></extra>")
       ) %>%
       # Scenario index line
       add_lines(
@@ -176,7 +176,7 @@ output$plot_real_gdp_indexed <- renderPlotly({
         y = scenario_index,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Scenario: %{y:.1f} index<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.1f} index<extra></extra>")
       )
   }
 
@@ -222,7 +222,7 @@ output$plot_10yr_yield <- renderPlotly({
         y = data$baseline$R10,
         name = "Nominal 10Y",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Nominal 10Y: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Real 10-year baseline
       add_lines(
@@ -230,7 +230,7 @@ output$plot_10yr_yield <- renderPlotly({
         y = baseline_real_r10,
         name = "Real 10Y",
         line = list(color = th$line_secondary, width = 2.5),
-        hovertemplate = paste0("Real 10Y: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   } else {
     # Show all 4 lines when there are deltas
@@ -241,7 +241,7 @@ output$plot_10yr_yield <- renderPlotly({
         y = data$baseline$R10,
         name = "Nominal 10Y (Baseline)",
         line = list(color = th$line_baseline, dash = "dash", width = 2),
-        hovertemplate = paste0("Nominal 10Y: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Nominal 10-year scenario
       add_lines(
@@ -249,7 +249,7 @@ output$plot_10yr_yield <- renderPlotly({
         y = data$scenario$R10,
         name = "Nominal 10Y (Scenario)",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Nominal 10Y: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Real 10-year baseline
       add_lines(
@@ -257,7 +257,7 @@ output$plot_10yr_yield <- renderPlotly({
         y = baseline_real_r10,
         name = "Real 10Y (Baseline)",
         line = list(color = th$line_secondary, dash = "dash", width = 2),
-        hovertemplate = paste0("Real 10Y: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Real 10-year scenario
       add_lines(
@@ -265,7 +265,7 @@ output$plot_10yr_yield <- renderPlotly({
         y = scenario_real_r10,
         name = "Real 10Y (Scenario)",
         line = list(color = th$line_secondary, width = 2.5),
-        hovertemplate = paste0("Real 10Y: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   }
 
@@ -303,7 +303,7 @@ output$plot_federal_funds <- renderPlotly({
         y = data$baseline$rfstar,
         name = "r*",
         line = list(color = th$line_secondary, width = 2.5),
-        hovertemplate = paste0("r*: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Federal Funds baseline
       add_lines(
@@ -311,7 +311,7 @@ output$plot_federal_funds <- renderPlotly({
         y = data$baseline$RF,
         name = "Fed Funds",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("FF Rate: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   } else {
     # Show all 4 lines when there are deltas
@@ -322,7 +322,7 @@ output$plot_federal_funds <- renderPlotly({
         y = data$baseline$rfstar,
         name = "r* (Baseline)",
         line = list(color = th$line_secondary, dash = "dash", width = 2),
-        hovertemplate = paste0("r*: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # r* scenario
       add_lines(
@@ -330,7 +330,7 @@ output$plot_federal_funds <- renderPlotly({
         y = data$scenario$rfstar,
         name = "r* (Scenario)",
         line = list(color = th$line_secondary, width = 2.5),
-        hovertemplate = paste0("r*: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Federal Funds baseline
       add_lines(
@@ -338,7 +338,7 @@ output$plot_federal_funds <- renderPlotly({
         y = data$baseline$RF,
         name = "Fed Funds (Baseline)",
         line = list(color = th$line_baseline, dash = "dash", width = 2),
-        hovertemplate = paste0("FF Rate: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Federal Funds scenario
       add_lines(
@@ -346,7 +346,7 @@ output$plot_federal_funds <- renderPlotly({
         y = data$scenario$RF,
         name = "Fed Funds (Scenario)",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("FF Rate: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   }
 
@@ -390,7 +390,7 @@ output$plot_budget_balance <- renderPlotly({
         y = baseline_budget_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Budget: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -400,14 +400,14 @@ output$plot_budget_balance <- renderPlotly({
         y = baseline_budget_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Budget: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = scenario_budget_pct,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Budget: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   }
 
@@ -444,7 +444,7 @@ output$plot_debt <- renderPlotly({
         y = data$baseline$D_pct_GDP,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Debt/GDP: %{y:.1f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.1f}%<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -454,14 +454,14 @@ output$plot_debt <- renderPlotly({
         y = data$baseline$D_pct_GDP,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Debt/GDP: %{y:.1f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.1f}%<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = data$scenario$D_pct_GDP,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Debt/GDP: %{y:.1f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.1f}%<extra></extra>")
       )
   }
 
@@ -498,7 +498,7 @@ output$plot_avg_interest_rate <- renderPlotly({
         y = data$baseline$RG,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Avg Interest: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -509,7 +509,7 @@ output$plot_avg_interest_rate <- renderPlotly({
         y = data$baseline$RG,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Baseline: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Scenario line
       add_lines(
@@ -517,7 +517,7 @@ output$plot_avg_interest_rate <- renderPlotly({
         y = data$scenario$RG,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Scenario: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   }
 
@@ -564,7 +564,7 @@ output$plot_total_receipts <- renderPlotly({
         y = baseline_receipts_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Receipts: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -574,14 +574,14 @@ output$plot_total_receipts <- renderPlotly({
         y = baseline_receipts_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Receipts: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = scenario_receipts_pct,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Receipts: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   }
 
@@ -626,7 +626,7 @@ output$plot_total_outlays <- renderPlotly({
         y = baseline_outlays_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Outlays: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -636,14 +636,14 @@ output$plot_total_outlays <- renderPlotly({
         y = baseline_outlays_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Outlays: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = scenario_outlays_pct,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Outlays: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   }
 
@@ -686,7 +686,7 @@ output$plot_primary_outlays <- renderPlotly({
         y = baseline_outlays_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Primary Outlays: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -696,14 +696,14 @@ output$plot_primary_outlays <- renderPlotly({
         y = baseline_outlays_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Primary Outlays: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = scenario_outlays_pct,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Primary Outlays: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   }
 
@@ -743,7 +743,7 @@ output$plot_real_gdp_growth <- renderPlotly({
         y = data$baseline$real_gdp_growth[valid_idx],
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("GDP Growth: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -754,7 +754,7 @@ output$plot_real_gdp_growth <- renderPlotly({
         y = data$baseline$real_gdp_growth[valid_idx],
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Baseline: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       ) %>%
       # Scenario growth line
       add_lines(
@@ -762,7 +762,7 @@ output$plot_real_gdp_growth <- renderPlotly({
         y = data$scenario$real_gdp_growth[valid_idx],
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Scenario: %{y:.2f}%<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}%<extra></extra>")
       )
   }
 
@@ -808,7 +808,7 @@ output$plot_primary_balance <- renderPlotly({
         y = baseline_primary_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, width = 2.5),
-        hovertemplate = paste0("Primary Balance: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   } else {
     # Show both lines when there are deltas
@@ -818,14 +818,14 @@ output$plot_primary_balance <- renderPlotly({
         y = baseline_primary_pct,
         name = "Baseline",
         line = list(color = th$line_baseline, dash = "dash", width = 2.5),
-        hovertemplate = paste0("Primary Balance: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       ) %>%
       add_lines(
         x = data$scenario$fy_label,
         y = scenario_primary_pct,
         name = "Scenario",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("Primary Balance: %{y:.2f}% of GDP<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}% of GDP<extra></extra>")
       )
   }
 
