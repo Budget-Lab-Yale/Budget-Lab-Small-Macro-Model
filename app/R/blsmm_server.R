@@ -87,19 +87,21 @@ server <- function(input, output, session) {
       )
     }
 
-    pill_text <- if (is_initial) {
+    pill_content <- if (is_initial) {
       "Ready | Baseline Loaded"
     } else if (identical(state, "running")) {
       paste0("RUNNING | ", note)
     } else if (identical(state, "error")) {
       paste0("ERROR | ", note)
+    } else if (identical(state, "dirty")) {
+      tagList("Inputs Changed", br(), "Run simulation to update results")
     } else {
       note
     }
 
     div(
       class = paste("run-status", state_class),
-      pill_text
+      pill_content
     )
   })
 

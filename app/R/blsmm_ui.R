@@ -87,6 +87,8 @@ ui <- fluidPage(
         padding: 8px 16px;
         display: inline-block;
         border: 1px solid transparent;
+        text-align: center;
+        line-height: 1.35;
       }
       .run-ready { background: #e9ecef; color: #343a40; border-color: #ced4da; }
       .run-dirty { background: #fff3cd; color: #856404; border-color: #ffe69c; }
