@@ -1377,7 +1377,8 @@ server <- function(input, output, session) {
         pageLength = 10,
         scrollX = TRUE,
         dom = 't',
-        compact = TRUE
+        compact = TRUE,
+        ordering = FALSE
       ),
       rownames = FALSE,
       selection = "none",  # no persistent row-click highlight
@@ -1504,7 +1505,8 @@ server <- function(input, output, session) {
                 dom = 't',
                 pageLength = 15,
                 scrollX = TRUE,
-                compact = TRUE
+                compact = TRUE,
+                ordering = FALSE
               ),
               rownames = FALSE,
               selection = "none",
