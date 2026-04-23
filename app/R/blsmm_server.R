@@ -893,10 +893,9 @@ server <- function(input, output, session) {
 
   # Ensure dashboard plots update immediately when simulation runs,
   # even if Dashboard tab is not currently visible
-  # All 13 charts:
+  # All 12 charts:
   outputOptions(output, "plot_unemployment", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_inflation", suspendWhenHidden = FALSE)
-  outputOptions(output, "plot_real_gdp_indexed", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_10yr_yield", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_federal_funds", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_budget_balance", suspendWhenHidden = FALSE)

@@ -592,16 +592,15 @@ ui <- fluidPage(
               br(),
               layout_column_wrap(
                 width = "400px",
-                plotlyOutput("plot_unemployment",       height = "360px"),
-                plotlyOutput("plot_inflation",          height = "360px"),
-                plotlyOutput("plot_real_gdp_indexed",   height = "360px"),
-                plotlyOutput("plot_10yr_yield",         height = "360px"),
-                plotlyOutput("plot_federal_funds",      height = "360px"),
                 plotlyOutput("plot_budget_balance",     height = "360px"),
                 plotlyOutput("plot_debt",               height = "360px"),
                 plotlyOutput("plot_avg_interest_rate",  height = "360px"),
                 plotlyOutput("plot_total_receipts",     height = "360px"),
                 plotlyOutput("plot_total_outlays",      height = "360px"),
+                plotlyOutput("plot_unemployment",       height = "360px"),
+                plotlyOutput("plot_inflation",          height = "360px"),
+                plotlyOutput("plot_10yr_yield",         height = "360px"),
+                plotlyOutput("plot_federal_funds",      height = "360px"),
                 plotlyOutput("plot_primary_outlays",    height = "360px"),
                 plotlyOutput("plot_real_gdp_growth",    height = "360px"),
                 plotlyOutput("plot_primary_balance",    height = "360px")
@@ -636,14 +635,14 @@ ui <- fluidPage(
               br(),
               layout_column_wrap(
                 width = "400px",
-                plotlyOutput("dev_plot_output_gap",      height = "360px"),
-                plotlyOutput("dev_plot_unemployment",    height = "360px"),
-                plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),
-                plotlyOutput("dev_plot_inflation",       height = "360px"),
+                plotlyOutput("dev_plot_primary_balance", height = "360px"),
                 plotlyOutput("dev_plot_debt",            height = "360px"),
-                plotlyOutput("dev_plot_federal_funds",   height = "360px"),
+                plotlyOutput("dev_plot_unemployment",    height = "360px"),
+                plotlyOutput("dev_plot_inflation",       height = "360px"),
                 plotlyOutput("dev_plot_10yr_yield",      height = "360px"),
-                plotlyOutput("dev_plot_primary_balance", height = "360px")
+                plotlyOutput("dev_plot_federal_funds",   height = "360px"),
+                plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),
+                plotlyOutput("dev_plot_output_gap",      height = "360px")
               ),
 
               br(),
