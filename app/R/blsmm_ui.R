@@ -418,6 +418,8 @@ ui <- fluidPage(
 
           # KPI Value Boxes — always visible above the level/deviation toggle.
           # 240px min so two fit side-by-side in a 900px iframe's main area.
+          # showcase_left_center pins the icon to a left column that never
+          # wraps above the text block, even at narrow widths.
           layout_column_wrap(
             width = "240px",
             gap = "12px",
@@ -425,17 +427,19 @@ ui <- fluidPage(
               title = "Final Debt Impact",
               value = textOutput("kpi_final_debt"),
               showcase = icon("scale-balanced"),
+              showcase_layout = showcase_left_center(),
               theme = value_box_theme(bg = "#ffffff", fg = bl_colors$navy),
               class = "blsmm-kpi-card",
-              p("Change in debt/GDP ratio", style = "font-size: 0.8em; margin: 0;")
+              p("Change in debt/GDP ratio")
             ),
             value_box(
               title = "Max Unemployment Effect",
               value = textOutput("kpi_max_unemployment"),
               showcase = icon("users"),
+              showcase_layout = showcase_left_center(),
               theme = value_box_theme(bg = "#ffffff", fg = bl_colors$navy),
               class = "blsmm-kpi-card",
-              p("Peak change in unemployment", style = "font-size: 0.8em; margin: 0;")
+              p("Peak change in unemployment")
             )
           ),
 

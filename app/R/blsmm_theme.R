@@ -384,40 +384,69 @@ bl_brand_overrides_block <- function() {
       background-color: #ffffff !important;
       border-left: 4px solid var(--bl-navy) !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      overflow: hidden; /* contain inner column backgrounds to card radius */
     }
-    .blsmm-kpi-card .card-body {
-      padding: 10px 14px;
+    /* Card body is a two-column row at every width (never wraps). */
+    .blsmm-kpi-card .card-body,
+    .blsmm-kpi-card > .bslib-gap-spacing,
+    .blsmm-kpi-card .bslib-gap-spacing {
+      padding: 0 !important;
+      gap: 0 !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: stretch !important;
+      flex-wrap: nowrap !important;
+    }
+    /* Left: fixed icon column with a subtle divider on the right. */
+    .blsmm-kpi-card .value-box-showcase {
+      flex: 0 0 auto !important;
+      width: 68px !important;
+      min-width: 68px !important;
+      max-width: 68px !important;
+      padding: 14px 10px !important;
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-right: 1px solid var(--bl-border);
+      background: transparent !important;
+    }
+    .blsmm-kpi-card .value-box-showcase svg,
+    .blsmm-kpi-card .value-box-showcase .fa,
+    .blsmm-kpi-card .value-box-showcase i {
+      color: var(--bl-navy) !important;
+      opacity: 0.40;
+      font-size: 1.7rem !important;
+    }
+    /* Right: text column with its own padding; label small muted,
+       value big navy bold, caption small muted. */
+    .blsmm-kpi-card .value-box-area {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 14px 16px 12px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 2px !important;
     }
     .blsmm-kpi-card .value-box-title {
       color: var(--bl-muted) !important;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      font-size: 0.72rem;
       font-weight: 600;
-      margin-bottom: 2px;
+      margin: 0 0 2px;
     }
     .blsmm-kpi-card .value-box-value {
       color: var(--bl-navy) !important;
-      font-size: 1.55rem;
+      font-size: 1.7rem;
       font-weight: 700;
       line-height: 1.1;
       margin: 0;
     }
-    .blsmm-kpi-card .value-box-showcase {
-      width: 44px !important;
-      min-width: 44px !important;
-      padding: 0 4px !important;
-    }
-    .blsmm-kpi-card .value-box-showcase,
-    .blsmm-kpi-card .value-box-showcase svg,
-    .blsmm-kpi-card .value-box-showcase .fa {
-      color: var(--bl-navy) !important;
-      opacity: 0.32;
-      font-size: 1.5rem;
-    }
     .blsmm-kpi-card p {
       color: var(--bl-body) !important;
-      margin: 2px 0 0;
+      margin: 4px 0 0;
       font-size: 0.78em;
       line-height: 1.25;
     }
