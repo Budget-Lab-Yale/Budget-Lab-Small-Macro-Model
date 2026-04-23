@@ -190,45 +190,6 @@ ui <- fluidPage(
       }
 ")),
     tags$script(HTML("
-      // rhandsontable can mis-measure width when rendered in hidden tabs.
-      // Refresh dimensions whenever a tab becomes visible.
-      function refreshAllHotTables() {
-        if (!window.HTMLWidgets || !HTMLWidgets.find) return;
-        document.querySelectorAll('.rhandsontable').forEach(function(el) {
-          var widget = HTMLWidgets.find('#' + el.id);
-          if (widget && widget.hot) {
-            try {
-              widget.hot.render();
-              if (widget.hot.refreshDimensions) widget.hot.refreshDimensions();
-            } catch (e) {}
-          }
-        });
-        window.dispatchEvent(new Event('resize'));
-      }
-
-      document.addEventListener('shown.bs.tab', function() {
-        setTimeout(refreshAllHotTables, 80);
-      });
-
-      // Refresh handsontables whenever the Custom Scenario Builder opens,
-      // since offcanvas content has zero width until it slides in.
-      document.addEventListener('shown.bs.offcanvas', function() {
-        setTimeout(refreshAllHotTables, 80);
-      });
-
-      // Also refresh when an accordion panel expands inside the drawer.
-      document.addEventListener('shown.bs.collapse', function() {
-        setTimeout(refreshAllHotTables, 60);
-      });
-
-      // And when a <details> element toggles open (per-input
-      // Edit-year-by-year disclosure around each handsontable).
-      document.addEventListener('toggle', function(e) {
-        if (e.target && e.target.tagName === 'DETAILS' && e.target.open) {
-          setTimeout(refreshAllHotTables, 60);
-        }
-      }, true);
-
       // Only one Bootstrap popover open at a time. When a popover is
       // about to be shown, hide every other currently-open popover.
       document.addEventListener('show.bs.popover', function(e) {
@@ -533,10 +494,11 @@ ui <- fluidPage(
         selected = "results",
 
         # ======================================================================
-        # INPUTS — removed. The 9 input tables live in an offcanvas drawer
-        # opened by the "Adjust Assumptions" button in the sidebar; see the
-        # drawer definition at the end of this UI. Their rHandsontableOutput
-        # IDs are unchanged, so the server-side render logic still works.
+        # INPUTS — removed. The 9 input categories live in an offcanvas
+        # drawer opened by the Custom Scenario button in the sidebar; see
+        # the drawer definition at the end of this UI. Each category's
+        # "Edit year-by-year" disclosure renders a native numericInput
+        # strip (see year_by_year_input_strip() in blsmm_helpers.R).
         # ======================================================================
 
         # ======================================================================

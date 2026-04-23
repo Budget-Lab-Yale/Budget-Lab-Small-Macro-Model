@@ -308,42 +308,63 @@ bl_brand_overrides_block <- function() {
       padding-bottom: 14px;
     }
 
-    /* ---------- Handsontable scroll-shadow hint ----------
-       The 10-column Baseline/Delta/Level tables overflow narrow screens
-       horizontally. Make the right edge shadowy so users know to scroll. */
-    .rhandsontable,
-    .handsontable .wtHolder {
-      position: relative;
+    /* ---------- Year-by-year native input strip ----------
+       Replaces the former handsontable. 10 cells (FY26..FY35) in a
+       horizontal flex strip; each cell stacks bold FY label / muted
+       baseline / editable numericInput / muted level. Scrolls
+       horizontally on narrow drawer widths. */
+    .blsmm-year-strip {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 2px 4px;
+      margin-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
     }
-    .blsmm-assumptions-drawer .rhandsontable::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 24px;
-      pointer-events: none;
-      background: linear-gradient(to right,
-                                  rgba(255, 255, 255, 0) 0%,
-                                  rgba(255, 255, 255, 0.95) 100%);
-      z-index: 4;
-      opacity: 0;
-      transition: opacity 0.15s ease;
+    .blsmm-year-cell {
+      flex: 0 0 auto;
+      width: 68px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      text-align: center;
     }
-    /* Only show the shadow when the drawer is narrow enough that the
-       table actually overflows. ~600px drawer width covers the table. */
-    @media (max-width: 640px) {
-      .blsmm-assumptions-drawer .rhandsontable::after {
-        opacity: 1;
-      }
-      .blsmm-input-advanced[open]::after {
-        content: '\\2192  Scroll horizontally to see all fiscal years';
-        display: block;
-        font-size: 0.78em;
-        color: var(--bl-muted);
-        font-style: italic;
-        margin-top: 6px;
-      }
+    .blsmm-year-label {
+      font-size: 0.75em;
+      font-weight: 700;
+      color: var(--bl-navy);
+      letter-spacing: 0.02em;
+    }
+    .blsmm-year-baseline,
+    .blsmm-year-level {
+      font-size: 0.78em;
+      color: var(--bl-muted);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+      min-height: 1.2em;
+    }
+    .blsmm-year-level {
+      font-weight: 600;
+      color: var(--bl-body);
+    }
+    .blsmm-year-strip .form-group,
+    .blsmm-year-strip .shiny-input-container {
+      margin-bottom: 0;
+      width: 100%;
+    }
+    .blsmm-year-strip input[type=number] {
+      font-size: 0.9em;
+      padding: 4px 6px;
+      text-align: right;
+      width: 100%;
+      font-variant-numeric: tabular-nums;
+      border-radius: 4px;
+    }
+    .blsmm-year-strip input[type=number]:focus {
+      outline: 2px solid var(--bl-blue);
+      outline-offset: 1px;
+      border-color: var(--bl-blue);
     }
 
     /* ---------- App shell & Controls drawer ----------

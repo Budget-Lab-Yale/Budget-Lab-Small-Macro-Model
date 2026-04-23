@@ -332,22 +332,69 @@ BLSMM_SHAPE_CHOICES_SHOCK <- c(
   "Temporary (3 years)" = "temporary3"
 )
 
+#' Render the year-by-year native input strip for one input category.
+#'
+#' Returns a horizontal strip of 10 cells (FY2026..FY2035). Each cell
+#' shows:
+#'   - FY label (bold)
+#'   - baseline value (muted, via textOutput)
+#'   - editable numericInput for the user delta
+#'   - level = baseline + delta (muted, via textOutput)
+#'
+#' Server input ids:  delta_<table_id>_fy<yyyy>
+#' Server output ids: baseline_<table_id>_fy<yyyy>,
+#'                    level_<table_id>_fy<yyyy>
+#' where <table_id> is `paste0("table_", table_key)`, matching the
+#' names(table_state) keys the server uses.
+year_by_year_input_strip <- function(table_key, n_years = N_PERIODS,
+                                     start_year = 2026) {
+  table_id <- paste0("table_", table_key)
+  years <- seq(start_year, start_year + n_years - 1)
+
+  cells <- lapply(years, function(yr) {
+    suffix <- paste0(table_id, "_fy", yr)
+    shiny::div(
+      class = "blsmm-year-cell",
+      shiny::div(class = "blsmm-year-label", paste0("FY", yr %% 100)),
+      shiny::div(
+        class = "blsmm-year-baseline",
+        shiny::textOutput(paste0("baseline_", suffix), inline = TRUE)
+      ),
+      shiny::numericInput(
+        inputId = paste0("delta_", suffix),
+        label   = NULL,
+        value   = 0,
+        step    = 0.01,
+        width   = "100%"
+      ),
+      shiny::div(
+        class = "blsmm-year-level",
+        shiny::textOutput(paste0("level_", suffix), inline = TRUE)
+      )
+    )
+  })
+
+  shiny::div(class = "blsmm-year-strip", cells)
+}
+
 #' Render a simple-mode input card for the Assumptions drawer
 #'
 #' Generates the per-input UI block: heading + example text, a shape
 #' selector and magnitude input (side-by-side under wide drawer, stacked
 #' under narrow), a small computed preview, and an expandable
-#' "Edit year-by-year" details block that hosts the existing
-#' rHandsontableOutput so advanced users can tweak individual cells.
+#' "Edit year-by-year" details block that hosts the native numeric-input
+#' strip (see year_by_year_input_strip()).
 #'
 #' Server inputs created (example for `table_key = "productivity"`):
-#'   input$shape_productivity, input$magnitude_productivity
+#'   input$shape_productivity, input$magnitude_productivity,
+#'   input$delta_table_productivity_fy2026 ... _fy2035
 #' Server outputs expected:
 #'   output$preview_productivity (text rendering of the computed delta)
-#'   output$table_productivity (handsontable, unchanged)
+#'   output$baseline_table_productivity_fy2026..fy2035
+#'   output$level_table_productivity_fy2026..fy2035
 #'
-#' @param table_key Short key used to derive input/output ids and the
-#'   rHandsontableOutput id (prefixed "table_").
+#' @param table_key Short key used to derive input/output ids. The
+#'   per-year strip uses the full table_id (prefixed "table_").
 #' @param label Heading above the controls.
 #' @param units Short units label placed after "Magnitude".
 #' @param example Short example line shown in muted text.
@@ -360,7 +407,6 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL,
   shape_id <- paste0("shape_",     table_key)
   mag_id   <- paste0("magnitude_", table_key)
   prev_id  <- paste0("preview_",   table_key)
-  table_id <- paste0("table_",     table_key)
 
   # Default selection: the first choice in the supplied list.
   default_shape <- unname(shape_choices[1])
@@ -399,7 +445,7 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL,
       shiny::textOutput(prev_id, inline = TRUE)
     ),
 
-    # Advanced: expandable handsontable for year-by-year edits.
+    # Advanced: expandable year-by-year native-input strip.
     shiny::tags$details(
       class = "blsmm-input-advanced",
       shiny::tags$summary(
@@ -407,8 +453,7 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL,
         style = "cursor: pointer; margin-top: 8px;",
         "Edit year-by-year"
       ),
-      shiny::br(),
-      rhandsontable::rHandsontableOutput(table_id, height = "180px")
+      year_by_year_input_strip(table_key)
     )
   )
 }

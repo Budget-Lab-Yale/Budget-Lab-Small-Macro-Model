@@ -14,7 +14,6 @@ library(DT)
 library(dplyr)
 library(openxlsx)
 library(shinyjs)
-library(rhandsontable)
 
 # Source model modules
 source('model/v1_8/parameters.R')

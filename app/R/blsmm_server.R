@@ -225,61 +225,20 @@ server <- function(input, output, session) {
     if (!tables_initialized()) initialize_tables(force = TRUE)
   })
 
-  for (table_id in table_ids) {
-    local({
-      id <- table_id
-      output[[id]] <- renderRHandsontable({
-        req(table_state[[id]])
-        tbl <- rhandsontable(
-          table_state[[id]],
-          rowHeaders = NULL,
-          height = 180,
-          readOnly = TRUE
-        ) %>%
-          hot_col("Row", readOnly = TRUE)
-
-        # Keep only User Delta row editable (yellow row); baseline/level stay locked.
-        for (col_idx in seq(TABLE_FIRST_DATA_COL, ncol(table_state[[id]]))) {
-          tbl <- tbl %>% hot_cell(row = TABLE_ROW_DELTA, col = col_idx, readOnly = FALSE)
-        }
-
-        tbl
-      })
-    })
-  }
-
-  get_current_table_data <- function(table_id) {
-    hot_data <- hot_to_r(input[[table_id]])
-    if (is.null(hot_data)) table_state[[table_id]] else hot_data
-  }
-
-  # Force Handsontable widgets to compute size/render when tabs change.
-  refresh_hot_tables <- function() {
-    shinyjs::runjs(
-      "setTimeout(function() {
-         window.dispatchEvent(new Event('resize'));
-         if (window.HTMLWidgets && HTMLWidgets.staticRender) {
-           HTMLWidgets.staticRender();
-         }
-       }, 50);"
-    )
-  }
-
-  session$onFlushed(function() {
-    refresh_hot_tables()
-  }, once = TRUE)
-
-  observeEvent(input$main_tabs, {
-    refresh_hot_tables()
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$input_subtabs, {
-    refresh_hot_tables()
-  }, ignoreInit = TRUE)
-
   # ============================================================================
-  # REACTIVE OBSERVERS - UPDATE LEVEL ROWS
+  # YEAR-BY-YEAR INPUT STRIPS
+  # ----------------------------------------------------------------------------
+  # Each category's "Edit year-by-year" disclosure contains a strip of 10
+  # native numericInputs named `delta_<table_id>_fy<yyyy>` plus matching
+  # baseline and level textOutputs. table_state[[table_id]] remains the
+  # single source of truth:
+  #   - user edits to the inputs flow UP to table_state (Direction A)
+  #   - programmatic writes to table_state (presets / reset / simple mode)
+  #     flow DOWN to the inputs via refresh_delta_inputs() (Direction B)
   # ============================================================================
+
+  # Helper to recompute the Level row from Baseline + Delta after any
+  # change to the delta values. Kept out of the observers for reuse.
   update_table_level_row <- function(hot_data) {
     if (is.null(hot_data)) return(hot_data)
     fy_cols <- seq(TABLE_FIRST_DATA_COL, ncol(hot_data))
@@ -289,65 +248,93 @@ server <- function(input, output, session) {
     hot_data
   }
 
+  # Direction B: push table_state values into each numericInput. Called
+  # after any programmatic write to table_state (presets, reset, simple
+  # mode). Opens the 1.5s echo guard first so the resulting input-change
+  # events do not clear active_preset.
+  refresh_delta_inputs <- function() {
+    preset_apply_time(as.numeric(Sys.time()))
+    for (id in table_ids) {
+      tbl <- isolate(table_state[[id]])
+      if (is.null(tbl)) next
+      for (yr in seq_len(N_PERIODS)) {
+        val <- suppressWarnings(as.numeric(
+          tbl[TABLE_ROW_DELTA, TABLE_FIRST_DATA_COL + yr - 1]
+        ))
+        updateNumericInput(session,
+                           paste0("delta_", id, "_fy", 2025 + yr),
+                           value = if (is.na(val)) 0 else val)
+      }
+    }
+  }
+
+  # Baseline + level textOutputs — 90 each. Baseline values don't change
+  # after the baseline data loads, but we render from table_state anyway
+  # so initialize_tables() picking up new baseline data propagates.
   for (table_id in table_ids) {
-    local({
-      id <- table_id
-      debounced_table_input <- debounce(reactive(input[[id]]), millis = 150)
-      observeEvent(debounced_table_input(), {
-        hot_data <- hot_to_r(debounced_table_input())
-        req(hot_data)
-        prev_data <- isolate(table_state[[id]])
+    for (yr in seq_len(N_PERIODS)) {
+      local({
+        id <- table_id
+        yyr <- yr
+        col <- TABLE_FIRST_DATA_COL + yyr - 1
+        suffix <- paste0(id, "_fy", 2025 + yyr)
+        output[[paste0("baseline_", suffix)]] <- renderText({
+          tbl <- table_state[[id]]
+          if (is.null(tbl)) return("")
+          sprintf("%.2f", as.numeric(tbl[TABLE_ROW_BASELINE, col]))
+        })
+        output[[paste0("level_", suffix)]] <- renderText({
+          tbl <- table_state[[id]]
+          if (is.null(tbl)) return("")
+          sprintf("%.2f", as.numeric(tbl[TABLE_ROW_LEVEL, col]))
+        })
+      })
+    }
+  }
 
-        # Enforce numeric-only inputs in User Delta row:
-        # revert non-numeric (non-blank) entries to the previous value.
-        fy_cols <- seq(TABLE_FIRST_DATA_COL, TABLE_FIRST_DATA_COL + N_PERIODS - 1)
-        raw_vals <- as.character(unlist(hot_data[TABLE_ROW_DELTA, fy_cols], use.names = FALSE))
-        raw_vals[is.na(raw_vals)] <- ""
-        trimmed <- trimws(raw_vals)
-        parsed_vals <- suppressWarnings(as.numeric(trimmed))
-        blank_mask <- trimmed == ""
-        invalid_idx <- which(!blank_mask & is.na(parsed_vals))
+  # Direction A: user edits to any delta_* input write that year's value
+  # into table_state, recompute the level row, and (outside the echo
+  # guard) mark the scenario dirty and clear active_preset.
+  for (table_id in table_ids) {
+    for (yr in seq_len(N_PERIODS)) {
+      local({
+        id <- table_id
+        yyr <- yr
+        col <- TABLE_FIRST_DATA_COL + yyr - 1
+        input_id <- paste0("delta_", id, "_fy", 2025 + yyr)
 
-        if (length(invalid_idx) > 0 && !is.null(prev_data)) {
-          hot_data[TABLE_ROW_DELTA, fy_cols[invalid_idx]] <- prev_data[TABLE_ROW_DELTA, fy_cols[invalid_idx]]
-          showNotification(
-            paste0(
-              "Only numeric values are allowed in User Delta cells. ",
-              "Invalid entries were reverted in ",
-              paste(fy_labels[invalid_idx], collapse = ", "),
-              "."
-            ),
-            type = "warning",
-            duration = 4
-          )
-        }
+        observeEvent(input[[input_id]], {
+          raw <- input[[input_id]]
+          new_val <- if (is.null(raw) || is.na(raw)) 0 else as.numeric(raw)
 
-        table_state[[id]] <- update_table_level_row(hot_data)
+          tbl <- isolate(table_state[[id]])
+          if (is.null(tbl)) return(invisible())
 
-        # Ignore startup no-op table events so initial status remains Complete.
-        parsed <- parse_table_deltas(hot_data, N_PERIODS)
-        has_nonzero_delta <- any(abs(parsed$values) > 1e-9, na.rm = TRUE)
-        has_invalid_delta <- length(parsed$invalid_idx) > 0
-        is_initial_baseline_state <- identical(run_state(), "solved") &&
-          identical(run_state_note(), "Baseline loaded")
+          cur_val <- suppressWarnings(as.numeric(tbl[TABLE_ROW_DELTA, col]))
+          if (isTRUE(all.equal(cur_val, new_val))) return(invisible())
 
-        if (!(is_initial_baseline_state && !has_nonzero_delta && !has_invalid_delta)) {
-          # A year-by-year edit made by the USER should clear any active
-          # preset (so Custom Scenario can light up instead). But this
-          # observer also fires when a preset programmatically writes to
-          # table_state (→ rHandsontable re-render → input change →
-          # debounce). Guard with a 1.5s window after the last preset
-          # application. Rapid AI Adoption updates 3 tables via
-          # apply_multi_preset; each triggers refresh_hot_tables() with
-          # a 50ms setTimeout plus the observer's 150ms debounce, and
-          # the last-arriving echo could exceed shorter windows.
-          if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 1.5) {
-            active_preset(NULL)
+          tbl[TABLE_ROW_DELTA, col] <- new_val
+          table_state[[id]] <- update_table_level_row(tbl)
+
+          is_initial_baseline_state <-
+            identical(isolate(run_state()), "solved") &&
+            identical(isolate(run_state_note()), "Baseline loaded")
+          has_nonzero_delta <- any(abs(suppressWarnings(as.numeric(
+            table_state[[id]][TABLE_ROW_DELTA,
+                              seq(TABLE_FIRST_DATA_COL,
+                                  TABLE_FIRST_DATA_COL + N_PERIODS - 1)]
+          ))) > 1e-9, na.rm = TRUE)
+
+          if (!(is_initial_baseline_state && !has_nonzero_delta)) {
+            if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 1.5) {
+              active_preset(NULL)
+            }
+            set_run_state("dirty",
+                          "Inputs Changed. Run Simulation to Update Results")
           }
-          set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
-        }
-      }, ignoreInit = TRUE)
-    })
+        }, ignoreInit = TRUE)
+      })
+    }
   }
 
   observeEvent(input$expectations_speed, {
@@ -363,35 +350,11 @@ server <- function(input, output, session) {
 
   collect_table_deltas <- function(require_valid = TRUE) {
     deltas <- list()
-    invalid_messages <- character(0)
-
     for (table_id in table_ids) {
-      current_data <- get_current_table_data(table_id)
-      parsed <- parse_table_deltas(current_data, N_PERIODS)
+      tbl <- table_state[[table_id]]
+      parsed <- parse_table_deltas(tbl, N_PERIODS)
       deltas[[table_id]] <- parsed$values
-
-      if (require_valid && length(parsed$invalid_idx) > 0) {
-        bad_years <- fy_labels[parsed$invalid_idx]
-        invalid_messages <- c(
-          invalid_messages,
-          sprintf("%s: %s", table_specs[[table_id]]$label, paste(bad_years, collapse = ", "))
-        )
-      }
     }
-
-    if (require_valid && length(invalid_messages) > 0) {
-      showNotification(
-        paste0(
-          "Invalid numeric entries in User Delta rows:\n",
-          paste(invalid_messages, collapse = "\n")
-        ),
-        type = "error",
-        duration = 8
-      )
-      set_run_state("error", "Invalid numeric input in tables")
-      return(NULL)
-    }
-
     deltas
   }
 
@@ -582,7 +545,7 @@ server <- function(input, output, session) {
   # Reset button handler
   observeEvent(input$reset_inputs, {
     initialize_tables(force = TRUE)
-    refresh_hot_tables()
+    refresh_delta_inputs()
 
     # Reset simple-mode inputs too so the drawer UI matches the zeroed
     # tables. The resulting change-events fire the simple observers, which
@@ -621,7 +584,7 @@ server <- function(input, output, session) {
   # Helper function to reset all tables to baseline
   reset_all_tables_to_baseline <- function() {
     initialize_tables(force = TRUE)
-    refresh_hot_tables()
+    refresh_delta_inputs()
   }
 
   # Helper function to update a table with shocks
@@ -640,7 +603,7 @@ server <- function(input, output, session) {
     table_data[TABLE_ROW_LEVEL, fy_cols] <- baseline_vals + shock_values
 
     table_state[[table_name]] <- table_data
-    refresh_hot_tables()
+    refresh_delta_inputs()
   }
 
   apply_single_preset <- function(table_name, shock_values) {
@@ -751,8 +714,9 @@ server <- function(input, output, session) {
       })
 
       # Observer: write simple-mode delta into the table when user edits
-      # shape or magnitude. Overwrites any previous values (by design —
-      # simple mode is an override layer).
+      # shape or magnitude. update_table_with_shocks() already writes
+      # the new delta into table_state and calls refresh_delta_inputs()
+      # to sync the per-year numericInput strip.
       observeEvent(
         list(input[[shape_id]], input[[mag_id]]),
         ignoreInit = TRUE,
@@ -766,7 +730,7 @@ server <- function(input, output, session) {
           # can light up.
           active_preset(NULL)
           set_run_state("dirty",
-                        "Inputs changed. Press Run to update results")
+                        "Inputs Changed. Run Simulation to Update Results")
         }
       )
     })
