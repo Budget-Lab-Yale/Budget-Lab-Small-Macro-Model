@@ -60,11 +60,6 @@ server <- function(input, output, session) {
     )
   })
 
-  is_dark_mode <- reactive({
-    mode <- input$dark_mode
-    isTRUE(mode) || identical(mode, "dark")
-  })
-
   # Plot theme pulls from Budget Lab design tokens (app/R/blsmm_theme.R).
   #
   # Line-color rule: baseline and scenario of the SAME variable use the
@@ -73,7 +68,7 @@ server <- function(input, output, session) {
   # variable plots (10Y nominal vs real; r* vs Fed Funds) use blue for
   # the primary pair and brand amber for the secondary pair.
   plot_theme <- reactive({
-    pal <- if (is_dark_mode()) bl_colors_dark else bl_colors
+    pal <- bl_colors
     list(
       paper_bg       = pal$bg,
       plot_bg        = pal$bg,
@@ -82,40 +77,27 @@ server <- function(input, output, session) {
       grid           = pal$gridline,
       grid_secondary = pal$bg_subtle,
       zero           = pal$border,
-      legend_bg      = if (is_dark_mode()) "rgba(26, 29, 35, 0.85)"
-                       else "rgba(255, 255, 255, 0.9)",
+      legend_bg      = "rgba(255, 255, 255, 0.9)",
       zero_line      = pal$muted,
       # Primary variable pair: both baseline and scenario in brand blue.
       line_baseline  = pal$blue,
       line_scenario  = pal$blue,
       # Secondary variable pair (2-pair charts only): brand amber.
       line_secondary = pal$orange,
-      debt_fill      = if (is_dark_mode()) "rgba(111, 163, 230, 0.25)"
-                       else "rgba(40, 109, 192, 0.18)",
+      debt_fill      = "rgba(40, 109, 192, 0.18)",
       hover_bg       = pal$navy
     )
   })
 
   dt_deviation_palette <- reactive({
-    if (is_dark_mode()) {
-      list(
-        neg_bg = "rgba(248, 81, 73, 0.22)",
-        zero_bg = "rgba(255, 255, 255, 0.03)",
-        pos_bg = "rgba(63, 185, 80, 0.22)",
-        neg_fg = "#ff7b72",
-        zero_fg = "#c9d1d9",
-        pos_fg = "#7ee787"
-      )
-    } else {
-      list(
-        neg_bg = "rgba(220, 53, 69, 0.15)",
-        zero_bg = "rgba(248, 249, 250, 0)",
-        pos_bg = "rgba(40, 167, 69, 0.15)",
-        neg_fg = "#dc3545",
-        zero_fg = "#6c757d",
-        pos_fg = "#28a745"
-      )
-    }
+    list(
+      neg_bg  = "rgba(220, 53, 69, 0.15)",
+      zero_bg = "rgba(248, 249, 250, 0)",
+      pos_bg  = "rgba(40, 167, 69, 0.15)",
+      neg_fg  = "#dc3545",
+      zero_fg = "#6c757d",
+      pos_fg  = "#28a745"
+    )
   })
 
   # ============================================================================

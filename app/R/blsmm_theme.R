@@ -50,41 +50,6 @@ bl_colors <- list(
   cat7 = "#1890a0"   # teal
 )
 
-# Dark-mode palette
-bl_colors_dark <- list(
-  navy          = "#4a6bd9",  # lighter navy for dark bg
-  blue          = "#6fa3e6",
-  orange        = "#f5a623",
-
-  body          = "#d5d8dd",
-  muted         = "#8a8f96",
-  heading       = "#f0f0f5",
-
-  bg            = "#1a1d23",
-  bg_subtle     = "#23272e",
-  bg_highlight  = "#2a3b5c",
-  border        = "#3a3f47",
-  gridline      = "#2a2e35",
-
-  row_baseline  = "#1f2937",
-  row_delta     = "#6b5d2f",
-  row_level     = "#1f2937",
-
-  status_ready   = "#3a3f47",
-  status_dirty   = "#6b5d2f",
-  status_running = "#1e3a5f",
-  status_solved  = "#1f4c3d",
-  status_error   = "#5a1f1f",
-
-  cat1 = "#6fa3e6",
-  cat2 = "#9ed142",
-  cat3 = "#a78bf0",
-  cat4 = "#e89c5c",
-  cat5 = "#48c97a",
-  cat6 = "#e084a8",
-  cat7 = "#5abccb"
-)
-
 # Font stacks. Sans throughout: Budget Lab's website pairs sans body with
 # serif headings (YaleNew), but in this app both use the same sans stack
 # for a tighter, more data-dashboard feel.
@@ -108,10 +73,9 @@ bl_spacing <- list(
 # Plotly chart theme
 # ------------------------------------------------------------------------------
 # Returns a list suitable for splatting into plotly::layout(..., !!!bl_plotly_theme()).
-# Pass dark = TRUE to get the dark-mode variant.
 # ------------------------------------------------------------------------------
-bl_plotly_theme <- function(dark = FALSE) {
-  pal <- if (dark) bl_colors_dark else bl_colors
+bl_plotly_theme <- function() {
+  pal <- bl_colors
 
   list(
     font = list(
@@ -169,8 +133,7 @@ bl_css_vars_block <- function() {
     "  --bl-container-pad: ", bl_spacing$container_pad, ";\n",
     "  --bl-shadow: ", bl_spacing$shadow, ";\n",
     "  --bl-shadow-lg: ", bl_spacing$shadow_lg, ";\n",
-    "}\n",
-    "[data-bs-theme='dark'] {\n", to_vars(bl_colors_dark, "bl-"), "\n}"
+    "}"
   )
   shiny::tags$style(shiny::HTML(css))
 }
@@ -235,15 +198,8 @@ bl_brand_overrides_block <- function() {
       font-weight: 700;
       letter-spacing: -0.01em;
     }
-    [data-bs-theme='dark'] h1, [data-bs-theme='dark'] h2,
-    [data-bs-theme='dark'] h3, [data-bs-theme='dark'] h4,
-    [data-bs-theme='dark'] h5, [data-bs-theme='dark'] h6 {
-      color: var(--bl-heading);
-    }
     a { color: var(--bl-blue); }
     a:hover, a:focus { color: var(--bl-navy); }
-    [data-bs-theme='dark'] a:hover,
-    [data-bs-theme='dark'] a:focus { color: var(--bl-blue); }
 
     /* Primary button: navy with white text */
     .btn-primary,
@@ -402,16 +358,6 @@ bl_brand_overrides_block <- function() {
       color: var(--bl-body) !important;
       margin-top: 6px;
     }
-    [data-bs-theme='dark'] .blsmm-kpi-card {
-      background-color: var(--bl-bg-subtle) !important;
-      border-left-color: var(--bl-blue) !important;
-    }
-    [data-bs-theme='dark'] .blsmm-kpi-card .value-box-value {
-      color: var(--bl-blue) !important;
-    }
-    [data-bs-theme='dark'] .blsmm-kpi-card .value-box-showcase {
-      color: var(--bl-blue) !important;
-    }
 
     /* ---------- Assumptions drawer (offcanvas) ----------
        Wider than default so 10 columns of handsontable fit comfortably;
@@ -433,10 +379,6 @@ bl_brand_overrides_block <- function() {
       background-color: var(--bl-bg-highlight);
       color: var(--bl-navy);
       box-shadow: none;
-    }
-    [data-bs-theme='dark'] .blsmm-assumptions-drawer .accordion-button:not(.collapsed) {
-      background-color: var(--bl-bg-subtle);
-      color: var(--bl-blue);
     }
     .blsmm-assumptions-drawer .accordion-item {
       border-color: var(--bl-border);
@@ -485,9 +427,6 @@ bl_brand_overrides_block <- function() {
     }
     .blsmm-input-advanced[open] summary {
       margin-bottom: 8px;
-    }
-    [data-bs-theme='dark'] .blsmm-input-card h5 {
-      color: var(--bl-blue);
     }
 
     /* Preset buttons: active state (sticky highlight until another preset

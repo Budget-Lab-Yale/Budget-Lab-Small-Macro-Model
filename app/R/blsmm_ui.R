@@ -44,14 +44,7 @@ ui <- fluidPage(
         border-radius: 8px;
         border: 2px solid #ddd;
       }
-
-      /* Dark mode base styling */
-      [data-bs-theme='dark'] .sse-display {
-        border-color: #4b5563;
-        color: #e5e7eb;
-      }
-
-      /* Light mode colors */
+/* Light mode colors */
       .sse-solved {
         background-color: #d4edda;
         color: #155724;
@@ -64,19 +57,6 @@ ui <- fluidPage(
         border-color: #ffeaa7;
       }
 
-      /* Dark mode colors - darker backgrounds with lighter text */
-      [data-bs-theme='dark'] .sse-solved {
-        background-color: #1e4620;
-        color: #a8e6a8 !important;
-        border-color: #2d6930;
-      }
-
-      [data-bs-theme='dark'] .sse-not-solved {
-        background-color: #4d3800;
-        color: #ffdf80 !important;
-        border-color: #665000;
-      }
-
       /* Input table styling */
       .handsontable td {
         text-align: right;
@@ -86,59 +66,7 @@ ui <- fluidPage(
         color: #999;
       }
 
-      /* Dark mode table styling (all input/output tables) */
-      html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(2) td {
-        background-color: #6B5D2F !important;
-        color: #FEFCE8 !important;
-      }
-      html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(1) td,
-      html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(3) td {
-        background-color: #1F2937 !important;
-        color: #D1D5DB !important;
-      }
-      html[data-bs-theme='dark'] .handsontable tbody tr td:first-child {
-        background-color: #374151 !important;
-        color: #F3F4F6 !important;
-      }
-      html[data-bs-theme='dark'] .handsontable td,
-      html[data-bs-theme='dark'] .handsontable th {
-        border-color: #4b5563 !important;
-      }
-      html[data-bs-theme='dark'] .handsontable .htDimmed {
-        color: #b6bec9 !important;
-      }
-
-      /* Dark mode DataTables styling */
-      html[data-bs-theme='dark'] table.dataTable,
-      html[data-bs-theme='dark'] table.dataTable tbody tr,
-      html[data-bs-theme='dark'] table.dataTable tbody td,
-      html[data-bs-theme='dark'] table.dataTable thead th {
-        background-color: #1f2630 !important;
-        color: #e9ecef !important;
-        border-color: #3a424a !important;
-      }
-      html[data-bs-theme='dark'] table.dataTable.stripe tbody tr.odd,
-      html[data-bs-theme='dark'] table.dataTable.display tbody tr.odd {
-        background-color: #242d37 !important;
-      }
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_info,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_length,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_filter,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_processing {
-        color: #c9d1d9 !important;
-      }
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate .paginate_button {
-        color: #c9d1d9 !important;
-      }
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate .paginate_button.current,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-        background: #2f81f7 !important;
-        color: #ffffff !important;
-        border-color: #2f81f7 !important;
-      }
-
-      /* Fiscal year note */
+/* Fiscal year note */
       .fy-note {
         font-size: 0.875em;
         color: #666;
@@ -146,11 +74,7 @@ ui <- fluidPage(
         margin-top: -8px;
         margin-bottom: 8px;
       }
-      html[data-bs-theme='dark'] .fy-note {
-        color: #9ca3af;
-      }
-
-      /* Run status pill */
+/* Run status pill */
       .run-status {
         font-family: monospace;
         font-size: 0.875em;
@@ -165,77 +89,36 @@ ui <- fluidPage(
       .run-running { background: #cfe2ff; color: #084298; border-color: #9ec5fe; }
       .run-solved { background: #d1e7dd; color: #0f5132; border-color: #a3cfbb; }
       .run-error { background: #f8d7da; color: #842029; border-color: #f1aeb5; }
-
-      /* Dark mode run status pills */
-      html[data-bs-theme='dark'] .run-ready { background: #374151; color: #d1d5db; border-color: #4b5563; }
-      html[data-bs-theme='dark'] .run-dirty { background: #78350f; color: #fcd34d; border-color: #a16207; }
-      html[data-bs-theme='dark'] .run-running { background: #1e3a8a; color: #93c5fd; border-color: #2563eb; }
-      html[data-bs-theme='dark'] .run-solved { background: #14532d; color: #86efac; border-color: #166534; }
-      html[data-bs-theme='dark'] .run-error { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
-
-      /* Muted text color class */
+/* Muted text color class */
       .text-muted-custom {
         color: #666;
       }
-      html[data-bs-theme='dark'] .text-muted-custom {
-        color: #9ca3af;
-      }
-
-      /* Link color class */
+/* Link color class */
       .text-link {
         color: #0066cc;
       }
-      html[data-bs-theme='dark'] .text-link {
-        color: #60a5fa;
-      }
-
-      /* Warning text color */
+/* Warning text color */
       .text-warning-custom {
         color: #cc0000;
       }
-      html[data-bs-theme='dark'] .text-warning-custom {
-        color: #f87171;
-      }
-
-      /* Info box backgrounds */
+/* Info box backgrounds */
       .bg-info-light {
         background-color: #f8f9fa;
       }
-      html[data-bs-theme='dark'] .bg-info-light {
-        background-color: #1f2937;
-      }
-
-      .bg-blue-light {
+.bg-blue-light {
         background-color: #e7f3ff;
         border-left: 4px solid #0066cc;
       }
-      html[data-bs-theme='dark'] .bg-blue-light {
-        background-color: #1e3a5f;
-        border-left: 4px solid #3b82f6;
-      }
-
-      .bg-yellow-light {
+.bg-yellow-light {
         background-color: #fff9e6;
       }
-      html[data-bs-theme='dark'] .bg-yellow-light {
-        background-color: #3f2f1a;
-      }
-
-      .bg-blue-pale {
+.bg-blue-pale {
         background-color: #f0f8ff;
       }
-      html[data-bs-theme='dark'] .bg-blue-pale {
-        background-color: #1e293b;
-      }
-
-      .bg-red-light {
+.bg-red-light {
         background-color: #fff0f0;
       }
-      html[data-bs-theme='dark'] .bg-red-light {
-        background-color: #3f1f1f;
-      }
-
-      /* SSE Display Box */
+/* SSE Display Box */
       .sse-box {
         font-family: monospace;
         font-size: 0.875em;
@@ -244,55 +127,7 @@ ui <- fluidPage(
         border-radius: 4px;
         border: 1px solid #dee2e6;
       }
-      html[data-bs-theme='dark'] .sse-box {
-        background: #2b3138;
-        border-color: #4b5563;
-        color: #e9ecef;
-      }
-
-      /* Dark mode button improvements */
-      html[data-bs-theme='dark'] .btn-outline-primary {
-        color: #60a5fa;
-        border-color: #3b82f6;
-        background-color: rgba(59, 130, 246, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-primary:hover {
-        color: #ffffff;
-        background-color: #3b82f6;
-        border-color: #3b82f6;
-      }
-      html[data-bs-theme='dark'] .btn-outline-danger {
-        color: #f87171;
-        border-color: #dc2626;
-        background-color: rgba(220, 38, 38, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-danger:hover {
-        color: #ffffff;
-        background-color: #dc2626;
-        border-color: #dc2626;
-      }
-      html[data-bs-theme='dark'] .btn-outline-success {
-        color: #86efac;
-        border-color: #16a34a;
-        background-color: rgba(22, 163, 74, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-success:hover {
-        color: #ffffff;
-        background-color: #16a34a;
-        border-color: #16a34a;
-      }
-      html[data-bs-theme='dark'] .btn-outline-warning {
-        color: #fcd34d;
-        border-color: #ca8a04;
-        background-color: rgba(202, 138, 4, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-warning:hover {
-        color: #000000;
-        background-color: #fbbf24;
-        border-color: #ca8a04;
-      }
-
-      /* Sidebar section styling for visual separation */
+/* Sidebar section styling for visual separation */
       .sidebar-section {
         padding: 16px;
         margin-bottom: 16px;
@@ -300,12 +135,7 @@ ui <- fluidPage(
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
       }
-      html[data-bs-theme='dark'] .sidebar-section {
-        background-color: #1f2937;
-        border-color: #374151;
-      }
-
-      .sidebar-section h4 {
+.sidebar-section h4 {
         margin-top: 0;
         margin-bottom: 16px;
         font-size: 1.125em;
@@ -352,18 +182,7 @@ ui <- fluidPage(
       .nav-tabs .nav-link[data-value='dashboard']:not(.active) {
         background-color: rgba(0, 102, 204, 0.05);
       }
-
-      /* Dark mode support for primary tabs */
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='inputs']:not(.active),
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='dashboard']:not(.active) {
-        background-color: rgba(96, 165, 250, 0.1);
-      }
-
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='inputs'].active,
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='dashboard'].active {
-        border-bottom: 3px solid #60a5fa;
-      }
-    ")),
+")),
     tags$script(HTML("
       // rhandsontable can mis-measure width when rendered in hidden tabs.
       // Refresh dimensions whenever a tab becomes visible.
@@ -453,17 +272,12 @@ ui <- fluidPage(
 
   tags$a(href = "#main-content", class = "skip-link", "Skip to main content"),
 
-  # Application title with dark mode toggle
-  fluidRow(
-    column(10,
-      h2("The Budget Lab's Small Macro Model (BLSMM)"),
-      h4("Interactive Policy Simulation Tool", class = "text-muted-custom"),
-      div(class = "fy-note",
-          "Note: All years are fiscal years (October 1 - September 30)")
-    ),
-    column(2, style = "text-align: right; padding-top: 15px;",
-      input_dark_mode(id = "dark_mode", mode = "light")
-    )
+  # Application title
+  div(
+    h2("The Budget Lab's Small Macro Model (BLSMM)"),
+    h4("Interactive Policy Simulation Tool", class = "text-muted-custom"),
+    div(class = "fy-note",
+        "Note: All years are fiscal years (October 1 - September 30)")
   ),
 
   br(),
