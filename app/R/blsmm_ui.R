@@ -794,7 +794,9 @@ ui <- fluidPage(
 
           hr(),
 
-          p(em("For questions or support, contact The Budget Lab at Yale."))
+          p("For questions or support, contact ",
+            tags$a(href = "mailto:budgetlab@yale.edu", "The Budget Lab"),
+            ".")
         )
       )
     )
