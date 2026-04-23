@@ -314,9 +314,13 @@ ui <- fluidPage(
           inst.hide();
         }
       });
-      // When CSB closes, reopen Controls if it was open before. Bootstrap
-      // offcanvas events bubble, so a document-level listener catches it.
-      document.addEventListener('hidden.bs.offcanvas', function(e) {
+      // When CSB closes, reopen Controls if it was open before. Listen
+      // on hide.bs.offcanvas (START of hide animation) rather than
+      // hidden.bs.offcanvas (end), so Controls starts sliding IN while
+      // CSB slides OUT — parallel animations that mirror the smooth
+      // forward transition (Controls -> CSB). Bootstrap offcanvas events
+      // bubble, so a document-level listener catches it.
+      document.addEventListener('hide.bs.offcanvas', function(e) {
         if (!e.target || e.target.id !== 'assumptions_drawer') return;
         if (!__blsmmControlsWasOpen) return;
         __blsmmControlsWasOpen = false;
