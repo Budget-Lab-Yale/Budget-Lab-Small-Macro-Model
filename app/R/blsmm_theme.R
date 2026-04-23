@@ -857,29 +857,31 @@ bl_brand_overrides_block <- function() {
       margin-bottom: 8px;
     }
     /* Advanced: ... secondary disclosures (calculated effects, r*
-       auto-adjustments). Same prominence as Edit year-by-year but
-       muted gray so they read as tertiary to the primary input row. */
-    .blsmm-details-muted > summary {
+       auto-adjustments). Identical to Edit year-by-year (same font
+       size, margins, native disclosure triangle); only the color
+       differs so they read as tertiary. */
+    .blsmm-details-muted summary {
       color: var(--bl-muted);
       font-size: 0.85em;
       margin-top: 4px;
       cursor: pointer;
-      list-style: none;
     }
-    .blsmm-details-muted > summary::-webkit-details-marker {
-      display: none;
-    }
-    .blsmm-details-muted > summary::before {
-      content: '\\25B8';
-      display: inline-block;
-      width: 1em;
-      transition: transform 0.15s ease;
-    }
-    .blsmm-details-muted[open] > summary::before {
-      transform: rotate(90deg);
-    }
-    .blsmm-details-muted[open] > summary {
+    .blsmm-details-muted[open] summary {
       margin-bottom: 8px;
+    }
+
+    /* Checkbox + ? popover row (Fast Expectations Adjustment). Margin
+       above matches the gap between shape/magnitude and Edit
+       year-by-year inside a simple_input_card. */
+    .blsmm-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .blsmm-checkbox-row .form-group,
+    .blsmm-checkbox-row .shiny-input-container {
+      margin-bottom: 0;
     }
 
     /* Preset buttons: active state (sticky highlight until another preset

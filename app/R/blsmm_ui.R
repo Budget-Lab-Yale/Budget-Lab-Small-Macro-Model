@@ -901,10 +901,21 @@ ui <- fluidPage(
             label     = "Inflation Target Delta (pp)",
             example   = "<strong>Example:</strong> +0.50 = Fed raises target from 2.0% to 2.5%."
           ),
-          checkboxInput("expectations_speed",
-                        "Fast Expectations Adjustment",
-                        value = FALSE),
-          helpText("Check if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment."),
+          div(class = "blsmm-checkbox-row",
+            checkboxInput("expectations_speed",
+                          "Fast Expectations Adjustment",
+                          value = FALSE),
+            bslib::popover(
+              trigger = tags$button(
+                type  = "button",
+                class = "blsmm-info-trigger blsmm-info-trigger-inline",
+                `aria-label` = "About Fast Expectations Adjustment",
+                tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
+              ),
+              "Check if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment.",
+              placement = "right"
+            )
+          ),
           hr(),
 
           simple_input_card(
