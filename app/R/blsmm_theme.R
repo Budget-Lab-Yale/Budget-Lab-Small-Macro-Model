@@ -329,13 +329,22 @@ bl_brand_overrides_block <- function() {
       font-size: 0.78em;
       font-weight: 600;
       color: var(--bl-navy);
-      padding-right: 10px;
+      padding: 4px 12px 4px 6px;
       text-align: right;
       white-space: nowrap;
       position: sticky;
       left: 0;
+      /* Solid white bg; box-shadow extends 6px right to cover the
+         column-gap so scrolling year content does not peek through.
+         Full-height grid cell (align-self) so the corner cell covers
+         the FY header row for year cells scrolling left behind it. */
       background: #fff;
-      z-index: 1;
+      box-shadow: 6px 0 0 0 #fff;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      z-index: 2;
     }
     .blsmm-year-label {
       font-size: 0.75em;
@@ -861,7 +870,7 @@ bl_brand_overrides_block <- function() {
       display: none;
     }
     .blsmm-details-muted > summary::before {
-      content: '\25B8';
+      content: '\\25B8';
       display: inline-block;
       width: 1em;
       transition: transform 0.15s ease;

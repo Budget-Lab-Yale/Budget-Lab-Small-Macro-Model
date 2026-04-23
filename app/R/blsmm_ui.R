@@ -856,7 +856,6 @@ ui <- fluidPage(
             units     = "pp of GDP",
             example   = "<strong>Example:</strong> +1.00 = spending increase of 1% of GDP; -1.00 = spending cut.<br><em>Primary outlays exclude interest payments on the debt.</em>"
           ),
-          br(),
 
           tags$details(
             class = "blsmm-details-muted",
