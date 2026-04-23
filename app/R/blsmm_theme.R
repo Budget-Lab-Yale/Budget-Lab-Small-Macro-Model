@@ -391,20 +391,30 @@ bl_brand_overrides_block <- function() {
       }
     }
 
-    /* Inline sidebar look at md+: Bootstrap's responsive offcanvas
-       falls back to display: flex; flex-direction: column; at md+.
-       We add a fixed width, right border, subtle bg tint, and padding
-       so it reads as a sidebar column. */
+    /* Inline sidebar look at md+. Bootstrap's own rules at md+ strip
+       the background to transparent !important and turn .offcanvas-body
+       into a flex row with padding: 0. We need to beat both. */
     @media (min-width: 768px) {
       .blsmm-controls-drawer.offcanvas-md {
         width: 280px;
         flex: 0 0 280px;
         border-right: 1px solid var(--bl-border);
-        background-color: var(--bl-bg-subtle);
+        background-color: var(--bl-bg-subtle) !important;
+        overflow: hidden;
+      }
+      /* Matches Bootstrap's own selector specificity for
+         .offcanvas-md .offcanvas-body so our rules win. */
+      .blsmm-controls-drawer.offcanvas-md .offcanvas-body {
+        display: block;
+        padding: 16px 20px;
+        overflow-y: auto;
+        background-color: transparent;
       }
     }
 
-    /* Body of the drawer / sidebar: consistent padding at every width. */
+    /* Body padding at all widths (mobile & desktop). At md+ the rule
+       above takes over; below md this applies inside the slide-in
+       drawer. */
     .blsmm-controls-body {
       padding: 16px 20px;
     }
