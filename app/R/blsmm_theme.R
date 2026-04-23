@@ -704,6 +704,7 @@ bl_brand_overrides_block <- function() {
     }
     .blsmm-assumptions-drawer .accordion-button {
       font-weight: 600;
+      background-color: #ffffff;
     }
     .blsmm-assumptions-drawer .accordion-button:not(.collapsed) {
       background-color: var(--bl-bg-highlight);
@@ -712,6 +713,71 @@ bl_brand_overrides_block <- function() {
     }
     .blsmm-assumptions-drawer .accordion-item {
       border-color: var(--bl-border);
+      overflow: visible;
+    }
+
+    /* Expand all / Collapse all toolbar row above the accordion */
+    .blsmm-csb-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* Sticky accordion headers — anchor the current section at the top
+       of the scroll container (the offcanvas body) while the body
+       scrolls. Requires a solid background on the button (set above). */
+    .blsmm-assumptions-drawer .accordion-header {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background-color: #ffffff;
+    }
+
+    /* ---------- Per-section color coding for the three input sections ----
+       bslib tags each accordion_panel with a data-value attribute matching
+       the value argument. CSS attribute selectors use unquoted identifiers
+       to keep this valid inside an R double-quoted string. Each section
+       gets a 4 px left border, a colored icon, and a solid tinted
+       open-state header background (10 % accent composited on white) so
+       the sticky header stays opaque while content scrolls behind it. */
+    .blsmm-assumptions-drawer .accordion-item[data-value=growth] {
+      border-left: 4px solid #5e9e00;
+    }
+    .blsmm-assumptions-drawer .accordion-item[data-value=growth] .accordion-button i {
+      color: #5e9e00;
+    }
+    .blsmm-assumptions-drawer .accordion-item[data-value=growth] .accordion-button:not(.collapsed) {
+      background-color: #eff5e6;
+    }
+
+    .blsmm-assumptions-drawer .accordion-item[data-value=fiscal] {
+      border-left: 4px solid #286dc0;
+    }
+    .blsmm-assumptions-drawer .accordion-item[data-value=fiscal] .accordion-button i {
+      color: #286dc0;
+    }
+    .blsmm-assumptions-drawer .accordion-item[data-value=fiscal] .accordion-button:not(.collapsed) {
+      background-color: #e9f0f9;
+    }
+
+    .blsmm-assumptions-drawer .accordion-item[data-value=monetary] {
+      border-left: 4px solid #f28e2b;
+    }
+    .blsmm-assumptions-drawer .accordion-item[data-value=monetary] .accordion-button i {
+      color: #f28e2b;
+    }
+    .blsmm-assumptions-drawer .accordion-item[data-value=monetary] .accordion-button:not(.collapsed) {
+      background-color: #fef4e9;
+    }
+
+    /* Always-visible All Deltas Summary block (promoted out of the accordion) */
+    .blsmm-csb-summary {
+      margin-top: 8px;
+    }
+    .blsmm-csb-summary h5 {
+      color: var(--bl-navy);
+      font-weight: 700;
     }
     .blsmm-assumptions-drawer h5 {
       font-size: 1rem;

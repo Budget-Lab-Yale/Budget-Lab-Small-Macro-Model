@@ -605,6 +605,15 @@ server <- function(input, output, session) {
     set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   })
 
+  # Custom Scenario Builder: Expand all / Collapse all accordion controls.
+  # Purely UI — does not touch table_state, active_preset, or run_state.
+  observeEvent(input$csb_expand_all, {
+    bslib::accordion_panel_open("assumptions_accordion", values = TRUE)
+  })
+  observeEvent(input$csb_collapse_all, {
+    bslib::accordion_panel_close("assumptions_accordion", values = TRUE)
+  })
+
   # ============================================================================
   # PRESET SCENARIOS
   # ============================================================================

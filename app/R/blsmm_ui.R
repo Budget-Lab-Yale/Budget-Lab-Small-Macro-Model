@@ -833,9 +833,16 @@ ui <- fluidPage(
         "Edit yellow cells to create your scenario. Zeros = no change from baseline. ",
         "Close this drawer and click ", strong("Run Simulation"), " when ready."
       ),
-      p(class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 20px;",
+      p(class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 12px;",
         icon("info-circle"), " ",
         strong("\"pp\""), " = percentage points (e.g., a change from 2.0% to 2.5% is +0.5 pp)."
+      ),
+
+      div(class = "blsmm-csb-toolbar",
+        actionButton("csb_expand_all", "Expand all",
+                     class = "btn btn-outline-secondary btn-sm"),
+        actionButton("csb_collapse_all", "Collapse all",
+                     class = "btn btn-outline-secondary btn-sm")
       ),
 
       accordion(
@@ -959,16 +966,15 @@ ui <- fluidPage(
             example   = "Temporary supply shocks (oil prices, pandemic disruptions). <strong>Example:</strong> +1.00 = inflation 1 pp above baseline that year.",
             shape_choices = BLSMM_SHAPE_CHOICES_SHOCK
           )
-        ),
-
-        # ---- All Deltas Summary --------------------------------------------
-        accordion_panel(
-          title = "All Deltas Summary",
-          value = "summary",
-          icon = icon("list-check"),
-          helpText("Read-only view consolidating every user delta across the three sections above. Non-zero values mean the scenario is active."),
-          DTOutput("summary_all_deltas")
         )
+      ),
+
+      # ---- All Deltas Summary (always visible, outside the accordion) ------
+      div(class = "blsmm-csb-summary",
+        hr(),
+        h5(icon("list-check"), " All Deltas Summary"),
+        helpText("All deltas in current scenario"),
+        DTOutput("summary_all_deltas")
       )
     )
   )
