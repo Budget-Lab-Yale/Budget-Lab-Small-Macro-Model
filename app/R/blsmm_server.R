@@ -1497,7 +1497,12 @@ server <- function(input, output, session) {
               rownames = FALSE,
               selection = "none",
               class = 'compact stripe hover') %>%
-      formatRound(columns = 2:(N_PERIODS + 1), digits = 2)
+      formatRound(columns = 2:(N_PERIODS + 1), digits = 2) %>%
+      formatStyle(
+        columns = 2:(N_PERIODS + 1),
+        backgroundColor = styleInterval(c(-1e-9, 1e-9),
+                                        c("#9ec5e8", "transparent", "#9ec5e8"))
+      )
   }
 
   # Render #1: inside the Custom Scenario Builder drawer

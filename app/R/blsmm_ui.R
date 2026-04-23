@@ -670,7 +670,7 @@ ui <- fluidPage(
           value = "scenario_summary",
           tagList(icon("list-check"), " Scenario Summary"),
           br(),
-          helpText("Every user delta across the nine input categories. Non-zero rows/years drive the current scenario. (Same data as the All Deltas Summary panel in the Custom Scenario Builder.)"),
+          helpText("All deltas in current scenario"),
           DTOutput("summary_all_deltas_results")
         ),
 
