@@ -277,6 +277,21 @@ ui <- fluidPage(
         }
       });
 
+      // Clicking the dark .offcanvas-backdrop dismisses every visible
+      // offcanvas. Bootstrap normally wires this itself but misses when
+      // multiple offcanvases share a stack (e.g., the Controls drawer
+      // open at the same time as the Custom Scenario Builder).
+      document.addEventListener('click', function(e) {
+        if (!e.target.classList ||
+            !e.target.classList.contains('offcanvas-backdrop')) return;
+        if (!window.bootstrap || !bootstrap.Offcanvas) return;
+        document.querySelectorAll(
+          '.offcanvas.show, .offcanvas-md.show, .offcanvas-sm.show, .offcanvas-lg.show, .offcanvas-xl.show'
+        ).forEach(function(el) {
+          bootstrap.Offcanvas.getOrCreateInstance(el).hide();
+        });
+      });
+
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refreshAllHotTables, 120);
       });
