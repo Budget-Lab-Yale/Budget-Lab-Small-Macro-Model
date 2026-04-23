@@ -691,27 +691,7 @@ server <- function(input, output, session) {
       k         <- key
       shape_id  <- paste0("shape_",     k)
       mag_id    <- paste0("magnitude_", k)
-      prev_id   <- paste0("preview_",   k)
       tbl_name  <- paste0("table_",     k)
-
-      # Preview: always reflects the current Delta row of the table, so it
-      # stays accurate whether the change came from simple mode, a preset,
-      # or a direct handsontable edit.
-      output[[prev_id]] <- renderText({
-        tbl <- table_state[[tbl_name]]
-        if (is.null(tbl)) return("")
-        fy_cols <- seq(TABLE_FIRST_DATA_COL,
-                       TABLE_FIRST_DATA_COL + N_PERIODS - 1)
-        delta <- suppressWarnings(as.numeric(unlist(
-          tbl[TABLE_ROW_DELTA, fy_cols], use.names = FALSE
-        )))
-        delta[is.na(delta)] <- 0
-        if (all(abs(delta) < 1e-12)) {
-          "No change from baseline."
-        } else {
-          paste0("Applied delta: ", format_shape_preview(delta))
-        }
-      })
 
       # Observer: write simple-mode delta into the table when user edits
       # shape or magnitude. update_table_with_shocks() already writes

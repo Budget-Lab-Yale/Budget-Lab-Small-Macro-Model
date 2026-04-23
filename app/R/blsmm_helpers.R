@@ -334,12 +334,14 @@ BLSMM_SHAPE_CHOICES_SHOCK <- c(
 
 #' Render the year-by-year native input strip for one input category.
 #'
-#' Returns a horizontal strip of 10 cells (FY2026..FY2035). Each cell
-#' shows:
-#'   - FY label (bold)
-#'   - baseline value (muted, via textOutput)
-#'   - editable numericInput for the user delta
-#'   - level = baseline + delta (muted, via textOutput)
+#' Returns a CSS-grid table with 4 rows and 11 columns:
+#'   row 1: (blank) | FY26 | FY27 | ... | FY35   (year headers)
+#'   row 2: Baseline        | baseline values    (textOutput, muted)
+#'   row 3: Input Delta     | numericInputs      (editable)
+#'   row 4: Scenario Level  | level values       (textOutput, muted)
+#'
+#' The leftmost column carries the row labels. Item order in the DOM
+#' is flat row-major; CSS grid auto-places them into the matrix.
 #'
 #' Server input ids:  delta_<table_id>_fy<yyyy>
 #' Server output ids: baseline_<table_id>_fy<yyyy>,
@@ -351,30 +353,53 @@ year_by_year_input_strip <- function(table_key, n_years = N_PERIODS,
   table_id <- paste0("table_", table_key)
   years <- seq(start_year, start_year + n_years - 1)
 
-  cells <- lapply(years, function(yr) {
-    suffix <- paste0(table_id, "_fy", yr)
-    shiny::div(
-      class = "blsmm-year-cell",
-      shiny::div(class = "blsmm-year-label", paste0("FY", yr %% 100)),
+  header_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label")),       # corner
+    lapply(years, function(yr) {
+      shiny::div(class = "blsmm-year-label",
+                 paste0("FY", yr %% 100))
+    })
+  )
+
+  baseline_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label", "Baseline")),
+    lapply(years, function(yr) {
       shiny::div(
         class = "blsmm-year-baseline",
-        shiny::textOutput(paste0("baseline_", suffix), inline = TRUE)
-      ),
+        shiny::textOutput(paste0("baseline_", table_id, "_fy", yr),
+                          inline = TRUE)
+      )
+    })
+  )
+
+  input_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label", "Input Delta")),
+    lapply(years, function(yr) {
       shiny::numericInput(
-        inputId = paste0("delta_", suffix),
+        inputId = paste0("delta_", table_id, "_fy", yr),
         label   = NULL,
         value   = 0,
         step    = 0.01,
         width   = "100%"
-      ),
+      )
+    })
+  )
+
+  level_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label", "Scenario Level")),
+    lapply(years, function(yr) {
       shiny::div(
         class = "blsmm-year-level",
-        shiny::textOutput(paste0("level_", suffix), inline = TRUE)
+        shiny::textOutput(paste0("level_", table_id, "_fy", yr),
+                          inline = TRUE)
       )
-    )
-  })
+    })
+  )
 
-  shiny::div(class = "blsmm-year-strip", cells)
+  shiny::div(
+    class = "blsmm-year-strip",
+    header_row, baseline_row, input_row, level_row
+  )
 }
 
 #' Render a simple-mode input card for the Assumptions drawer
@@ -406,7 +431,6 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL,
                               shape_choices = BLSMM_SHAPE_CHOICES) {
   shape_id <- paste0("shape_",     table_key)
   mag_id   <- paste0("magnitude_", table_key)
-  prev_id  <- paste0("preview_",   table_key)
 
   # Default selection: the first choice in the supplied list.
   default_shape <- unname(shape_choices[1])
@@ -440,17 +464,11 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL,
       )
     ),
 
-    shiny::div(
-      class = "blsmm-input-preview",
-      shiny::textOutput(prev_id, inline = TRUE)
-    ),
-
     # Advanced: expandable year-by-year native-input strip.
     shiny::tags$details(
       class = "blsmm-input-advanced",
       shiny::tags$summary(
         class = "text-link",
-        style = "cursor: pointer; margin-top: 8px;",
         "Edit year-by-year"
       ),
       year_by_year_input_strip(table_key)

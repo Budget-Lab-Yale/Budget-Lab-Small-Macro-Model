@@ -859,8 +859,8 @@ ui <- fluidPage(
           br(),
 
           tags$details(
-            tags$summary(strong("Advanced: calculated effects"),
-                         class = "text-link", style = "cursor: pointer;"),
+            class = "blsmm-details-muted",
+            tags$summary("Advanced: calculated effects"),
             br(),
             h6("Additional Outlay Changes from Economic Growth"),
             p(class = "text-muted-custom", style = "font-size: 0.85em;",
@@ -888,8 +888,8 @@ ui <- fluidPage(
             example   = "<strong>Example:</strong> +0.25 raises r* by 0.25 pp; -0.25 lowers it."
           ),
           tags$details(
-            tags$summary(strong("Advanced: automatic r* adjustments"),
-                         class = "text-link", style = "cursor: pointer;"),
+            class = "blsmm-details-muted",
+            tags$summary("Advanced: automatic r* adjustments"),
             br(),
             p(class = "text-muted-custom", style = "font-size: 0.85em;",
               "The neutral rate adjusts automatically based on growth and debt levels."),

@@ -309,40 +309,49 @@ bl_brand_overrides_block <- function() {
     }
 
     /* ---------- Year-by-year native input strip ----------
-       Replaces the former handsontable. 10 cells (FY26..FY35) in a
-       horizontal flex strip; each cell stacks bold FY label / muted
-       baseline / editable numericInput / muted level. Scrolls
-       horizontally on narrow drawer widths. */
+       Replaces the former handsontable. CSS grid: 1 label column +
+       10 FY columns; 4 rows (blank / FY label, Baseline, Input Delta,
+       Scenario Level). Items are emitted in flat row-major order and
+       grid auto-placement handles the matrix. The left label column
+       sticks in place during horizontal scroll on narrow widths. */
     .blsmm-year-strip {
-      display: flex;
-      gap: 6px;
+      display: grid;
+      grid-template-columns: auto repeat(10, 68px);
+      column-gap: 6px;
+      row-gap: 4px;
+      align-items: center;
       overflow-x: auto;
       padding: 8px 2px 4px;
       margin-bottom: 8px;
       -webkit-overflow-scrolling: touch;
     }
-    .blsmm-year-cell {
-      flex: 0 0 auto;
-      width: 68px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      text-align: center;
+    .blsmm-year-row-label {
+      font-size: 0.78em;
+      font-weight: 600;
+      color: var(--bl-navy);
+      padding-right: 10px;
+      text-align: right;
+      white-space: nowrap;
+      position: sticky;
+      left: 0;
+      background: #fff;
+      z-index: 1;
     }
     .blsmm-year-label {
       font-size: 0.75em;
       font-weight: 700;
       color: var(--bl-navy);
       letter-spacing: 0.02em;
+      text-align: center;
     }
     .blsmm-year-baseline,
     .blsmm-year-level {
-      font-size: 0.78em;
+      font-size: 0.82em;
       color: var(--bl-muted);
       font-variant-numeric: tabular-nums;
       line-height: 1.2;
       min-height: 1.2em;
+      text-align: center;
     }
     .blsmm-year-level {
       font-weight: 600;
@@ -829,20 +838,38 @@ bl_brand_overrides_block <- function() {
       color: var(--bl-body);
       margin-bottom: 4px;
     }
-    .blsmm-input-preview {
-      font-size: 0.85em;
-      color: var(--bl-muted);
-      font-style: italic;
-      margin-top: 4px;
-      margin-bottom: 8px;
-      min-height: 1.25em;
-    }
     .blsmm-input-advanced summary {
       color: var(--bl-blue);
       font-size: 0.85em;
       margin-top: 4px;
+      cursor: pointer;
     }
     .blsmm-input-advanced[open] summary {
+      margin-bottom: 8px;
+    }
+    /* Advanced: ... secondary disclosures (calculated effects, r*
+       auto-adjustments). Same prominence as Edit year-by-year but
+       muted gray so they read as tertiary to the primary input row. */
+    .blsmm-details-muted > summary {
+      color: var(--bl-muted);
+      font-size: 0.85em;
+      margin-top: 4px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .blsmm-details-muted > summary::-webkit-details-marker {
+      display: none;
+    }
+    .blsmm-details-muted > summary::before {
+      content: '\25B8';
+      display: inline-block;
+      width: 1em;
+      transition: transform 0.15s ease;
+    }
+    .blsmm-details-muted[open] > summary::before {
+      transform: rotate(90deg);
+    }
+    .blsmm-details-muted[open] > summary {
       margin-bottom: 8px;
     }
 
