@@ -882,19 +882,6 @@ server <- function(input, output, session) {
   outputOptions(output, "kpi_final_debt", suspendWhenHidden = FALSE)
   outputOptions(output, "kpi_max_unemployment", suspendWhenHidden = FALSE)
 
-  # Ensure input tables are always rendered (even when Inputs tab not visible)
-  # This is critical for reset and preset scenarios to work from Dashboard tab
-  # All 9 input tables
-  outputOptions(output, "table_lf_growth", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_productivity", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_receipts", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_outlays", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_rfstar", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_output_gap", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_inflation_shock", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_monetary_rule", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_inflation_target", suspendWhenHidden = FALSE)
-
   # ============================================================================
   # DEVIATION PLOTS (Tab 3)
   # ============================================================================
