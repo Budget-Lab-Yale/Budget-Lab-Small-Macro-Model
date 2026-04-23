@@ -542,7 +542,7 @@ ui <- fluidPage(
         # ======================================================================
         tabPanel(
           value = "results",
-          tagList(icon("gauge-high"), " ", tags$b(tags$u("Results"))),
+          tagList(icon("gauge-high"), " Results"),
           br(),
 
           # Getting started box removed — tutorial content lives in the
@@ -668,7 +668,7 @@ ui <- fluidPage(
         # ======================================================================
         tabPanel(
           value = "scenario_summary",
-          tagList(icon("list-check"), " ", tags$b(tags$u("Scenario Summary"))),
+          tagList(icon("list-check"), " Scenario Summary"),
           br(),
           helpText("Every user delta across the nine input categories. Non-zero rows/years drive the current scenario. (Same data as the All Deltas Summary panel in the Custom Scenario Builder.)"),
           DTOutput("summary_all_deltas_results")
