@@ -288,6 +288,14 @@ summarise_lfpr_scenario <- function(
 #' @param magnitude Numeric scalar. If NA or NULL, returns all zeros.
 #' @param n Integer. Horizon length (default N_PERIODS = 10).
 #' @return Numeric vector of length n.
+#' Format a delta value with an explicit sign prefix to reinforce that
+#' the field is a change from baseline. Zero renders without a sign.
+format_signed_delta <- function(val) {
+  v <- suppressWarnings(as.numeric(val))
+  if (is.na(v) || abs(v) < 1e-12) return("0.00")
+  sprintf("%+.2f", v)
+}
+
 build_shape_delta <- function(shape, magnitude, n = N_PERIODS) {
   if (is.null(magnitude) || is.na(magnitude) || !is.finite(magnitude)) {
     return(rep(0, n))
@@ -375,13 +383,21 @@ year_by_year_input_strip <- function(table_key, n_years = N_PERIODS,
   input_row <- c(
     list(shiny::div(class = "blsmm-year-row-label", "Input Delta")),
     lapply(years, function(yr) {
-      shiny::numericInput(
+      # textInput (not numericInput) so we can display an explicit "+"
+      # prefix on positive values; the server parses with as.numeric().
+      # The browser's number-input spinner arrows are hidden as a side
+      # benefit — text inputs don't render them.
+      ti <- shiny::textInput(
         inputId = paste0("delta_", table_id, "_fy", yr),
         label   = NULL,
-        value   = 0,
-        step    = 0.01,
+        value   = "0.00",
         width   = "100%"
       )
+      ti$children[[2]]$attribs$class <- paste(
+        ti$children[[2]]$attribs$class, "blsmm-delta-input"
+      )
+      ti$children[[2]]$attribs$inputmode <- "decimal"
+      ti
     })
   )
 

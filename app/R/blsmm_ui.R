@@ -190,6 +190,30 @@ ui <- fluidPage(
       }
 ")),
     tags$script(HTML("
+      // Year-by-year delta inputs: format the displayed value with an
+      // explicit sign prefix (+ / -) on blur so users see the field is
+      // a delta. Zero renders as '0.00' with no sign. Dispatches a
+      // 'change' event so Shiny's text input binding picks up the
+      // reformatted value — but the all.equal short-circuit in the
+      // server observer keeps this from clearing active_preset.
+      document.addEventListener('blur', function(e) {
+        var el = e.target;
+        if (!el || !el.classList || !el.classList.contains('blsmm-delta-input')) return;
+        var raw = el.value;
+        var v = parseFloat(raw);
+        if (isNaN(v)) v = 0;
+        var next;
+        if (Math.abs(v) < 1e-12) {
+          next = '0.00';
+        } else {
+          next = (v > 0 ? '+' : '') + v.toFixed(2);
+        }
+        if (next !== raw) {
+          el.value = next;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }, true);
+
       // Only one Bootstrap popover open at a time. When a popover is
       // about to be shown, hide every other currently-open popover.
       document.addEventListener('show.bs.popover', function(e) {

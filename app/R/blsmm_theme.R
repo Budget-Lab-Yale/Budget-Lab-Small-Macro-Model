@@ -371,7 +371,7 @@ bl_brand_overrides_block <- function() {
       margin-bottom: 0;
       width: 100%;
     }
-    .blsmm-year-strip input[type=number] {
+    .blsmm-year-strip .blsmm-delta-input {
       font-size: 0.9em;
       padding: 4px 6px;
       text-align: right;
@@ -379,7 +379,7 @@ bl_brand_overrides_block <- function() {
       font-variant-numeric: tabular-nums;
       border-radius: 4px;
     }
-    .blsmm-year-strip input[type=number]:focus {
+    .blsmm-year-strip .blsmm-delta-input:focus {
       outline: 2px solid var(--bl-blue);
       outline-offset: 1px;
       border-color: var(--bl-blue);

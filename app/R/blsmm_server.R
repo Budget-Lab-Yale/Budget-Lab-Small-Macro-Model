@@ -261,9 +261,9 @@ server <- function(input, output, session) {
         val <- suppressWarnings(as.numeric(
           tbl[TABLE_ROW_DELTA, TABLE_FIRST_DATA_COL + yr - 1]
         ))
-        updateNumericInput(session,
-                           paste0("delta_", id, "_fy", 2025 + yr),
-                           value = if (is.na(val)) 0 else val)
+        updateTextInput(session,
+                        paste0("delta_", id, "_fy", 2025 + yr),
+                        value = format_signed_delta(val))
       }
     }
   }
@@ -305,7 +305,8 @@ server <- function(input, output, session) {
 
         observeEvent(input[[input_id]], {
           raw <- input[[input_id]]
-          new_val <- if (is.null(raw) || is.na(raw)) 0 else as.numeric(raw)
+          new_val <- suppressWarnings(as.numeric(raw))
+          if (is.null(new_val) || is.na(new_val)) new_val <- 0
 
           tbl <- isolate(table_state[[id]])
           if (is.null(tbl)) return(invisible())
