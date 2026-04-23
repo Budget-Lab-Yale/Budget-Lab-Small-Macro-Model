@@ -227,6 +227,22 @@ ui <- fluidPage(
         }
       }, true);
 
+      // Only one Bootstrap popover open at a time. When a popover is
+      // about to be shown, hide every other currently-open popover.
+      document.addEventListener('show.bs.popover', function(e) {
+        var opening = e.target;
+        document.querySelectorAll('.popover.show').forEach(function(popEl) {
+          var describedTrigger = document.querySelector(
+            '[aria-describedby=\"' + popEl.id + '\"]'
+          );
+          if (describedTrigger && describedTrigger !== opening &&
+              window.bootstrap && bootstrap.Popover) {
+            var inst = bootstrap.Popover.getInstance(describedTrigger);
+            if (inst) inst.hide();
+          }
+        });
+      });
+
       // Safety-net handler for offcanvas dismiss (X close button).
       // Bootstrap's auto-wiring sometimes misses clicks on .btn-close
       // inside responsive offcanvases (.offcanvas-md). This delegates
@@ -369,7 +385,11 @@ ui <- fluidPage(
                        style = "width: 100%; margin-top: 10px;")
         ),
 
-        # SIMULATION: Run button + solver status pills (SSE + run-status).
+        # SIMULATION: Run button + run-status pill.
+        # (The raw SSE pill was removed as visual noise; run_status_bar
+        # already surfaces Complete/Error/etc. in a user-friendly form.
+        # The sse_display output is still rendered server-side but no
+        # longer shown in the UI.)
         div(class = "sidebar-section",
           h4("Simulation"),
           actionButton("run_sim",
@@ -378,11 +398,6 @@ ui <- fluidPage(
                        class = "btn-primary blsmm-action-btn",
                        style = "width: 100%; margin-bottom: 12px;"),
 
-          # SSE pill (solver convergence, monospace)
-          div(class = "blsmm-sim-status-wrap",
-              div(class = "run-status run-ready blsmm-sse-pill",
-                  textOutput("sse_display", inline = TRUE))
-          ),
           # Run status pill (READY / DIRTY / Complete / ERROR)
           div(class = "blsmm-sim-status-wrap",
               role = "status",
@@ -407,7 +422,7 @@ ui <- fluidPage(
 
         div(class = "text-muted-custom",
             style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
-            "Version 1.0. Updated April 2026.")
+            "Version 1.0")
       )
     ),
 
@@ -455,22 +470,8 @@ ui <- fluidPage(
           tagList(icon("gauge-high"), " ", tags$b(tags$u("Results"))),
           br(),
 
-          # Collapsed by default so the first screen is KPIs + charts.
-          # Users open the disclosure for the how-to-use primer.
-          tags$details(class = "alert alert-secondary blsmm-getting-started",
-            tags$summary(strong("Getting started"),
-                         tags$span(class = "blsmm-summary-hint",
-                                   " — how to use this tool")),
-            p(style = "margin: 10px 0 8px;",
-              strong("Getting started: "),
-              "Configure your scenario in the Controls sidebar and click 'Run Simulation' to see results."),
-            p(style = "margin-bottom: 0;",
-              strong("How to read: "),
-              "Charts compare Baseline (dashed) vs Scenario (solid). ",
-              "Rates and inflation are percentage points; debt and balances are percent of GDP. ",
-              "For budget charts, more negative values indicate larger deficits. ",
-              "All years are fiscal years (October 1 – September 30).")
-          ),
+          # Getting started box removed — tutorial content lives in the
+          # About tab and the Controls sidebar is visible / self-evident.
 
           # KPI Value Boxes — always visible above the level/deviation toggle.
           # 200px min so two fit side-by-side in a 900px iframe's main area;
@@ -678,7 +679,7 @@ ui <- fluidPage(
             tags$ul(
               tags$li(strong("Type:"), " Structural macroeconomic model"),
               tags$li(strong("Frequency:"), " Annual (fiscal years, October 1 – September 30)"),
-              tags$li(strong("Version:"), " 1.8 (endogenous r* and fiscal feedback)"),
+              tags$li(strong("Version:"), " 1.0"),
               tags$li(strong("Structure:"), " 9 simultaneous equations + pre-simulation block + fiscal block"),
               tags$li(strong("Parameters:"), " 39 calibrated parameters")
             ),

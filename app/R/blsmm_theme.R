@@ -589,13 +589,17 @@ bl_brand_overrides_block <- function() {
       flex-wrap: nowrap !important;
       container-type: normal !important;
     }
-    /* Left: fixed icon column with a subtle divider on the right. */
+    /* Left: fixed icon column with a subtle divider on the right. The
+       card has a 4px navy border-left; to center the icon in the
+       visible icon area (from right-edge of the stripe to left-edge of
+       the divider), compensate by pushing icon content 4px to the
+       right (extra left padding). */
     .blsmm-kpi-card .value-box-showcase {
       flex: 0 0 auto !important;
-      width: 60px !important;
-      min-width: 60px !important;
-      max-width: 60px !important;
-      padding: 12px 8px !important;
+      width: 64px !important;
+      min-width: 64px !important;
+      max-width: 64px !important;
+      padding: 12px 8px 12px 12px !important; /* +4px left vs right */
       margin: 0 !important;
       display: flex !important;
       align-items: center !important;
@@ -603,9 +607,11 @@ bl_brand_overrides_block <- function() {
       border-right: 1px solid var(--bl-border);
       background: transparent !important;
     }
+    .blsmm-kpi-card .value-box-showcase > *,
     .blsmm-kpi-card .value-box-showcase svg,
     .blsmm-kpi-card .value-box-showcase .fa,
     .blsmm-kpi-card .value-box-showcase i {
+      margin: 0 !important;
       color: var(--bl-navy) !important;
       opacity: 0.40;
       font-size: 1.6rem !important;
