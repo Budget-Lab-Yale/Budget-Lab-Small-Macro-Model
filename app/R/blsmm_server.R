@@ -189,7 +189,11 @@ server <- function(input, output, session) {
           table_state[[id]],
           rowHeaders = NULL,
           height = 180,
-          readOnly = TRUE
+          readOnly = TRUE,
+          # allowInvalid = TRUE keeps invalid text in the cell (typically
+          # flagged red) instead of silently snapping back to 0.00, so
+          # users can see and correct their typo.
+          allowInvalid = TRUE
         ) %>%
           hot_col("Row", readOnly = TRUE)
 
@@ -1015,15 +1019,12 @@ server <- function(input, output, session) {
     data <- simulation_results()$deviations
     th <- plot_theme()
 
-    # Add shaded area for cumulative effect
     plot_ly() %>%
       add_lines(
         x = data$fy_label,
         y = data$d_D_pct_GDP,
         name = "Debt/GDP Deviation",
         line = list(color = th$line_scenario, width = 3),
-        fill = 'tozeroy',
-        fillcolor = th$debt_fill,
         hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
@@ -1317,7 +1318,8 @@ server <- function(input, output, session) {
         compact = TRUE
       ),
       rownames = FALSE,
-      class = 'compact stripe'
+      selection = "none",  # no persistent row-click highlight
+      class = 'compact stripe hover'  # hover class -> light highlight on hover only
     ) %>%
       formatRound(columns = 2:8, digits = 2) %>%
       formatStyle(
