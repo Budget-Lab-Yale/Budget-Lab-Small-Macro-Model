@@ -346,59 +346,22 @@ bl_brand_overrides_block <- function() {
       }
     }
 
-    /* ---------- Mobile sidebar: backdrop + trim + labelled toggle ----------
-       Below ~700px the Controls sidebar becomes a slide-in drawer. Make it
-       unmistakably an overlay: semi-transparent backdrop behind the drawer,
-       85vw width so a sliver of Results peeks on the right edge, bigger
-       toggle labelled \"Controls\" so users know what they're opening.
-       bslib's layout_sidebar uses data-collapsible-side and the child
-       .sidebar element carries the open/closed state through attributes. */
+    /* ---------- Mobile sidebar: narrower drawer with shadow ----------
+       Below ~700px, bslib collapses the sidebar into a slide-in drawer.
+       We intentionally defer to bslib's native open/close logic here;
+       the only change is the drawer width: 85vw capped at 360px so a
+       sliver of the Results view stays visible on the right edge. A
+       crisp right-edge shadow tells users it's a layered drawer rather
+       than a replacement view.
+
+       Earlier attempts at a custom dark backdrop and a labelled toggle
+       fought bslib's internals and produced an always-on overlay that
+       blocked clicks. That code was reverted; trust bslib here. */
     @media (max-width: 699.98px) {
-      /* Narrower drawer, Results visible on right */
       .bslib-sidebar-layout > .sidebar {
         width: 85vw !important;
         max-width: 360px !important;
-      }
-
-      /* Backdrop behind the open sidebar */
-      .bslib-sidebar-layout[data-open-desktop]:not([data-open-desktop=\"closed\"])
-        .sidebar::before,
-      .bslib-sidebar-layout:has(> .sidebar[data-open-desktop=\"open\"])::after,
-      .bslib-sidebar-layout:has(> .sidebar[aria-expanded=\"true\"])::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.42);
-        z-index: 10;
-        pointer-events: auto;
-        animation: blsmmFadeIn 0.18s ease;
-      }
-      @keyframes blsmmFadeIn {
-        from { opacity: 0; } to { opacity: 1; }
-      }
-
-      /* Bigger, labelled toggle button */
-      .bslib-sidebar-layout > .collapse-toggle,
-      .bslib-sidebar-layout .collapse-toggle {
-        padding: 8px 14px !important;
-        background: var(--bl-navy) !important;
-        color: #ffffff !important;
-        border-radius: 0.5rem !important;
-        font-weight: 600;
-        font-size: 0.9rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      }
-      .bslib-sidebar-layout > .collapse-toggle::after,
-      .bslib-sidebar-layout .collapse-toggle::after {
-        content: ' Controls';
-        font-size: 0.9rem;
-        letter-spacing: 0.01em;
-      }
-
-      /* Ensure the sidebar floats above main content (z-index) when open */
-      .bslib-sidebar-layout > .sidebar {
-        z-index: 20 !important;
-        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.22);
+        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.18);
       }
     }
 
