@@ -314,11 +314,21 @@ format_shape_preview <- function(delta_vec, digits = 2) {
   paste0(paste(first3, collapse = ", "), ", ..., ", last)
 }
 
-# Shape options presented in every simple-mode select input.
+# Shape options presented in every simple-mode select input. Ordered
+# from the most localized pulse (single year) to the slowest onset
+# (linear ramp).
 BLSMM_SHAPE_CHOICES <- c(
-  "Permanent shift"     = "permanent",
+  "One-time (year 1)"           = "onetime",
+  "Temporary (3 years)"         = "temporary3",
+  "Permanent shift"             = "permanent",
+  "Linear ramp (0 → magnitude)" = "ramp"
+)
+
+# Restricted shape set for shock-style inputs where a sustained
+# "permanent" or slow "ramp" doesn't correspond to a meaningful
+# scenario (e.g., an unexpected inflation shock is inherently transient).
+BLSMM_SHAPE_CHOICES_SHOCK <- c(
   "One-time (year 1)"   = "onetime",
-  "Linear ramp (0 → magnitude)" = "ramp",
   "Temporary (3 years)" = "temporary3"
 )
 
@@ -341,11 +351,19 @@ BLSMM_SHAPE_CHOICES <- c(
 #' @param label Heading above the controls.
 #' @param units Short units label placed after "Magnitude".
 #' @param example Short example line shown in muted text.
-simple_input_card <- function(table_key, label, units = "pp", example = NULL) {
+#' @param shape_choices Named character vector of shape options to offer.
+#'   Defaults to BLSMM_SHAPE_CHOICES (all four shapes). Pass
+#'   BLSMM_SHAPE_CHOICES_SHOCK for inputs where permanent / ramp are
+#'   not meaningful (one-off shocks).
+simple_input_card <- function(table_key, label, units = "pp", example = NULL,
+                              shape_choices = BLSMM_SHAPE_CHOICES) {
   shape_id <- paste0("shape_",     table_key)
   mag_id   <- paste0("magnitude_", table_key)
   prev_id  <- paste0("preview_",   table_key)
   table_id <- paste0("table_",     table_key)
+
+  # Default selection: the first choice in the supplied list.
+  default_shape <- unname(shape_choices[1])
 
   shiny::div(
     class = "blsmm-input-card",
@@ -363,8 +381,8 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL) {
       shiny::selectInput(
         inputId = shape_id,
         label   = "Shape",
-        choices = BLSMM_SHAPE_CHOICES,
-        selected = "permanent",
+        choices = shape_choices,
+        selected = default_shape,
         width = "100%"
       ),
       shiny::numericInput(

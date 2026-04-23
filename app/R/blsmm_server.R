@@ -527,10 +527,14 @@ server <- function(input, output, session) {
     # Reset simple-mode inputs too so the drawer UI matches the zeroed
     # tables. The resulting change-events fire the simple observers, which
     # write zero deltas into the already-zero tables — harmless.
+    # Reset to the first option in the new shape-choice order
+    # ("onetime"). Inflation_shock has a restricted choice list but
+    # still has "onetime" as its first option, so the same value
+    # works for every input.
     for (k in c("productivity", "lf_growth", "receipts", "outlays",
                 "rfstar", "inflation_target", "monetary_rule",
                 "output_gap", "inflation_shock")) {
-      updateSelectInput(session, paste0("shape_", k), selected = "permanent")
+      updateSelectInput(session, paste0("shape_", k), selected = "onetime")
       updateNumericInput(session, paste0("magnitude_", k), value = 0)
     }
 
@@ -681,7 +685,7 @@ server <- function(input, output, session) {
         list(input[[shape_id]], input[[mag_id]]),
         ignoreInit = TRUE,
         {
-          shape <- input[[shape_id]] %||% "permanent"
+          shape <- input[[shape_id]] %||% "onetime"
           mag   <- input[[mag_id]]
           delta <- build_shape_delta(shape, mag, N_PERIODS)
           update_table_with_shocks(tbl_name, delta)

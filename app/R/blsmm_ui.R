@@ -888,7 +888,8 @@ ui <- fluidPage(
           simple_input_card(
             table_key = "inflation_shock",
             label     = "Unexpected Inflation Shock (pp)",
-            example   = "Temporary supply shocks (oil prices, pandemic disruptions). <strong>Example:</strong> +1.00 = inflation 1 pp above baseline that year."
+            example   = "Temporary supply shocks (oil prices, pandemic disruptions). <strong>Example:</strong> +1.00 = inflation 1 pp above baseline that year.",
+            shape_choices = BLSMM_SHAPE_CHOICES_SHOCK
           )
         ),
 
