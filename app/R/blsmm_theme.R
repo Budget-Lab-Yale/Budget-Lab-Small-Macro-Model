@@ -175,8 +175,8 @@ bl_brand_overrides_block <- function() {
       --bs-border-radius-pill: 50rem;
     }
     .btn, .card, .form-control, .form-select, .input-group-text,
-    .alert, .modal-content, .offcanvas, .dropdown-menu, .nav-pills .nav-link,
-    .value-box, .bslib-value-box {
+    .alert, .modal-content, .offcanvas, .offcanvas-md, .dropdown-menu,
+    .nav-pills .nav-link, .value-box, .bslib-value-box {
       border-radius: 0.5rem;
     }
     .btn-sm { border-radius: 0.4rem; }
@@ -472,12 +472,16 @@ bl_brand_overrides_block <- function() {
        Using min-height + flex centering rather than padding math so
        the layout holds if fonts change slightly. */
     .blsmm-controls-header {
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      min-height: 48px;
-      border-bottom: 1px solid var(--bl-border);
+      display: flex !important;
+      align-items: center !important;
+      padding: 0 20px !important;
+      min-height: 48px !important;
+      border-bottom: 1px solid var(--bl-border) !important;
       gap: 12px;
+      /* Bootstrap's .offcanvas-header uses --bs-offcanvas-padding-y/x
+         via padding shorthand — zero the variables so ours wins. */
+      --bs-offcanvas-padding-y: 0;
+      --bs-offcanvas-padding-x: 20px;
     }
     .blsmm-controls-header .offcanvas-title {
       font-family: var(--bl-font-heading);
@@ -489,7 +493,7 @@ bl_brand_overrides_block <- function() {
     }
     @media (min-width: 768px) {
       .blsmm-controls-header {
-        min-height: 60px;
+        min-height: 60px !important;
       }
       /* Bootstrap hides .offcanvas-md .offcanvas-header at md+ — re-show. */
       .blsmm-controls-drawer.offcanvas-md .blsmm-controls-header {
