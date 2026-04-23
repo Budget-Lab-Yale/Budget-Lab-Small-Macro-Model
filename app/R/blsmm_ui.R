@@ -297,6 +297,11 @@ ui <- fluidPage(
       // (Bootstrap reuses a single backdrop for both). Close Controls
       // first, then let Bootstrap's toggle handler open CSB. On wide
       // widths Controls is inline (no .show class) so this is a no-op.
+      //
+      // Track whether Controls was open so we can restore it when CSB
+      // closes — the user's next action is almost always Run Simulation,
+      // which lives in Controls.
+      var __blsmmControlsWasOpen = false;
       document.addEventListener('click', function(e) {
         var customBtn = e.target.closest('#open_assumptions');
         if (!customBtn) return;
@@ -304,7 +309,21 @@ ui <- fluidPage(
         if (!controlsDrawer || !controlsDrawer.classList.contains('show')) return;
         if (!window.bootstrap || !bootstrap.Offcanvas) return;
         var inst = bootstrap.Offcanvas.getInstance(controlsDrawer);
-        if (inst) inst.hide();
+        if (inst) {
+          __blsmmControlsWasOpen = true;
+          inst.hide();
+        }
+      });
+      // When CSB closes, reopen Controls if it was open before. Bootstrap
+      // offcanvas events bubble, so a document-level listener catches it.
+      document.addEventListener('hidden.bs.offcanvas', function(e) {
+        if (!e.target || e.target.id !== 'assumptions_drawer') return;
+        if (!__blsmmControlsWasOpen) return;
+        __blsmmControlsWasOpen = false;
+        var controlsDrawer = document.getElementById('controls_drawer');
+        if (controlsDrawer && window.bootstrap && bootstrap.Offcanvas) {
+          bootstrap.Offcanvas.getOrCreateInstance(controlsDrawer).show();
+        }
       });
 
       document.addEventListener('DOMContentLoaded', function() {
