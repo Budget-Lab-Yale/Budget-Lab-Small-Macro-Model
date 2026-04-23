@@ -400,17 +400,22 @@ ui <- fluidPage(
       id = "main-content",
       class = "blsmm-main flex-grow-1",
 
-      # Mobile-only Controls toggle. Hidden at >= md via d-md-none.
-      # Sticky so it stays reachable as the user scrolls the Results tab.
+      # Mobile-only top bar with a hamburger menu toggle. Hidden at >= md
+      # via d-md-none. Sticky so it stays reachable as the user scrolls.
+      # Hamburger icon (fa-bars) signals "drawer from the left" to users
+      # familiar with mobile app top-bar patterns. Subtle styling — not a
+      # navy primary button — so it doesn't compete with Run Simulation
+      # as an action.
       tags$button(
         id = "toggle_controls",
         type = "button",
-        class = "btn btn-primary d-md-none blsmm-controls-toggle",
+        class = "d-md-none blsmm-controls-toggle",
         `data-bs-toggle` = "offcanvas",
         `data-bs-target` = "#controls_drawer",
         `aria-controls` = "controls_drawer",
-        tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
-        tags$span(" Controls")
+        `aria-label` = "Open controls menu",
+        tags$i(class = "fa fa-bars", `aria-hidden` = "true"),
+        tags$span(class = "blsmm-controls-toggle-label", "Controls")
       ),
 
       tabsetPanel(

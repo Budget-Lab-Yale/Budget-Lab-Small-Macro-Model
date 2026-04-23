@@ -371,16 +371,47 @@ bl_brand_overrides_block <- function() {
       }
     }
 
-    /* Mobile-only toggle button: sticky at top so it stays reachable as
-       the user scrolls the Results tab. Hidden at md+ via d-md-none. */
+    /* Mobile-only top bar with hamburger menu toggle. Full-width bar
+       flush to the left/right edges of the main area (extends past the
+       main's padding via negative margin). Subtle white bar with a
+       bottom border; sticky so it stays reachable while scrolling. */
     .blsmm-controls-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: calc(100% + 40px);
+      margin: -16px -20px 14px;
+      padding: 12px 20px;
+      background: #ffffff;
+      border: 0;
+      border-bottom: 1px solid var(--bl-border);
+      color: var(--bl-navy);
+      font-weight: 600;
+      font-size: 1rem;
+      font-family: var(--bl-font-body);
+      cursor: pointer;
+      text-align: left;
       position: sticky;
-      top: 8px;
-      margin: 12px 12px 4px;
-      z-index: 5;
-      width: auto;
-      align-self: flex-start;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+      top: 0;
+      z-index: 10;
+    }
+    .blsmm-controls-toggle:hover,
+    .blsmm-controls-toggle:focus {
+      background: var(--bl-bg-subtle);
+      color: var(--bl-navy);
+      outline: 0;
+    }
+    .blsmm-controls-toggle:focus-visible {
+      outline: 2px solid var(--bl-blue);
+      outline-offset: -2px;
+    }
+    .blsmm-controls-toggle i {
+      font-size: 1.2em;
+      line-height: 1;
+      color: var(--bl-navy);
+    }
+    .blsmm-controls-toggle-label {
+      letter-spacing: 0.01em;
     }
 
     /* Controls drawer: enable container queries so button font-size
