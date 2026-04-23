@@ -800,7 +800,7 @@ ui <- fluidPage(
     `aria-labelledby` = "assumptions_drawer_label",
 
     tags$div(
-      class = "offcanvas-header",
+      class = "offcanvas-header blsmm-controls-header",
       h4(id = "assumptions_drawer_label", class = "offcanvas-title mb-0",
          "Custom Scenario Builder"),
       tags$button(

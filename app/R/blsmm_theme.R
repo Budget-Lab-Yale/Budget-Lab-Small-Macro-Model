@@ -381,7 +381,8 @@ bl_brand_overrides_block <- function() {
       gap: 10px;
       width: calc(100% + 40px);
       margin: -16px -20px 14px;
-      padding: 12px 20px;
+      padding: 0 20px;
+      min-height: 48px;            /* matches drawer header at narrow */
       background: #ffffff;
       border: 0;
       border-bottom: 1px solid var(--bl-border);
@@ -458,12 +459,25 @@ bl_brand_overrides_block <- function() {
     }
 
     /* Controls header: reads as the sidebar/drawer title at every
-       width. Bootstrap's default hides .offcanvas-md .offcanvas-header
-       at md+, so we re-show it. The close (X) button is hidden at md+
-       since the sidebar is always visible there (no close needed). */
+       width. Used on BOTH the Controls drawer/sidebar and the Custom
+       Scenario Builder offcanvas so the two headers share one style.
+
+       Heights are tuned so the bottom border aligns with neighboring
+       horizontal rules:
+       - wide (md+): 60px = Results/About tab underline y-position
+         (main padding-top 20 + tab row height 40 = 60).
+       - narrow: 48px = mobile top-bar height (padding 12 + title +
+         padding 12 + 1px border).
+
+       Using min-height + flex centering rather than padding math so
+       the layout holds if fonts change slightly. */
     .blsmm-controls-header {
-      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      min-height: 48px;
       border-bottom: 1px solid var(--bl-border);
+      gap: 12px;
     }
     .blsmm-controls-header .offcanvas-title {
       font-family: var(--bl-font-heading);
@@ -471,11 +485,17 @@ bl_brand_overrides_block <- function() {
       font-weight: 800;
       color: var(--bl-navy);
       letter-spacing: -0.01em;
+      flex: 1 1 auto;
     }
     @media (min-width: 768px) {
+      .blsmm-controls-header {
+        min-height: 60px;
+      }
+      /* Bootstrap hides .offcanvas-md .offcanvas-header at md+ — re-show. */
       .blsmm-controls-drawer.offcanvas-md .blsmm-controls-header {
         display: flex;
       }
+      /* At md+ the Controls sidebar is always visible, so the X is hidden. */
       .blsmm-controls-drawer.offcanvas-md .blsmm-controls-close {
         display: none;
       }
