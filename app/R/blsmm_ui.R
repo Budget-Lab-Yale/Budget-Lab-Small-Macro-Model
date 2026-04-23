@@ -281,105 +281,137 @@ ui <- fluidPage(
   # context is carried in the Getting Started alert on the Results tab
   # and in the About tab for anyone who needs it.
 
-  # Responsive sidebar layout (bslib).
-  # On narrow screens the sidebar collapses into a toggle button.
-  # fillable = FALSE so the main content scrolls naturally (many plots).
-  layout_sidebar(
-    fillable = FALSE,
-    sidebar = sidebar(
-      width = 280,
-      open = list(desktop = "open", mobile = "closed"),
-      title = "Controls",
+  # App shell: responsive Bootstrap offcanvas for Controls + main content.
+  # At >= md (768px): the Controls drawer renders inline as a 280px left
+  # column (Bootstrap's .offcanvas-md reverts to normal flow at md+).
+  # At < md: Controls is hidden behind an offcanvas drawer, opened by the
+  # sticky toggle button at the top of the main area. Bootstrap handles the
+  # dark backdrop, focus trap, Escape key, click-outside-to-close, and ARIA
+  # state natively — same mechanism as the Custom Scenario Builder drawer.
+  div(class = "d-flex flex-row blsmm-shell",
 
-      # ------------------------------------------------------------------
-      # SCENARIO: Custom (opens the Custom Scenario Builder drawer) or
-      # one of three presets. Reset to Defaults also lives here since
-      # it's a scenario-level control (wipes the current scenario back
-      # to baseline).
-      # ------------------------------------------------------------------
-      div(class = "sidebar-section",
-        h4("Scenario"),
+    # ------------------------------------------------------------------
+    # CONTROLS — responsive offcanvas drawer
+    # ------------------------------------------------------------------
+    tags$div(
+      class = "offcanvas-md offcanvas-start blsmm-controls-drawer",
+      id = "controls_drawer",
+      tabindex = "-1",
+      `aria-labelledby` = "controls_drawer_label",
 
-        # Custom Scenario — the primary option. Larger button.
-        tags$button(
-          id = "open_assumptions",
-          type = "button",
-          class = "btn btn-primary blsmm-action-btn blsmm-scenario-primary",
-          style = "width: 100%; margin-bottom: 14px;",
-          `data-bs-toggle` = "offcanvas",
-          `data-bs-target` = "#assumptions_drawer",
-          `aria-controls` = "assumptions_drawer",
-          tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
-          tags$span(" Custom Scenario")
+      # Drawer header: only visible when behaving as an offcanvas (< md).
+      # Hidden at >= md where Controls renders inline as a sidebar.
+      tags$div(class = "offcanvas-header d-md-none",
+        h4(id = "controls_drawer_label", class = "offcanvas-title mb-0",
+           "Controls"),
+        tags$button(type = "button", class = "btn-close",
+                    `data-bs-dismiss` = "offcanvas",
+                    `aria-label` = "Close")
+      ),
+
+      tags$div(class = "offcanvas-body blsmm-controls-body",
+
+        # SCENARIO: Custom (opens Custom Scenario Builder drawer) or
+        # one of three presets. Reset to Defaults also lives here since
+        # it's a scenario-level control (wipes the current scenario
+        # back to baseline).
+        div(class = "sidebar-section",
+          h4("Scenario"),
+
+          # Custom Scenario — the primary option. Larger button.
+          tags$button(
+            id = "open_assumptions",
+            type = "button",
+            class = "btn btn-primary blsmm-action-btn blsmm-scenario-primary",
+            style = "width: 100%; margin-bottom: 14px;",
+            `data-bs-toggle` = "offcanvas",
+            `data-bs-target` = "#assumptions_drawer",
+            `aria-controls` = "assumptions_drawer",
+            tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
+            tags$span(" Custom Scenario")
+          ),
+
+          p("Or start from a preset:", class = "text-muted-custom",
+            style = "font-size: 0.875em; margin-bottom: 8px;"),
+
+          # Presets: all uniform (outline-primary). Description lives in a
+          # popover triggered by the ? icon to the right of each button.
+          preset_row("preset_rapid_ai", "Rapid AI Adoption",
+                     "Productivity boost + labor-force participation decline + outlay rise (Karger et al.)."),
+          preset_row("preset_persistent_infl", "Persistent Inflation",
+                     "Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030."),
+          preset_row("preset_military_conflict", "Higher Defense Spending",
+                     "Defense outlays rise per BR2027, including a +$350B mandatory bump in FY2027."),
+
+          # Reset — scenario-level control. Softer visual weight than Custom.
+          actionButton("reset_inputs",
+                       "Reset to Defaults",
+                       icon = icon("rotate-right"),
+                       class = "btn btn-outline-secondary btn-sm",
+                       style = "width: 100%; margin-top: 10px;")
         ),
 
-        p("Or start from a preset:", class = "text-muted-custom",
-          style = "font-size: 0.875em; margin-bottom: 8px;"),
+        # SIMULATION: Run button + solver status pills (SSE + run-status).
+        div(class = "sidebar-section",
+          h4("Simulation"),
+          actionButton("run_sim",
+                       "Run Simulation",
+                       icon = icon("play"),
+                       class = "btn-primary blsmm-action-btn",
+                       style = "width: 100%; margin-bottom: 12px;"),
 
-        # Presets: all uniform (outline-primary). Description lives in a
-        # popover triggered by the ? icon to the right of each button.
-        preset_row("preset_rapid_ai", "Rapid AI Adoption",
-                   "Productivity boost + labor-force participation decline + outlay rise (Karger et al.)."),
-        preset_row("preset_persistent_infl", "Persistent Inflation",
-                   "Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030."),
-        preset_row("preset_military_conflict", "Higher Defense Spending",
-                   "Defense outlays rise per BR2027, including a +$350B mandatory bump in FY2027."),
-
-        # Reset — scenario-level control. Softer visual weight than Custom.
-        actionButton("reset_inputs",
-                     "Reset to Defaults",
-                     icon = icon("rotate-right"),
-                     class = "btn btn-outline-secondary btn-sm",
-                     style = "width: 100%; margin-top: 10px;")
-      ),
-
-      # ------------------------------------------------------------------
-      # SIMULATION: Run button + solver status pills (SSE + run-status).
-      # Placed below Scenario because users pick a scenario first, then run.
-      # ------------------------------------------------------------------
-      div(class = "sidebar-section",
-        h4("Simulation"),
-        actionButton("run_sim",
-                     "Run Simulation",
-                     icon = icon("play"),
-                     class = "btn-primary blsmm-action-btn",
-                     style = "width: 100%; margin-bottom: 12px;"),
-
-        # SSE pill (solver convergence, monospace)
-        div(class = "blsmm-sim-status-wrap",
-            div(class = "run-status run-ready blsmm-sse-pill",
-                textOutput("sse_display", inline = TRUE))
+          # SSE pill (solver convergence, monospace)
+          div(class = "blsmm-sim-status-wrap",
+              div(class = "run-status run-ready blsmm-sse-pill",
+                  textOutput("sse_display", inline = TRUE))
+          ),
+          # Run status pill (READY / DIRTY / Complete / ERROR)
+          div(class = "blsmm-sim-status-wrap",
+              role = "status",
+              `aria-live` = "polite",
+              uiOutput("run_status_bar")
+          )
         ),
-        # Run status pill (READY / DIRTY / Complete / ERROR)
-        div(class = "blsmm-sim-status-wrap",
-            role = "status",
-            `aria-live` = "polite",
-            uiOutput("run_status_bar")
-        )
-      ),
 
-      # Export section
-      div(class = "sidebar-section",
-        h4("Export Results"),
-        downloadButton("download_csv",
-                      "Export to CSV",
-                      class = "btn-outline-primary",
-                      style = "width: 100%; margin-bottom: 8px;"),
+        # Export section
+        div(class = "sidebar-section",
+          h4("Export Results"),
+          downloadButton("download_csv",
+                        "Export to CSV",
+                        class = "btn-outline-primary",
+                        style = "width: 100%; margin-bottom: 8px;"),
 
-        downloadButton("download_excel",
-                      "Export to Excel",
-                      class = "btn-outline-primary",
-                      style = "width: 100%;")
-      ),
+          downloadButton("download_excel",
+                        "Export to Excel",
+                        class = "btn-outline-primary",
+                        style = "width: 100%;")
+        ),
 
-      div(class = "text-muted-custom", style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
-          "Version 1.0. Updated April 2026.")
+        div(class = "text-muted-custom",
+            style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
+            "Version 1.0. Updated April 2026.")
+      )
     ),
 
-    # Main content area
-    div(
+    # ------------------------------------------------------------------
+    # MAIN CONTENT
+    # ------------------------------------------------------------------
+    tags$main(
       id = "main-content",
-      class = "blsmm-main",
+      class = "blsmm-main flex-grow-1",
+
+      # Mobile-only Controls toggle. Hidden at >= md via d-md-none.
+      # Sticky so it stays reachable as the user scrolls the Results tab.
+      tags$button(
+        id = "toggle_controls",
+        type = "button",
+        class = "btn btn-primary d-md-none blsmm-controls-toggle",
+        `data-bs-toggle` = "offcanvas",
+        `data-bs-target` = "#controls_drawer",
+        `aria-controls` = "controls_drawer",
+        tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
+        tags$span(" Controls")
+      ),
 
       tabsetPanel(
         id = "main_tabs",

@@ -346,45 +346,67 @@ bl_brand_overrides_block <- function() {
       }
     }
 
-    /* ---------- Mobile sidebar: narrower drawer with shadow ----------
-       Below ~700px, bslib collapses the sidebar into a slide-in drawer.
-       We intentionally defer to bslib's native open/close logic here;
-       the only change is the drawer width: 85vw capped at 360px so a
-       sliver of the Results view stays visible on the right edge. A
-       crisp right-edge shadow tells users it's a layered drawer rather
-       than a replacement view.
+    /* ---------- App shell & Controls drawer ----------
+       The app uses a d-flex row: responsive Controls offcanvas on the
+       left, main content on the right. Below md (768px) the offcanvas
+       behaves as a slide-in drawer; at md+ it renders inline as a
+       static sidebar column. Bootstrap handles the mobile overlay
+       (backdrop, focus trap, Escape, click-outside) natively. */
 
-       Earlier attempts at a custom dark backdrop and a labelled toggle
-       fought bslib's internals and produced an always-on overlay that
-       blocked clicks. That code was reverted; trust bslib here. */
-    @media (max-width: 699.98px) {
-      .bslib-sidebar-layout > .sidebar {
-        width: 85vw !important;
-        max-width: 360px !important;
-        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.18);
-      }
+    .blsmm-shell {
+      min-height: 100vh;
     }
 
-    /* ---------- Sidebar-specific layout fixes ---------- */
+    /* Main content area: flex-grow so it fills remaining width next to
+       the inline sidebar at md+. min-width: 0 lets plotly / tables shrink
+       inside the flex container instead of forcing horizontal scroll. */
+    .blsmm-main {
+      min-width: 0;
+    }
 
-    /* Enable container queries so sidebar content scales to its width */
-    .bslib-sidebar-layout > .sidebar,
-    .bslib-sidebar-layout .sidebar-content {
+    /* Mobile-only toggle button: sticky at top so it stays reachable as
+       the user scrolls the Results tab. Hidden at md+ via d-md-none. */
+    .blsmm-controls-toggle {
+      position: sticky;
+      top: 8px;
+      margin: 12px 12px 4px;
+      z-index: 5;
+      width: auto;
+      align-self: flex-start;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+    }
+
+    /* Controls drawer: enable container queries so button font-size
+       scales to the drawer's actual width via cqi units. */
+    .blsmm-controls-drawer {
       container-type: inline-size;
     }
 
-    /* Controls header: sidebar title more prominent, with bottom rule */
-    .bslib-sidebar-layout > .sidebar .sidebar-title,
-    .bslib-sidebar-layout .sidebar-content > :first-child > .sidebar-title,
-    .blsmm-sidebar-title {
-      font-family: var(--bl-font-heading);
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--bl-navy);
-      letter-spacing: -0.01em;
-      margin: 0 0 12px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid var(--bl-navy);
+    /* Drawer width when acting as an offcanvas (< md): 92vw capped at
+       360px so a sliver of Results peeks on the right. Bootstrap's
+       default .offcanvas-md width is 100% at this breakpoint; override. */
+    @media (max-width: 767.98px) {
+      .blsmm-controls-drawer.offcanvas-md {
+        width: min(92vw, 360px) !important;
+      }
+    }
+
+    /* Inline sidebar look at md+: Bootstrap's responsive offcanvas
+       falls back to display: flex; flex-direction: column; at md+.
+       We add a fixed width, right border, subtle bg tint, and padding
+       so it reads as a sidebar column. */
+    @media (min-width: 768px) {
+      .blsmm-controls-drawer.offcanvas-md {
+        width: 280px;
+        flex: 0 0 280px;
+        border-right: 1px solid var(--bl-border);
+        background-color: var(--bl-bg-subtle);
+      }
+    }
+
+    /* Body of the drawer / sidebar: consistent padding at every width. */
+    .blsmm-controls-body {
+      padding: 16px 20px;
     }
 
     /* Center sim-status pills (SSE + run-status) inside the Simulation card */
