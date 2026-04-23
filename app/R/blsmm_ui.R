@@ -658,6 +658,16 @@ ui <- fluidPage(
                   verbatimTextOutput("deviation_summary")
                 )
               )
+            ),
+
+            # Scenario Summary view: consolidated read-only table of all
+            # 9 user deltas (also shown inside the Custom Scenario
+            # Builder drawer). Two renders of the same reactive data.
+            nav_panel(
+              title = "Scenario Summary",
+              br(),
+              helpText("Every user delta across the nine input categories. Non-zero rows/years drive the current scenario."),
+              DTOutput("summary_all_deltas_results")
             )
           )
         ),

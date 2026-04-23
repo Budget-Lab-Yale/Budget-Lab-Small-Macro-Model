@@ -1442,11 +1442,13 @@ server <- function(input, output, session) {
   # USER DELTAS SUMMARY TABLE (BLSMM) - CONSOLIDATED
   # ============================================================================
 
-  # Consolidated summary: All 9 input types in one table
-  output$summary_all_deltas <- renderDT({
+  # Consolidated summary: All 9 input types in one table.
+  # Data assembled into a shared reactive so we can render the same
+  # table into two outputs — inside the Custom Scenario Builder drawer
+  # AND on the Results tab's "Scenario Summary" nav panel.
+  summary_all_deltas_df <- reactive({
     table_deltas <- collect_table_deltas(require_valid = FALSE)
 
-    # Create data frame with all shock types
     df <- data.frame(
       Shock = c(
         "Labor Force Growth (pp)",
@@ -1462,7 +1464,6 @@ server <- function(input, output, session) {
       stringsAsFactors = FALSE
     )
 
-    # Add year columns
     fy_labels <- create_fy_labels()
     for (i in 1:N_PERIODS) {
       df[[fy_labels[i]]] <- c(
@@ -1477,8 +1478,13 @@ server <- function(input, output, session) {
         table_deltas$table_monetary_rule[i]
       )
     }
+    df
+  })
 
-    datatable(df,
+  # Shared renderer: no row-selection highlight, hover-only row tint,
+  # matches the Key Variable Deviations table treatment.
+  render_summary_all_deltas <- function() {
+    datatable(summary_all_deltas_df(),
               options = list(
                 dom = 't',
                 pageLength = 15,
@@ -1486,9 +1492,15 @@ server <- function(input, output, session) {
                 compact = TRUE
               ),
               rownames = FALSE,
-              class = 'compact stripe') %>%
-      formatRound(columns = 2:(N_PERIODS+1), digits = 2)
-  })
+              selection = "none",
+              class = 'compact stripe hover') %>%
+      formatRound(columns = 2:(N_PERIODS + 1), digits = 2)
+  }
+
+  # Render #1: inside the Custom Scenario Builder drawer
+  output$summary_all_deltas <- renderDT({ render_summary_all_deltas() })
+  # Render #2: on the Results tab's "Scenario Summary" sub-tab
+  output$summary_all_deltas_results <- renderDT({ render_summary_all_deltas() })
 
   # ============================================================================
   # EXPORT HANDLERS
