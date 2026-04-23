@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLSMM — Embed Preview (Shared)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      color: #4a4a4a;
+      background: #f6f7f9;
+    }
+    header {
+      max-width: 1100px;
+      margin: 0 auto 16px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      color: #101f5b;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    p { margin: 0; font-size: 13px; color: #666; }
+    .frame {
+      width: 1100px;
+      max-width: 100%;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    iframe {
+      border: 0;
+      display: block;
+      background: white;
+      width: 100%;
+      min-height: 2400px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Budget Lab Small Macro Model — Preview</h1>
+  <p>Embedded at 1100&nbsp;px, close to the content width of a Budget Lab publication page. App loaded from Posit Cloud.</p>
+</header>
+
+<div class="frame">
+  <iframe
+    id="blsmm"
+    src="https://019dbb60-80bf-7410-afdf-cf819558d9f1.share.connect.posit.cloud/"
+    title="Budget Lab Small Macro Model"
+    allow="fullscreen"
+    loading="lazy">
+  </iframe>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.min.js"></script>
+<script>
+  // iframe-resizer sizes the iframe to its content height so reviewers
+  // never see nested scrollbars. The Shiny app loads the companion
+  // contentWindow script in its <head>.
+  window.addEventListener('load', function () {
+    if (typeof iFrameResize === 'function') {
+      iFrameResize(
+        {
+          log: false,
+          checkOrigin: false,
+          heightCalculationMethod: 'lowestElement',
+          tolerance: 4,
+          scrolling: false
+        },
+        '#blsmm'
+      );
+    }
+  });
+</script>
+
+</body>
+</html>

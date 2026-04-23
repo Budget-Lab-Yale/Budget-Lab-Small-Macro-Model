@@ -22,7 +22,7 @@
       background: var(--bg);
     }
     header {
-      max-width: 1600px;
+      max-width: 2800px;
       margin: 0 auto 20px;
     }
     h1 {
@@ -64,7 +64,7 @@
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
-      max-width: 1600px;
+      max-width: 2800px;
       margin: 0 auto;
     }
     .frame {
@@ -99,6 +99,8 @@
     .frame-400 { width: 400px; }
     .frame-600 { width: 600px; }
     .frame-900 { width: 900px; }
+    .frame-1145 { width: 1145px; }
+    .frame-1305 { width: 1305px; }
 
     .status {
       margin-top: 16px;
@@ -108,7 +110,7 @@
       border-radius: 8px;
       font-size: 12px;
       color: var(--muted);
-      max-width: 1600px;
+      max-width: 2800px;
       margin-left: auto;
       margin-right: auto;
     }
@@ -125,7 +127,7 @@
 
 <header>
   <h1>BLSMM — Embed Preview</h1>
-  <p>Three iframes of the Shiny app at target embed widths. Refresh the page after restarting the app.</p>
+  <p>Iframes at target embed widths. 400 / 600 / 900 px are narrow-embed stress tests; 1145 px (laptop, ~1280 viewport) and 1305 px (desktop, 1440+ viewport) match the actual content-column width of a Budget Lab publication page. Refresh after restarting the app.</p>
   <div class="controls">
     <label for="src">App URL:</label>
     <input type="text" id="src" value="http://127.0.0.1:8100/">
@@ -152,6 +154,18 @@
     </div>
     <iframe id="f900" src="http://127.0.0.1:8100/"></iframe>
   </div>
+  <div class="frame frame-1145">
+    <div class="frame-label">
+      Laptop (1280 viewport) <span class="dims">1145px</span>
+    </div>
+    <iframe id="f1145" src="http://127.0.0.1:8100/"></iframe>
+  </div>
+  <div class="frame frame-1305">
+    <div class="frame-label">
+      Desktop (1440+ viewport) <span class="dims">1305px</span>
+    </div>
+    <iframe id="f1305" src="http://127.0.0.1:8100/"></iframe>
+  </div>
 </div>
 
 <div class="status">
@@ -170,7 +184,7 @@
      iframe to its content height without nested scrollbars. -->
 <script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.min.js"></script>
 <script>
-  const FRAME_IDS = ['f400', 'f600', 'f900'];
+  const FRAME_IDS = ['f400', 'f600', 'f900', 'f1145', 'f1305'];
 
   function initResizers() {
     if (typeof iFrameResize !== 'function') return;
