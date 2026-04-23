@@ -403,8 +403,8 @@ bl_brand_overrides_block <- function() {
        into a flex row with padding: 0. We need to beat both. */
     @media (min-width: 768px) {
       .blsmm-controls-drawer.offcanvas-md {
-        width: 280px;
-        flex: 0 0 280px;
+        width: 320px;
+        flex: 0 0 320px;
         border-right: 1px solid var(--bl-border);
         background-color: var(--bl-bg-subtle) !important;
         overflow: hidden;
