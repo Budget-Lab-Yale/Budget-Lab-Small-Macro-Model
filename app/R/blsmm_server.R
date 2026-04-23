@@ -66,29 +66,40 @@ server <- function(input, output, session) {
 
   output$run_status_bar <- renderUI({
     state <- run_state()
-    state_class <- switch(
-      state,
-      ready = "run-ready",
-      dirty = "run-dirty",
-      running = "run-running",
-      solved = "run-solved",
-      error = "run-error",
-      "run-ready"
-    )
+    note  <- run_state_note()
 
-    state_label <- switch(
-      state,
-      ready = "READY",
-      dirty = "DIRTY",
-      running = "RUNNING",
-      solved = "Complete",
-      error = "ERROR",
-      "READY"
-    )
+    # Initial baseline: grey "Ready | Baseline Loaded" pill.
+    # Any other solved state: green pill, note only (no label prefix).
+    is_initial <- identical(state, "solved") &&
+      identical(note, "Baseline loaded")
+
+    state_class <- if (is_initial) {
+      "run-ready"
+    } else {
+      switch(
+        state,
+        ready = "run-ready",
+        dirty = "run-dirty",
+        running = "run-running",
+        solved = "run-solved",
+        error = "run-error",
+        "run-ready"
+      )
+    }
+
+    pill_text <- if (is_initial) {
+      "Ready | Baseline Loaded"
+    } else if (identical(state, "running")) {
+      paste0("RUNNING | ", note)
+    } else if (identical(state, "error")) {
+      paste0("ERROR | ", note)
+    } else {
+      note
+    }
 
     div(
       class = paste("run-status", state_class),
-      paste0(state_label, " | ", run_state_note())
+      pill_text
     )
   })
 
@@ -331,7 +342,7 @@ server <- function(input, output, session) {
           if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 1.5) {
             active_preset(NULL)
           }
-          set_run_state("dirty", "Inputs changed. Press Run to update results")
+          set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
         }
       }, ignoreInit = TRUE)
     })
@@ -344,7 +355,7 @@ server <- function(input, output, session) {
       # Changing the expectations-speed option is a scenario edit too;
       # clear the preset highlight.
       active_preset(NULL)
-      set_run_state("dirty", "Options changed. Press Run to update results")
+      set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
     }
   }, ignoreInit = TRUE)
 
@@ -503,7 +514,7 @@ server <- function(input, output, session) {
 
       if (exists(cache_key, envir = simulation_cache, inherits = FALSE)) {
         results <- get(cache_key, envir = simulation_cache, inherits = FALSE)
-        set_run_state("solved", "Loaded cached results")
+        set_run_state("solved", "Simulation Complete")
       } else {
         # Run simulation
         results <- tryCatch({
@@ -532,13 +543,13 @@ server <- function(input, output, session) {
         if (is.null(solver_summary)) {
           max_sse <- max(results$solver_sse, na.rm = TRUE)
           if (max_sse < 1e-9) {
-            set_run_state("solved", "Simulation complete")
+            set_run_state("solved", "Simulation Complete")
           } else {
             set_run_state("error", sprintf("Not converged (SSE: %.2e)", max_sse))
           }
         } else {
           if (solver_summary$overall_converged) {
-            set_run_state("solved", "Simulation complete")
+            set_run_state("solved", "Simulation Complete")
           } else {
             set_run_state("error", sprintf("Not converged (SSE: %.2e)", solver_summary$final_sse))
           }
@@ -589,7 +600,7 @@ server <- function(input, output, session) {
     updateCheckboxInput(session, "expectations_speed", value = FALSE)
     # Clear active preset so none of the three preset buttons appears selected
     active_preset(NULL)
-    set_run_state("dirty", "Inputs reset. Press Run to update results")
+    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   })
 
   # ============================================================================
@@ -624,7 +635,7 @@ server <- function(input, output, session) {
   apply_single_preset <- function(table_name, shock_values) {
     reset_all_tables_to_baseline()
     update_table_with_shocks(table_name, shock_values)
-    set_run_state("dirty", "Preset applied. Press Run to update results")
+    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
   apply_multi_preset <- function(presets_list) {
@@ -634,7 +645,7 @@ server <- function(input, output, session) {
       shock_values <- presets_list[[i]]
       update_table_with_shocks(table_name, shock_values)
     }
-    set_run_state("dirty", "Preset applied. Press Run to update results")
+    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
   # Preset 1: Rapid AI Adoption
