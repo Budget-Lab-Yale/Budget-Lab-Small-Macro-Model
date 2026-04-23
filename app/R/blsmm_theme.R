@@ -615,6 +615,10 @@ bl_brand_overrides_block <- function() {
       color: var(--bl-navy) !important;
       opacity: 0.40;
       font-size: 1.6rem !important;
+      /* FontAwesome glyphs (scale-balanced, users) sit slightly left
+         of their character-box midpoint. Nudge 6px right so the ink
+         lands between the navy stripe and the vertical divider. */
+      transform: translateX(6px);
     }
     /* Right: text column. Labels are allowed to wrap so narrow cards
        still fit the content column-wise, instead of pushing the whole
