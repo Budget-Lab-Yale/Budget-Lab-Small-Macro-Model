@@ -190,10 +190,12 @@ server <- function(input, output, session) {
           rowHeaders = NULL,
           height = 180,
           readOnly = TRUE,
-          # allowInvalid = FALSE: invalid entries (text, etc.) are
-          # rejected and the cell snaps back to the prior value (0.00
-          # in the User Delta row).
-          allowInvalid = FALSE
+          # allowInvalid = TRUE lets the cell commit and deselect
+          # normally when a user enters text or blank. The server-side
+          # observer then silently rewrites the delta cell to 0.00.
+          # (With allowInvalid = FALSE the cell refuses to deselect
+          # while holding an invalid value — too aggressive.)
+          allowInvalid = TRUE
         ) %>%
           hot_col("Row", readOnly = TRUE)
 
@@ -278,18 +280,7 @@ server <- function(input, output, session) {
 
         if (length(reset_idx) > 0) {
           hot_data[TABLE_ROW_DELTA, fy_cols[reset_idx]] <- 0
-          if (length(invalid_idx) > 0) {
-            showNotification(
-              paste0(
-                "Only numeric values are allowed in User Delta cells. ",
-                "Reset to 0 in ",
-                paste(fy_labels[invalid_idx], collapse = ", "),
-                "."
-              ),
-              type = "warning",
-              duration = 4
-            )
-          }
+          # Silent — no notification. Cell just snaps back to 0.00.
         }
 
         # Force a fresh numeric dataframe so downstream consumers always
