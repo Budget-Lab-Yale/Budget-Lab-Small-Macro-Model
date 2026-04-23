@@ -292,6 +292,21 @@ ui <- fluidPage(
         });
       });
 
+      // On narrow widths, opening the Custom Scenario Builder while the
+      // Controls drawer is also open leaves Controls behind with no tint
+      // (Bootstrap reuses a single backdrop for both). Close Controls
+      // first, then let Bootstrap's toggle handler open CSB. On wide
+      // widths Controls is inline (no .show class) so this is a no-op.
+      document.addEventListener('click', function(e) {
+        var customBtn = e.target.closest('#open_assumptions');
+        if (!customBtn) return;
+        var controlsDrawer = document.getElementById('controls_drawer');
+        if (!controlsDrawer || !controlsDrawer.classList.contains('show')) return;
+        if (!window.bootstrap || !bootstrap.Offcanvas) return;
+        var inst = bootstrap.Offcanvas.getInstance(controlsDrawer);
+        if (inst) inst.hide();
+      });
+
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refreshAllHotTables, 120);
       });
