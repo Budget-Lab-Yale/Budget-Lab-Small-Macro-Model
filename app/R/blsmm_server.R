@@ -15,6 +15,12 @@ server <- function(input, output, session) {
   # preset is clicked or the user resets. Running a simulation does NOT
   # clear the active preset.
   active_preset <- reactiveVal(NULL)
+  # Timestamp of the most recent preset application. Used by the
+  # handsontable observer to decide whether a table-change event is
+  # user-driven (so it should clear active_preset) or was caused by
+  # the preset itself writing to table_state (so it should NOT clear
+  # active_preset).
+  preset_apply_time <- reactiveVal(0)
   preset_button_ids <- c(
     rapid_ai          = "preset_rapid_ai",
     persistent_infl   = "preset_persistent_infl",
@@ -313,10 +319,15 @@ server <- function(input, output, session) {
           identical(run_state_note(), "Baseline loaded")
 
         if (!(is_initial_baseline_state && !has_nonzero_delta && !has_invalid_delta)) {
-          # Any year-by-year edit means the scenario diverges from any
-          # preset — clear the preset highlight so only Custom Scenario
-          # can light up.
-          active_preset(NULL)
+          # A year-by-year edit made by the USER should clear any active
+          # preset (so Custom Scenario can light up instead). But this
+          # observer also fires when a preset programmatically writes to
+          # table_state (→ rHandsontable re-render → input change →
+          # debounce). Guard with a 600ms window after the last preset
+          # application — within that window, skip clearing.
+          if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 0.6) {
+            active_preset(NULL)
+          }
           set_run_state("dirty", "Inputs changed. Press Run to update results")
         }
       }, ignoreInit = TRUE)
@@ -627,6 +638,7 @@ server <- function(input, output, session) {
   # Source: BLSMM_1_8_20260326_links_rapidAI.xlsm
   # Three simultaneous shocks: productivity boost, LFPR decline, outlay rise
   observeEvent(input$preset_rapid_ai, {
+    preset_apply_time(as.numeric(Sys.time()))
     apply_multi_preset(list(
       table_productivity = c(1.60, 1.50, 1.50, 1.60, 1.60,
                              1.70, 1.70, 1.80, 1.80, 1.80),
@@ -641,6 +653,7 @@ server <- function(input, output, session) {
   # Source: BLSMM_1_8_20260326_links_persistentinflation.xlsm
   # Front-loaded inflation shock (3 nonzero years)
   observeEvent(input$preset_persistent_infl, {
+    preset_apply_time(as.numeric(Sys.time()))
     apply_single_preset(
       "table_inflation_shock",
       c(0.0, 0.1, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -652,6 +665,7 @@ server <- function(input, output, session) {
   # Source: defense_outlays_data.xlsx, "Primary Outlays Delta" col
   # Defense outlay path including +$350B FY2027 mandatory spending
   observeEvent(input$preset_military_conflict, {
+    preset_apply_time(as.numeric(Sys.time()))
     apply_single_preset(
       "table_outlays",
       c(0.05926643923051801, 1.4648663376827828,
