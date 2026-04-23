@@ -395,6 +395,30 @@ simple_input_card <- function(table_key, label, units = "pp", example = NULL) {
   )
 }
 
+#' One row in the Scenario card: preset button on the left, ? popover trigger
+#' on the right. Click the button to apply the preset; click the ? to see a
+#' one-line description without consuming sidebar vertical space.
+preset_row <- function(input_id, label, description) {
+  shiny::div(
+    class = "d-flex gap-2 mb-2 blsmm-preset-row align-items-stretch",
+    shiny::actionButton(
+      inputId = input_id,
+      label   = label,
+      class   = "btn btn-outline-primary btn-sm blsmm-preset-btn flex-grow-1"
+    ),
+    bslib::popover(
+      trigger = shiny::tags$button(
+        type  = "button",
+        class = "btn btn-sm btn-outline-secondary blsmm-preset-info",
+        `aria-label` = paste0("About ", label),
+        shiny::tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
+      ),
+      description,
+      placement = "right"
+    )
+  )
+}
+
 # ==============================================================================
 # USER INTERFACE
 # ==============================================================================

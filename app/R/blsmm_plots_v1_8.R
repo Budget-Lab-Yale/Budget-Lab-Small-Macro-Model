@@ -68,7 +68,7 @@ output$plot_unemployment <- renderPlotly({
 
   p %>%
     layout(
-      title = "Unemployment rate (%)",
+      title = "<b>Unemployment rate (%)</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -121,7 +121,7 @@ output$plot_inflation <- renderPlotly({
 
   p %>%
     layout(
-      title = "Inflation (%)",
+      title = "<b>Inflation (%)</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent (GDP deflator)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -180,7 +180,7 @@ output$plot_real_gdp_indexed <- renderPlotly({
 
   p %>%
     layout(
-      title = "Real GDP indexed (100 = FY2025)",
+      title = "<b>Real GDP indexed (100 = FY2025)</b>",
       xaxis = list(title = "", gridcolor = th$grid),
       yaxis = list(
         title = "Index (FY2025 = 100)",
@@ -268,7 +268,7 @@ output$plot_10yr_yield <- renderPlotly({
 
   p %>%
     layout(
-      title = "10-year Treasury yield (%)",
+      title = "<b>10-year Treasury yield (%)</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -348,7 +348,7 @@ output$plot_federal_funds <- renderPlotly({
 
   p %>%
     layout(
-      title = "Federal Funds rate (%)",
+      title = "<b>Federal Funds rate (%)</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -408,7 +408,7 @@ output$plot_budget_balance <- renderPlotly({
 
   p %>%
     layout(
-      title = "Budget Balance % of GDP",
+      title = "<b>Budget Balance % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP (negative = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -461,7 +461,7 @@ output$plot_debt <- renderPlotly({
 
   p %>%
     layout(
-      title = "Debt % of GDP",
+      title = "<b>Debt % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -516,7 +516,7 @@ output$plot_avg_interest_rate <- renderPlotly({
 
   p %>%
     layout(
-      title = "Average interest rate on federal debt (%)",
+      title = "<b>Average interest rate on federal debt (%)</b>",
       xaxis = list(title = "", gridcolor = th$grid),
       yaxis = list(
         title = "Percent",
@@ -579,7 +579,7 @@ output$plot_total_receipts <- renderPlotly({
 
   p %>%
     layout(
-      title = "Total Receipts % of GDP",
+      title = "<b>Total Receipts % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -640,7 +640,7 @@ output$plot_total_outlays <- renderPlotly({
 
   p %>%
     layout(
-      title = "Total Outlays % of GDP",
+      title = "<b>Total Outlays % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -699,7 +699,7 @@ output$plot_primary_outlays <- renderPlotly({
 
   p %>%
     layout(
-      title = "Primary Outlays % of GDP",
+      title = "<b>Primary Outlays % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
@@ -757,7 +757,7 @@ output$plot_real_gdp_growth <- renderPlotly({
 
   p %>%
     layout(
-      title = "Real GDP growth (%)",
+      title = "<b>Real GDP growth (%)</b>",
       xaxis = list(title = "", gridcolor = th$grid),
       yaxis = list(
         title = "Percent",
@@ -819,7 +819,7 @@ output$plot_primary_balance <- renderPlotly({
 
   p %>%
     layout(
-      title = "Primary Budget Balance % of GDP",
+      title = "<b>Primary Budget Balance % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
       yaxis = list(title = "Percent of GDP (negative = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",

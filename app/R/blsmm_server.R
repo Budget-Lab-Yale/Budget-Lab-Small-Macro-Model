@@ -884,7 +884,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Budget Balance Deviation from Baseline (pp of GDP)",
+        title = "<b>Budget Balance Deviation from Baseline (pp of GDP)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -918,7 +918,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Unemployment Rate Deviation from Baseline (pp)",
+        title = "<b>Unemployment Rate Deviation from Baseline (pp)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -955,7 +955,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Real GDP Growth Deviation from Baseline (pp)",
+        title = "<b>Real GDP Growth Deviation from Baseline (pp)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -989,7 +989,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Inflation Rate Deviation from Baseline (pp)",
+        title = "<b>Inflation Rate Deviation from Baseline (pp)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1026,7 +1026,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Debt/GDP Deviation from Baseline (pp of GDP)",
+        title = "<b>Debt/GDP Deviation from Baseline (pp of GDP)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1060,7 +1060,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Federal Funds Rate Deviation from Baseline (pp)",
+        title = "<b>Federal Funds Rate Deviation from Baseline (pp)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1094,7 +1094,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "10-Year Treasury Yield Deviation from Baseline (pp)",
+        title = "<b>10-Year Treasury Yield Deviation from Baseline (pp)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1128,7 +1128,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Primary Balance Deviation from Baseline (pp of GDP)",
+        title = "<b>Primary Balance Deviation from Baseline (pp of GDP)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",

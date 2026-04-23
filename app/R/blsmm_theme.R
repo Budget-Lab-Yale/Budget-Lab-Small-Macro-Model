@@ -283,17 +283,30 @@ bl_brand_overrides_block <- function() {
       container-type: inline-size;
     }
 
-    /* Center the Solver Status / run-status pill inside the sidebar */
-    .blsmm-solver-status,
-    .blsmm-run-status-wrap {
-      text-align: center;
+    /* Controls header: sidebar title more prominent, with bottom rule */
+    .bslib-sidebar-layout > .sidebar .sidebar-title,
+    .bslib-sidebar-layout .sidebar-content > :first-child > .sidebar-title,
+    .blsmm-sidebar-title {
+      font-family: var(--bl-font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--bl-navy);
+      letter-spacing: -0.01em;
+      margin: 0 0 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--bl-navy);
     }
-    .blsmm-solver-status h4 {
+
+    /* Center sim-status pills (SSE + run-status) inside the Simulation card */
+    .blsmm-sim-status-wrap {
       text-align: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
-    .blsmm-solver-status .sse-box {
-      display: inline-block;
+    .blsmm-sim-status-wrap:last-child { margin-bottom: 0; }
+    .blsmm-sse-pill {
+      font-family: var(--bl-font-mono);
+      font-size: 0.78em;
+      letter-spacing: 0;
     }
 
     /* Run Simulation / Reset buttons:
@@ -311,11 +324,14 @@ bl_brand_overrides_block <- function() {
       font-weight: 600;
       min-height: 56px;
     }
-    #run_sim.blsmm-action-btn {
-      font-size: clamp(0.9rem, 5cqi, 1.05rem);
+    #run_sim.blsmm-action-btn,
+    .blsmm-scenario-primary.blsmm-action-btn {
+      font-size: clamp(0.95rem, 5.5cqi, 1.1rem);
+      min-height: 64px;
     }
-    #reset_inputs.blsmm-action-btn {
-      font-size: clamp(0.82rem, 4.2cqi, 0.95rem);
+    .blsmm-scenario-primary.blsmm-action-btn {
+      padding: 14px 16px;
+      font-weight: 700;
     }
     .blsmm-action-btn > i,
     .blsmm-action-btn > .fa,
@@ -324,6 +340,23 @@ bl_brand_overrides_block <- function() {
       flex: 0 0 auto;
       margin: 0;
     }
+
+    /* Preset row: scenario button fills the row, ? info button sits at
+       the right. Info button is a fixed-width square. */
+    .blsmm-preset-row .blsmm-preset-btn {
+      white-space: normal;
+      line-height: 1.2;
+      min-height: 34px;
+    }
+    .blsmm-preset-info {
+      flex: 0 0 auto;
+      width: 34px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .blsmm-preset-info i { font-size: 0.95em; }
 
     /* ---------- KPI value boxes ----------
        Light card look: white background, navy left-edge accent, muted
@@ -334,29 +367,41 @@ bl_brand_overrides_block <- function() {
       border-left: 4px solid var(--bl-navy) !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
+    .blsmm-kpi-card .card-body {
+      padding: 10px 14px;
+    }
     .blsmm-kpi-card .value-box-title {
       color: var(--bl-muted) !important;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      font-size: 0.7rem;
       font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .blsmm-kpi-card .value-box-value {
       color: var(--bl-navy) !important;
-      font-size: 1.8rem;
+      font-size: 1.55rem;
       font-weight: 700;
       line-height: 1.1;
+      margin: 0;
+    }
+    .blsmm-kpi-card .value-box-showcase {
+      width: 44px !important;
+      min-width: 44px !important;
+      padding: 0 4px !important;
     }
     .blsmm-kpi-card .value-box-showcase,
     .blsmm-kpi-card .value-box-showcase svg,
     .blsmm-kpi-card .value-box-showcase .fa {
       color: var(--bl-navy) !important;
-      opacity: 0.35;
+      opacity: 0.32;
+      font-size: 1.5rem;
     }
     .blsmm-kpi-card p {
       color: var(--bl-body) !important;
-      margin-top: 6px;
+      margin: 2px 0 0;
+      font-size: 0.78em;
+      line-height: 1.25;
     }
 
     /* ---------- Assumptions drawer (offcanvas) ----------
@@ -430,15 +475,16 @@ bl_brand_overrides_block <- function() {
     }
 
     /* Preset buttons: active state (sticky highlight until another preset
-       is clicked or inputs are reset). Fills the outline variant with its
-       own color so the selected scenario reads at a glance. */
-    .btn-outline-primary.preset-active,
-    .btn-outline-primary.preset-active:focus,
-    .btn-outline-primary.preset-active:hover {
+       is clicked or inputs are reset). All three presets share the same
+       navy active fill since they're the same variant now. */
+    .blsmm-preset-btn.preset-active,
+    .blsmm-preset-btn.preset-active:focus,
+    .blsmm-preset-btn.preset-active:hover {
       background-color: var(--bl-navy) !important;
       border-color: var(--bl-navy) !important;
       color: #ffffff !important;
     }
+    /* Legacy rules kept for any remaining variant-flavored selectors. */
     .btn-outline-warning.preset-active,
     .btn-outline-warning.preset-active:focus,
     .btn-outline-warning.preset-active:hover {
