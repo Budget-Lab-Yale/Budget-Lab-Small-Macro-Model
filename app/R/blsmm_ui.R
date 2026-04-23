@@ -425,10 +425,13 @@ ui <- fluidPage(
           h4("Scenario"),
 
           # Custom Scenario — the primary option. Larger button.
+          # Outline by default; fills navy via .preset-active when the
+          # user has a custom scenario live (server toggles the class
+          # via the custom_scenario_active reactive).
           tags$button(
             id = "open_assumptions",
             type = "button",
-            class = "btn btn-primary blsmm-action-btn blsmm-scenario-primary",
+            class = "btn btn-outline-primary blsmm-action-btn blsmm-scenario-primary blsmm-preset-btn",
             style = "width: 100%; margin-bottom: 14px;",
             `data-bs-toggle` = "offcanvas",
             `data-bs-target` = "#assumptions_drawer",

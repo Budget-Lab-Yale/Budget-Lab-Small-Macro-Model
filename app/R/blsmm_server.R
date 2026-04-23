@@ -32,6 +32,32 @@ server <- function(input, output, session) {
     }
   })
 
+  # Custom Scenario highlight: TRUE iff no preset is active AND at least
+  # one delta in table_state is non-zero. Derived so the state self-
+  # corrects if the user manually zeroes everything out.
+  custom_scenario_active <- reactive({
+    if (!is.null(active_preset())) return(FALSE)
+    fy_cols <- seq(TABLE_FIRST_DATA_COL,
+                   TABLE_FIRST_DATA_COL + N_PERIODS - 1)
+    keys <- names(table_state)
+    if (length(keys) == 0) return(FALSE)
+    any(vapply(keys, function(k) {
+      tbl <- table_state[[k]]
+      if (is.null(tbl)) return(FALSE)
+      delta <- suppressWarnings(
+        as.numeric(unlist(tbl[TABLE_ROW_DELTA, fy_cols], use.names = FALSE))
+      )
+      any(abs(delta) > 1e-9, na.rm = TRUE)
+    }, logical(1)))
+  })
+  observe({
+    if (isTRUE(custom_scenario_active())) {
+      shinyjs::addCssClass("open_assumptions", "preset-active")
+    } else {
+      shinyjs::removeCssClass("open_assumptions", "preset-active")
+    }
+  })
+
   output$run_status_bar <- renderUI({
     state <- run_state()
     state_class <- switch(
@@ -287,6 +313,10 @@ server <- function(input, output, session) {
           identical(run_state_note(), "Baseline loaded")
 
         if (!(is_initial_baseline_state && !has_nonzero_delta && !has_invalid_delta)) {
+          # Any year-by-year edit means the scenario diverges from any
+          # preset — clear the preset highlight so only Custom Scenario
+          # can light up.
+          active_preset(NULL)
           set_run_state("dirty", "Inputs changed. Press Run to update results")
         }
       }, ignoreInit = TRUE)
@@ -297,6 +327,9 @@ server <- function(input, output, session) {
     is_initial_baseline_state <- identical(run_state(), "solved") &&
       identical(run_state_note(), "Baseline loaded")
     if (!(is_initial_baseline_state && !isTRUE(input$expectations_speed))) {
+      # Changing the expectations-speed option is a scenario edit too;
+      # clear the preset highlight.
+      active_preset(NULL)
       set_run_state("dirty", "Options changed. Press Run to update results")
     }
   }, ignoreInit = TRUE)
@@ -689,6 +722,10 @@ server <- function(input, output, session) {
           mag   <- input[[mag_id]]
           delta <- build_shape_delta(shape, mag, N_PERIODS)
           update_table_with_shocks(tbl_name, delta)
+          # Any simple-mode edit means the scenario diverges from any
+          # preset — clear the preset highlight so only Custom Scenario
+          # can light up.
+          active_preset(NULL)
           set_run_state("dirty",
                         "Inputs changed. Press Run to update results")
         }
