@@ -189,25 +189,13 @@ server <- function(input, output, session) {
           table_state[[id]],
           rowHeaders = NULL,
           height = 180,
-          readOnly = TRUE,
-          # allowInvalid = TRUE lets the cell commit and deselect
-          # normally when a user enters text or blank. The server-side
-          # observer then silently rewrites the delta cell to 0.00.
-          # (With allowInvalid = FALSE the cell refuses to deselect
-          # while holding an invalid value — too aggressive.)
-          allowInvalid = TRUE
+          readOnly = TRUE
         ) %>%
           hot_col("Row", readOnly = TRUE)
 
-        # Numeric column type on every FY column so invalid text is
-        # rejected and the prior 0.00 is restored. Without explicit
-        # numeric type, rhandsontable infers per-column from data and
-        # can leave cells blank after invalid entry.
+        # Keep only User Delta row editable (yellow row); baseline/level stay locked.
         for (col_idx in seq(TABLE_FIRST_DATA_COL, ncol(table_state[[id]]))) {
-          tbl <- tbl %>%
-            hot_col(colnames(table_state[[id]])[col_idx],
-                    type = "numeric", format = "0.00") %>%
-            hot_cell(row = TABLE_ROW_DELTA, col = col_idx, readOnly = FALSE)
+          tbl <- tbl %>% hot_cell(row = TABLE_ROW_DELTA, col = col_idx, readOnly = FALSE)
         }
 
         tbl
@@ -263,12 +251,10 @@ server <- function(input, output, session) {
       observeEvent(debounced_table_input(), {
         hot_data <- hot_to_r(debounced_table_input())
         req(hot_data)
+        prev_data <- isolate(table_state[[id]])
 
-        # Normalize the User Delta row: anything that isn't a finite
-        # number (text / blank / NA) becomes 0.00. Simpler and
-        # user-friendlier than reverting to prior values — blank cells
-        # no longer stay blank after a backspace, and invalid entries
-        # snap to 0 instead of lingering.
+        # Enforce numeric-only inputs in User Delta row:
+        # revert non-numeric (non-blank) entries to the previous value.
         fy_cols <- seq(TABLE_FIRST_DATA_COL, TABLE_FIRST_DATA_COL + N_PERIODS - 1)
         raw_vals <- as.character(unlist(hot_data[TABLE_ROW_DELTA, fy_cols], use.names = FALSE))
         raw_vals[is.na(raw_vals)] <- ""
@@ -276,19 +262,21 @@ server <- function(input, output, session) {
         parsed_vals <- suppressWarnings(as.numeric(trimmed))
         blank_mask <- trimmed == ""
         invalid_idx <- which(!blank_mask & is.na(parsed_vals))
-        reset_idx <- which(blank_mask | is.na(parsed_vals))
 
-        if (length(reset_idx) > 0) {
-          hot_data[TABLE_ROW_DELTA, fy_cols[reset_idx]] <- 0
-          # Silent — no notification. Cell just snaps back to 0.00.
+        if (length(invalid_idx) > 0 && !is.null(prev_data)) {
+          hot_data[TABLE_ROW_DELTA, fy_cols[invalid_idx]] <- prev_data[TABLE_ROW_DELTA, fy_cols[invalid_idx]]
+          showNotification(
+            paste0(
+              "Only numeric values are allowed in User Delta cells. ",
+              "Invalid entries were reverted in ",
+              paste(fy_labels[invalid_idx], collapse = ", "),
+              "."
+            ),
+            type = "warning",
+            duration = 4
+          )
         }
 
-        # Force a fresh numeric dataframe so downstream consumers always
-        # see numeric (not character) in the delta row. rhandsontable
-        # sometimes returns character columns after an invalid-edit event.
-        hot_data[TABLE_ROW_DELTA, fy_cols] <- as.numeric(
-          unlist(hot_data[TABLE_ROW_DELTA, fy_cols], use.names = FALSE)
-        )
         table_state[[id]] <- update_table_level_row(hot_data)
 
         # Ignore startup no-op table events so initial status remains Complete.
