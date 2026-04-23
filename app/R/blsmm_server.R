@@ -323,9 +323,12 @@ server <- function(input, output, session) {
           # preset (so Custom Scenario can light up instead). But this
           # observer also fires when a preset programmatically writes to
           # table_state (→ rHandsontable re-render → input change →
-          # debounce). Guard with a 600ms window after the last preset
-          # application — within that window, skip clearing.
-          if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 0.6) {
+          # debounce). Guard with a 1.5s window after the last preset
+          # application. Rapid AI Adoption updates 3 tables via
+          # apply_multi_preset; each triggers refresh_hot_tables() with
+          # a 50ms setTimeout plus the observer's 150ms debounce, and
+          # the last-arriving echo could exceed shorter windows.
+          if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 1.5) {
             active_preset(NULL)
           }
           set_run_state("dirty", "Inputs changed. Press Run to update results")
