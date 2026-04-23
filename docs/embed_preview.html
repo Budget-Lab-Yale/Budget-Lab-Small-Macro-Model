@@ -92,11 +92,13 @@
       border: 0;
       display: block;
       background: white;
-      height: 800px;
+      /* No fixed height: iframe-resizer sets it to content height. */
+      min-height: 400px;
+      width: 100%;
     }
-    .frame-400 iframe { width: 400px; }
-    .frame-600 iframe { width: 600px; }
-    .frame-900 iframe { width: 900px; }
+    .frame-400 { width: 400px; }
+    .frame-600 { width: 600px; }
+    .frame-900 { width: 900px; }
 
     .status {
       margin-top: 16px;
@@ -157,15 +159,47 @@
   Run <code>source("app.R")</code> in RStudio, then open this file in a browser.
   The app is pinned to port <code>8100</code> by <code>app.R</code> so the URL above is stable across sessions.
   If the port is already in use, change it in <code>app.R</code> and update the URL above, then click Reload frames.
+  <br><br>
+  <strong>Auto-height:</strong> iframes use <code>iframe-resizer</code> to size themselves to content height, so you see the
+  full app under each width without nested scrollbars. Production embed pages on budgetlab.yale.edu will need the same
+  <code>iframeResizer.min.js</code> script loaded and initialized with <code>iFrameResize()</code>.
 </div>
 
+<!-- iframe-resizer parent script. Pairs with the contentWindow script
+     loaded inside the Shiny app (see blsmm_ui.R tags$head) to size each
+     iframe to its content height without nested scrollbars. -->
+<script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.min.js"></script>
 <script>
-  function updateSources() {
-    const url = document.getElementById('src').value.trim();
-    ['f400', 'f600', 'f900'].forEach(id => {
-      document.getElementById(id).src = url;
+  const FRAME_IDS = ['f400', 'f600', 'f900'];
+
+  function initResizers() {
+    if (typeof iFrameResize !== 'function') return;
+    FRAME_IDS.forEach(id => {
+      iFrameResize(
+        {
+          log: false,
+          checkOrigin: false,          // local file:// parent -> http://127.0.0.1 iframe
+          heightCalculationMethod: 'lowestElement',
+          tolerance: 4,
+          scrolling: false
+        },
+        '#' + id
+      );
     });
   }
+
+  function updateSources() {
+    const url = document.getElementById('src').value.trim();
+    FRAME_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el.iFrameResizer) el.iFrameResizer.close();
+      el.src = url;
+    });
+    // Re-init after the new src loads.
+    setTimeout(initResizers, 600);
+  }
+
+  window.addEventListener('load', initResizers);
 </script>
 
 </body>

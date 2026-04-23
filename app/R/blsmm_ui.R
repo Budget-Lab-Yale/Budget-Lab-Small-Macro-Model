@@ -9,6 +9,10 @@ ui <- fluidPage(
     bl_css_vars_block(),
     # Brand overrides: body/heading fonts, primary colors
     bl_brand_overrides_block(),
+    # iframe-resizer child script: lets a parent page auto-size this iframe
+    # to its content height so there are no nested scrollbars. Safe to load
+    # when not embedded - it's a no-op unless a parent calls iFrameResize().
+    tags$script(src = "https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.contentWindow.min.js"),
     tags$style(HTML("
       /* Yellow highlight for editable row (User Delta row = row 2) */
       .handsontable tbody tr:nth-child(2) td {

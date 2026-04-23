@@ -159,6 +159,45 @@ Small Macro Model/
 
 ------------------------------------------------------------------------
 
+## Deployment & Embedding
+
+The app is designed to be embedded on the Budget Lab website (budgetlab.yale.edu) via an iframe.
+
+### Hosting options
+
+Two practical paths for running the server:
+
+1.  **shinyapps.io** (Posit-hosted, good for development previews and low-traffic production)
+    - Install `rsconnect` once: `install.packages("rsconnect")`
+    - Configure your account: `rsconnect::setAccountInfo(name, token, secret)`
+    - Deploy from the project root: `rsconnect::deployApp()`
+    - Free tier: 25 active hours/month (fine for dev and stakeholder review). Standard tier ($99/mo) removes the active-hour limit.
+2.  **Posit Connect via Yale** (preferred for production if available)
+    - Ask Yale ITS whether the university licenses Posit Connect. If so, deploy via `rsconnect::deployApp(server = "...")`. No active-hour limits, stable URL, SSO-friendly.
+    - If Yale does not have a Posit Connect license, upgrade shinyapps.io to the Standard tier.
+
+Other paths (Shinylive / WebAssembly, Docker on Yale infra) are possible but more work; iframe + server-side Shiny is the recommended pattern.
+
+### Local preview of the narrow-embed layout
+
+`docs/embed_preview.html` iframes the running app at three widths (400 / 600 / 900 px) so you can see how it behaves under a narrow embed. To use it:
+
+1.  Run `source("app.R")` in RStudio. The app pins itself to port `8100` via `options(shiny.port = 8100)` so the preview URL is stable.
+2.  Open `docs/embed_preview.html` in a browser (double-click is fine).
+3.  Each iframe auto-sizes to the app's content height — no nested scrollbars — via the [iframe-resizer](https://github.com/davidjbradshaw/iframe-resizer) library (v4.4.5, CDN-loaded).
+
+### Embedding on budgetlab.yale.edu
+
+The app loads the `iframeResizer.contentWindow` child script internally (see `app/R/blsmm_ui.R`). The host page needs three things:
+
+1.  An `<iframe>` element pointing at the deployed Shiny URL, with `scrolling="no"` and no fixed `height`.
+2.  The parent script: `<script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.min.js"></script>`
+3.  An init call after the iframe is in the DOM: `iFrameResize({ log: false, checkOrigin: false, heightCalculationMethod: 'lowestElement' }, '#blsmm-iframe');`
+
+Fonts and colors are bundled inside the iframe (Mallory/YaleNew stack with Source Sans 3 fallback), so the embed does not depend on the parent page's stylesheet.
+
+------------------------------------------------------------------------
+
 ## Use Cases
 
 ### 1. Fiscal Policy Analysis
