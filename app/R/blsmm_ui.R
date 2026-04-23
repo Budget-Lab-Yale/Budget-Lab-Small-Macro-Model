@@ -243,6 +243,25 @@ ui <- fluidPage(
         });
       });
 
+      // Click outside an open popover -> close it. A click INSIDE the
+      // popover itself, or ON its trigger, is left alone (trigger click
+      // is Bootstrap's own toggle behavior).
+      document.addEventListener('click', function(e) {
+        if (!window.bootstrap || !bootstrap.Popover) return;
+        if (e.target.closest('.popover')) return;                   // inside popover body
+        if (e.target.closest('[data-bs-toggle=\"popover\"]')) return; // trigger element
+        if (e.target.closest('.blsmm-info-trigger')) return;          // our info trigger class
+        document.querySelectorAll('.popover.show').forEach(function(popEl) {
+          var describedTrigger = document.querySelector(
+            '[aria-describedby=\"' + popEl.id + '\"]'
+          );
+          if (describedTrigger) {
+            var inst = bootstrap.Popover.getInstance(describedTrigger);
+            if (inst) inst.hide();
+          }
+        });
+      });
+
       // Safety-net handler for offcanvas dismiss (X close button).
       // Bootstrap's auto-wiring sometimes misses clicks on .btn-close
       // inside responsive offcanvases (.offcanvas-md). This delegates
