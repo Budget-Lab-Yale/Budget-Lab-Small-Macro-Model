@@ -8,97 +8,339 @@ server <- function(input, output, session) {
     if (!is.null(note)) run_state_note(note)
   }
 
+  # Active preset tracking. NULL when no preset is loaded (or inputs have
+  # been reset). Set by each preset observer; cleared by the reset
+  # observer. An observe() below toggles a CSS class on the three preset
+  # buttons so the active one stays visually selected until another
+  # preset is clicked or the user resets. Running a simulation does NOT
+  # clear the active preset.
+  active_preset <- reactiveVal(NULL)
+  # Timestamp of the most recent preset application. Used by the
+  # handsontable observer to decide whether a table-change event is
+  # user-driven (so it should clear active_preset) or was caused by
+  # the preset itself writing to table_state (so it should NOT clear
+  # active_preset).
+  preset_apply_time <- reactiveVal(0)
+  preset_button_ids <- c(
+    rapid_ai          = "preset_rapid_ai",
+    persistent_infl   = "preset_persistent_infl",
+    military_conflict = "preset_military_conflict"
+  )
+  observe({
+    ap <- active_preset()
+    for (key in names(preset_button_ids)) {
+      btn_id <- preset_button_ids[[key]]
+      if (!is.null(ap) && identical(ap, key)) {
+        shinyjs::addCssClass(btn_id, "preset-active")
+      } else {
+        shinyjs::removeCssClass(btn_id, "preset-active")
+      }
+    }
+  })
+
+  # Custom Scenario highlight: TRUE iff no preset is active AND at least
+  # one delta in table_state is non-zero. Derived so the state self-
+  # corrects if the user manually zeroes everything out.
+  custom_scenario_active <- reactive({
+    if (!is.null(active_preset())) return(FALSE)
+    fy_cols <- seq(TABLE_FIRST_DATA_COL,
+                   TABLE_FIRST_DATA_COL + N_PERIODS - 1)
+    keys <- names(table_state)
+    if (length(keys) == 0) return(FALSE)
+    any(vapply(keys, function(k) {
+      tbl <- table_state[[k]]
+      if (is.null(tbl)) return(FALSE)
+      delta <- suppressWarnings(
+        as.numeric(unlist(tbl[TABLE_ROW_DELTA, fy_cols], use.names = FALSE))
+      )
+      any(abs(delta) > 1e-9, na.rm = TRUE)
+    }, logical(1)))
+  })
+  observe({
+    if (isTRUE(custom_scenario_active())) {
+      shinyjs::addCssClass("open_assumptions", "preset-active")
+    } else {
+      shinyjs::removeCssClass("open_assumptions", "preset-active")
+    }
+  })
+
   output$run_status_bar <- renderUI({
     state <- run_state()
-    state_class <- switch(
-      state,
-      ready = "run-ready",
-      dirty = "run-dirty",
-      running = "run-running",
-      solved = "run-solved",
-      error = "run-error",
-      "run-ready"
-    )
+    note  <- run_state_note()
 
-    state_label <- switch(
-      state,
-      ready = "READY",
-      dirty = "DIRTY",
-      running = "RUNNING",
-      solved = "Complete",
-      error = "ERROR",
-      "READY"
-    )
+    # Initial baseline: grey "Ready | Baseline Loaded" pill.
+    # Any other solved state: green pill, note only (no label prefix).
+    is_initial <- identical(state, "solved") &&
+      identical(note, "Baseline loaded")
+
+    state_class <- if (is_initial) {
+      "run-ready"
+    } else {
+      switch(
+        state,
+        ready = "run-ready",
+        dirty = "run-dirty",
+        running = "run-running",
+        solved = "run-solved",
+        error = "run-error",
+        "run-ready"
+      )
+    }
+
+    pill_content <- if (is_initial) {
+      "Ready | Baseline Loaded"
+    } else if (identical(state, "running")) {
+      paste0("RUNNING | ", note)
+    } else if (identical(state, "error")) {
+      paste0("ERROR | ", note)
+    } else if (identical(state, "dirty")) {
+      tagList("Inputs Changed", br(), "Run simulation to update results")
+    } else {
+      note
+    }
 
     div(
       class = paste("run-status", state_class),
-      paste0(state_label, " | ", run_state_note())
+      pill_content
     )
   })
 
-  is_dark_mode <- reactive({
-    mode <- input$dark_mode
-    isTRUE(mode) || identical(mode, "dark")
-  })
-
+  # Plot theme pulls from Budget Lab design tokens (app/R/blsmm_theme.R).
+  #
+  # Line-color rule: baseline and scenario of the SAME variable use the
+  # same color; dash style (baseline = dashed, scenario = solid)
+  # distinguishes them. Single-variable plots use blue for both. Two-
+  # variable plots (10Y nominal vs real; r* vs Fed Funds) use blue for
+  # the primary pair and brand amber for the secondary pair.
   plot_theme <- reactive({
-    if (is_dark_mode()) {
-      list(
-        paper_bg = "#1f2630",
-        plot_bg = "#1f2630",
-        font = "#e9ecef",
-        grid = "#3a424a",
-        grid_secondary = "#2a323a",
-        zero = "#6c757d",
-        legend_bg = "rgba(31, 38, 48, 0.85)",
-        zero_line = "#adb5bd",
-        line_baseline = "#4A90E2",
-        line_scenario = "#F5A623",
-        line_secondary = "#B08AE8",
-        bar_baseline = "#4A90E2",
-        bar_scenario = "#F5A623",
-        debt_fill = "rgba(245, 166, 35, 0.25)"
-      )
-    } else {
-      list(
-        paper_bg = "#ffffff",
-        plot_bg = "#ffffff",
-        font = "#212529",
-        grid = "#e9ecef",
-        grid_secondary = "#f8f9fa",
-        zero = "#ced4da",
-        legend_bg = "rgba(255, 255, 255, 0.9)",
-        zero_line = "#6c757d",
-        line_baseline = "#0052A5",
-        line_scenario = "#E87722",
-        line_secondary = "#7B61C7",
-        bar_baseline = "#0052A5",
-        bar_scenario = "#E87722",
-        debt_fill = "rgba(232, 119, 34, 0.2)"
-      )
-    }
+    pal <- bl_colors
+    list(
+      paper_bg       = pal$bg,
+      plot_bg        = pal$bg,
+      font           = pal$body,
+      font_family    = bl_fonts$body,
+      grid           = pal$gridline,
+      grid_secondary = pal$bg_subtle,
+      zero           = pal$border,
+      legend_bg      = "rgba(255, 255, 255, 0.9)",
+      zero_line      = pal$muted,
+      # Primary variable pair: both baseline and scenario in brand blue.
+      line_baseline  = pal$blue,
+      line_scenario  = pal$blue,
+      # Secondary variable pair (2-pair charts only): brand amber.
+      line_secondary = pal$orange,
+      debt_fill      = "rgba(40, 109, 192, 0.18)",
+      hover_bg       = pal$navy
+    )
   })
 
   dt_deviation_palette <- reactive({
-    if (is_dark_mode()) {
-      list(
-        neg_bg = "rgba(248, 81, 73, 0.22)",
-        zero_bg = "rgba(255, 255, 255, 0.03)",
-        pos_bg = "rgba(63, 185, 80, 0.22)",
-        neg_fg = "#ff7b72",
-        zero_fg = "#c9d1d9",
-        pos_fg = "#7ee787"
-      )
-    } else {
-      list(
-        neg_bg = "rgba(220, 53, 69, 0.15)",
-        zero_bg = "rgba(248, 249, 250, 0)",
-        pos_bg = "rgba(40, 167, 69, 0.15)",
-        neg_fg = "#dc3545",
-        zero_fg = "#6c757d",
-        pos_fg = "#28a745"
-      )
-    }
+    list(
+      neg_bg  = "rgba(220, 53, 69, 0.15)",
+      zero_bg = "rgba(248, 249, 250, 0)",
+      pos_bg  = "rgba(40, 167, 69, 0.15)",
+      neg_fg  = "#dc3545",
+      zero_fg = "#6c757d",
+      pos_fg  = "#1a7a2e"
+    )
+  })
+
+  # ============================================================================
+  # SCREEN-READER CHART DESCRIPTIONS
+  # sr_level_desc: summarises a two-line (baseline + scenario) levels chart.
+  # sr_dev_desc:   summarises a single-line deviation chart.
+  # Both return a plain string used inside a sr-only aria-live paragraph in
+  # the corresponding output$<id>_sr renderUI block below.
+  # ============================================================================
+
+  sr_level_desc <- function(b, s, fy, fmt, unit, label) {
+    valid <- !is.na(b) & !is.na(s)
+    if (!any(valid)) return(label)
+    b <- b[valid]; s <- s[valid]; fy <- fy[valid]; n <- length(b)
+    dev <- s[n] - b[n]
+    dir <- if (abs(dev) < 0.005) "no significant change" else sprintf("%+.2f%s", dev, unit)
+    sprintf(
+      "%s. Baseline: %s%s in %s, ending %s%s in %s. Scenario ends at %s%s (%s from baseline).",
+      label,
+      sprintf(fmt, b[1]), unit, fy[1],
+      sprintf(fmt, b[n]), unit, fy[n],
+      sprintf(fmt, s[n]), unit,
+      dir
+    )
+  }
+
+  sr_dev_desc <- function(dev, fy, fmt, unit, label) {
+    valid <- !is.na(dev)
+    if (!any(valid)) return(label)
+    dev <- dev[valid]; fy <- fy[valid]; n <- length(dev)
+    peak_i <- which.max(abs(dev))
+    dir <- if (abs(dev[n]) < 0.005) "returns near zero" else sprintf("%+.2f%s", dev[n], unit)
+    sprintf(
+      "%s. Peak deviation %+.2f%s in %s. Final: %s in %s.",
+      label,
+      dev[peak_i], unit, fy[peak_i],
+      dir, fy[n]
+    )
+  }
+
+  # -- Levels tab SR outputs (12 charts) --
+
+  output$plot_unemployment_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$U, d$scenario$U, d$baseline$fy_label,
+                    "%.2f", " percent", "Unemployment rate"))
+  })
+
+  output$plot_inflation_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$PI, d$scenario$PI, d$baseline$fy_label,
+                    "%.2f", " percent", "Inflation rate"))
+  })
+
+  output$plot_10yr_yield_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$R10, d$scenario$R10, d$baseline$fy_label,
+                    "%.2f", " percent", "Nominal 10-year Treasury yield"))
+  })
+
+  output$plot_federal_funds_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$RF, d$scenario$RF, d$baseline$fy_label,
+                    "%.2f", " percent", "Federal Funds rate"))
+  })
+
+  output$plot_budget_balance_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- (d$baseline$BUD / d$baseline[["GDP$"]]) * 100
+    s <- (d$scenario$BUD  / d$scenario[["GDP$"]])  * 100
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Total budget balance"))
+  })
+
+  output$plot_debt_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$D_pct_GDP, d$scenario$D_pct_GDP, d$baseline$fy_label,
+                    "%.1f", "% of GDP", "Federal debt held by the public"))
+  })
+
+  output$plot_avg_interest_rate_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$RG, d$scenario$RG, d$baseline$fy_label,
+                    "%.2f", " percent", "Average interest rate on federal debt"))
+  })
+
+  output$plot_total_receipts_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- d$baseline$rgfr_star * (d$baseline$GDPstar / d$baseline$GDP)
+    s <- d$scenario$rgfr_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Total federal receipts"))
+  })
+
+  output$plot_total_outlays_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- (d$baseline$rgfop_star * (d$baseline$GDPstar / d$baseline$GDP)) +
+         ((d$baseline$NI / d$baseline[["GDP$"]]) * 100)
+    s <- (d$scenario$rgfop_star  * (d$scenario$GDPstar  / d$scenario$GDP))  +
+         ((d$scenario$NI  / d$scenario[["GDP$"]])  * 100)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Total federal outlays (including net interest)"))
+  })
+
+  output$plot_primary_outlays_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- d$baseline$rgfop_star * (d$baseline$GDPstar / d$baseline$GDP)
+    s <- d$scenario$rgfop_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Primary federal outlays (excluding interest)"))
+  })
+
+  output$plot_real_gdp_growth_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$real_gdp_growth, d$scenario$real_gdp_growth,
+                    d$baseline$fy_label,
+                    "%.2f", " percent", "Real GDP growth rate"))
+  })
+
+  output$plot_primary_balance_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- d$baseline$rbudp_star * (d$baseline$GDPstar / d$baseline$GDP)
+    s <- d$scenario$rbudp_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Primary budget balance"))
+  })
+
+  # -- Deviations tab SR outputs (8 charts) --
+
+  output$dev_plot_primary_balance_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_rbudp_star, d$fy_label,
+                  "%.2f", " pp of GDP", "Primary balance deviation from baseline"))
+  })
+
+  output$dev_plot_debt_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_D_pct_GDP, d$fy_label,
+                  "%.2f", " pp of GDP", "Debt-to-GDP deviation from baseline"))
+  })
+
+  output$dev_plot_unemployment_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_U, d$fy_label,
+                  "%.3f", " pp", "Unemployment rate deviation from baseline"))
+  })
+
+  output$dev_plot_inflation_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_PI, d$fy_label,
+                  "%.3f", " pp", "Inflation rate deviation from baseline"))
+  })
+
+  output$dev_plot_10yr_yield_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_R10, d$fy_label,
+                  "%.2f", " pp", "10-year Treasury yield deviation from baseline"))
+  })
+
+  output$dev_plot_federal_funds_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_RF, d$fy_label,
+                  "%.2f", " pp", "Federal Funds rate deviation from baseline"))
+  })
+
+  output$dev_plot_real_gdp_growth_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_real_gdp_growth, d$fy_label,
+                  "%.3f", " pp", "Real GDP growth deviation from baseline"))
+  })
+
+  output$dev_plot_output_gap_sr <- renderUI({
+    req(simulation_results()); full <- simulation_results()
+    b_pct <- (full$baseline$BUD / full$baseline[["GDP$"]]) * 100
+    s_pct <- (full$scenario$BUD  / full$scenario[["GDP$"]])  * 100
+    dev <- s_pct - b_pct
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(dev, full$baseline$fy_label,
+                  "%.2f", " pp of GDP", "Budget balance deviation from baseline"))
   })
 
   # ============================================================================
@@ -181,61 +423,20 @@ server <- function(input, output, session) {
     if (!tables_initialized()) initialize_tables(force = TRUE)
   })
 
-  for (table_id in table_ids) {
-    local({
-      id <- table_id
-      output[[id]] <- renderRHandsontable({
-        req(table_state[[id]])
-        tbl <- rhandsontable(
-          table_state[[id]],
-          rowHeaders = NULL,
-          height = 180,
-          readOnly = TRUE
-        ) %>%
-          hot_col("Row", readOnly = TRUE)
-
-        # Keep only User Delta row editable (yellow row); baseline/level stay locked.
-        for (col_idx in seq(TABLE_FIRST_DATA_COL, ncol(table_state[[id]]))) {
-          tbl <- tbl %>% hot_cell(row = TABLE_ROW_DELTA, col = col_idx, readOnly = FALSE)
-        }
-
-        tbl
-      })
-    })
-  }
-
-  get_current_table_data <- function(table_id) {
-    hot_data <- hot_to_r(input[[table_id]])
-    if (is.null(hot_data)) table_state[[table_id]] else hot_data
-  }
-
-  # Force Handsontable widgets to compute size/render when tabs change.
-  refresh_hot_tables <- function() {
-    shinyjs::runjs(
-      "setTimeout(function() {
-         window.dispatchEvent(new Event('resize'));
-         if (window.HTMLWidgets && HTMLWidgets.staticRender) {
-           HTMLWidgets.staticRender();
-         }
-       }, 50);"
-    )
-  }
-
-  session$onFlushed(function() {
-    refresh_hot_tables()
-  }, once = TRUE)
-
-  observeEvent(input$main_tabs, {
-    refresh_hot_tables()
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$input_subtabs, {
-    refresh_hot_tables()
-  }, ignoreInit = TRUE)
-
   # ============================================================================
-  # REACTIVE OBSERVERS - UPDATE LEVEL ROWS
+  # YEAR-BY-YEAR INPUT STRIPS
+  # ----------------------------------------------------------------------------
+  # Each category's "Edit year-by-year" disclosure contains a strip of 10
+  # native numericInputs named `delta_<table_id>_fy<yyyy>` plus matching
+  # baseline and level textOutputs. table_state[[table_id]] remains the
+  # single source of truth:
+  #   - user edits to the inputs flow UP to table_state (Direction A)
+  #   - programmatic writes to table_state (presets / reset / simple mode)
+  #     flow DOWN to the inputs via refresh_delta_inputs() (Direction B)
   # ============================================================================
+
+  # Helper to recompute the Level row from Baseline + Delta after any
+  # change to the delta values. Kept out of the observers for reuse.
   update_table_level_row <- function(hot_data) {
     if (is.null(hot_data)) return(hot_data)
     fy_cols <- seq(TABLE_FIRST_DATA_COL, ncol(hot_data))
@@ -245,94 +446,114 @@ server <- function(input, output, session) {
     hot_data
   }
 
+  # Direction B: push table_state values into each numericInput. Called
+  # after any programmatic write to table_state (presets, reset, simple
+  # mode). Opens the 1.5s echo guard first so the resulting input-change
+  # events do not clear active_preset.
+  refresh_delta_inputs <- function() {
+    preset_apply_time(as.numeric(Sys.time()))
+    for (id in table_ids) {
+      tbl <- isolate(table_state[[id]])
+      if (is.null(tbl)) next
+      for (yr in seq_len(N_PERIODS)) {
+        val <- suppressWarnings(as.numeric(
+          tbl[TABLE_ROW_DELTA, TABLE_FIRST_DATA_COL + yr - 1]
+        ))
+        updateTextInput(session,
+                        paste0("delta_", id, "_fy", 2025 + yr),
+                        value = format_signed_delta(val))
+      }
+    }
+  }
+
+  # Baseline + level textOutputs — 90 each. Baseline values don't change
+  # after the baseline data loads, but we render from table_state anyway
+  # so initialize_tables() picking up new baseline data propagates.
   for (table_id in table_ids) {
-    local({
-      id <- table_id
-      debounced_table_input <- debounce(reactive(input[[id]]), millis = 150)
-      observeEvent(debounced_table_input(), {
-        hot_data <- hot_to_r(debounced_table_input())
-        req(hot_data)
-        prev_data <- isolate(table_state[[id]])
+    for (yr in seq_len(N_PERIODS)) {
+      local({
+        id <- table_id
+        yyr <- yr
+        col <- TABLE_FIRST_DATA_COL + yyr - 1
+        suffix <- paste0(id, "_fy", 2025 + yyr)
+        output[[paste0("baseline_", suffix)]] <- renderText({
+          tbl <- table_state[[id]]
+          if (is.null(tbl)) return("")
+          sprintf("%.2f", as.numeric(tbl[TABLE_ROW_BASELINE, col]))
+        })
+        output[[paste0("level_", suffix)]] <- renderText({
+          tbl <- table_state[[id]]
+          if (is.null(tbl)) return("")
+          sprintf("%.2f", as.numeric(tbl[TABLE_ROW_LEVEL, col]))
+        })
+      })
+    }
+  }
 
-        # Enforce numeric-only inputs in User Delta row:
-        # revert non-numeric (non-blank) entries to the previous value.
-        fy_cols <- seq(TABLE_FIRST_DATA_COL, TABLE_FIRST_DATA_COL + N_PERIODS - 1)
-        raw_vals <- as.character(unlist(hot_data[TABLE_ROW_DELTA, fy_cols], use.names = FALSE))
-        raw_vals[is.na(raw_vals)] <- ""
-        trimmed <- trimws(raw_vals)
-        parsed_vals <- suppressWarnings(as.numeric(trimmed))
-        blank_mask <- trimmed == ""
-        invalid_idx <- which(!blank_mask & is.na(parsed_vals))
+  # Direction A: user edits to any delta_* input write that year's value
+  # into table_state, recompute the level row, and (outside the echo
+  # guard) mark the scenario dirty and clear active_preset.
+  for (table_id in table_ids) {
+    for (yr in seq_len(N_PERIODS)) {
+      local({
+        id <- table_id
+        yyr <- yr
+        col <- TABLE_FIRST_DATA_COL + yyr - 1
+        input_id <- paste0("delta_", id, "_fy", 2025 + yyr)
 
-        if (length(invalid_idx) > 0 && !is.null(prev_data)) {
-          hot_data[TABLE_ROW_DELTA, fy_cols[invalid_idx]] <- prev_data[TABLE_ROW_DELTA, fy_cols[invalid_idx]]
-          showNotification(
-            paste0(
-              "Only numeric values are allowed in User Delta cells. ",
-              "Invalid entries were reverted in ",
-              paste(fy_labels[invalid_idx], collapse = ", "),
-              "."
-            ),
-            type = "warning",
-            duration = 4
-          )
-        }
+        observeEvent(input[[input_id]], {
+          raw <- input[[input_id]]
+          new_val <- suppressWarnings(as.numeric(raw))
+          if (is.null(new_val) || is.na(new_val)) new_val <- 0
 
-        table_state[[id]] <- update_table_level_row(hot_data)
+          tbl <- isolate(table_state[[id]])
+          if (is.null(tbl)) return(invisible())
 
-        # Ignore startup no-op table events so initial status remains Complete.
-        parsed <- parse_table_deltas(hot_data, N_PERIODS)
-        has_nonzero_delta <- any(abs(parsed$values) > 1e-9, na.rm = TRUE)
-        has_invalid_delta <- length(parsed$invalid_idx) > 0
-        is_initial_baseline_state <- identical(run_state(), "solved") &&
-          identical(run_state_note(), "Baseline loaded")
+          cur_val <- suppressWarnings(as.numeric(tbl[TABLE_ROW_DELTA, col]))
+          if (isTRUE(all.equal(cur_val, new_val))) return(invisible())
 
-        if (!(is_initial_baseline_state && !has_nonzero_delta && !has_invalid_delta)) {
-          set_run_state("dirty", "Inputs changed. Press Run to update results")
-        }
-      }, ignoreInit = TRUE)
-    })
+          tbl[TABLE_ROW_DELTA, col] <- new_val
+          table_state[[id]] <- update_table_level_row(tbl)
+
+          is_initial_baseline_state <-
+            identical(isolate(run_state()), "solved") &&
+            identical(isolate(run_state_note()), "Baseline loaded")
+          has_nonzero_delta <- any(abs(suppressWarnings(as.numeric(
+            table_state[[id]][TABLE_ROW_DELTA,
+                              seq(TABLE_FIRST_DATA_COL,
+                                  TABLE_FIRST_DATA_COL + N_PERIODS - 1)]
+          ))) > 1e-9, na.rm = TRUE)
+
+          if (!(is_initial_baseline_state && !has_nonzero_delta)) {
+            if (as.numeric(Sys.time()) - isolate(preset_apply_time()) > 1.5) {
+              active_preset(NULL)
+            }
+            set_run_state("dirty",
+                          "Inputs Changed. Run Simulation to Update Results")
+          }
+        }, ignoreInit = TRUE)
+      })
+    }
   }
 
   observeEvent(input$expectations_speed, {
     is_initial_baseline_state <- identical(run_state(), "solved") &&
       identical(run_state_note(), "Baseline loaded")
     if (!(is_initial_baseline_state && !isTRUE(input$expectations_speed))) {
-      set_run_state("dirty", "Options changed. Press Run to update results")
+      # Changing the expectations-speed option is a scenario edit too;
+      # clear the preset highlight.
+      active_preset(NULL)
+      set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
     }
   }, ignoreInit = TRUE)
 
   collect_table_deltas <- function(require_valid = TRUE) {
     deltas <- list()
-    invalid_messages <- character(0)
-
     for (table_id in table_ids) {
-      current_data <- get_current_table_data(table_id)
-      parsed <- parse_table_deltas(current_data, N_PERIODS)
+      tbl <- table_state[[table_id]]
+      parsed <- parse_table_deltas(tbl, N_PERIODS)
       deltas[[table_id]] <- parsed$values
-
-      if (require_valid && length(parsed$invalid_idx) > 0) {
-        bad_years <- fy_labels[parsed$invalid_idx]
-        invalid_messages <- c(
-          invalid_messages,
-          sprintf("%s: %s", table_specs[[table_id]]$label, paste(bad_years, collapse = ", "))
-        )
-      }
     }
-
-    if (require_valid && length(invalid_messages) > 0) {
-      showNotification(
-        paste0(
-          "Invalid numeric entries in User Delta rows:\n",
-          paste(invalid_messages, collapse = "\n")
-        ),
-        type = "error",
-        duration = 8
-      )
-      set_run_state("error", "Invalid numeric input in tables")
-      return(NULL)
-    }
-
     deltas
   }
 
@@ -457,7 +678,7 @@ server <- function(input, output, session) {
 
       if (exists(cache_key, envir = simulation_cache, inherits = FALSE)) {
         results <- get(cache_key, envir = simulation_cache, inherits = FALSE)
-        set_run_state("solved", "Loaded cached results")
+        set_run_state("solved", "Simulation Complete")
       } else {
         # Run simulation
         results <- tryCatch({
@@ -486,13 +707,13 @@ server <- function(input, output, session) {
         if (is.null(solver_summary)) {
           max_sse <- max(results$solver_sse, na.rm = TRUE)
           if (max_sse < 1e-9) {
-            set_run_state("solved", "Simulation complete")
+            set_run_state("solved", "Simulation Complete")
           } else {
             set_run_state("error", sprintf("Not converged (SSE: %.2e)", max_sse))
           }
         } else {
           if (solver_summary$overall_converged) {
-            set_run_state("solved", "Simulation complete")
+            set_run_state("solved", "Simulation Complete")
           } else {
             set_run_state("error", sprintf("Not converged (SSE: %.2e)", solver_summary$final_sse))
           }
@@ -523,11 +744,36 @@ server <- function(input, output, session) {
   # Reset button handler
   observeEvent(input$reset_inputs, {
     initialize_tables(force = TRUE)
-    refresh_hot_tables()
+    refresh_delta_inputs()
+
+    # Reset simple-mode inputs too so the drawer UI matches the zeroed
+    # tables. The resulting change-events fire the simple observers, which
+    # write zero deltas into the already-zero tables — harmless.
+    # Reset to the first option in the new shape-choice order
+    # ("onetime"). Inflation_shock has a restricted choice list but
+    # still has "onetime" as its first option, so the same value
+    # works for every input.
+    for (k in c("productivity", "lf_growth", "receipts", "outlays",
+                "rfstar", "inflation_target", "monetary_rule",
+                "output_gap", "inflation_shock")) {
+      updateSelectInput(session, paste0("shape_", k), selected = "onetime")
+      updateNumericInput(session, paste0("magnitude_", k), value = 0)
+    }
 
     # Reset checkbox
     updateCheckboxInput(session, "expectations_speed", value = FALSE)
-    set_run_state("dirty", "Inputs reset. Press Run to update results")
+    # Clear active preset so none of the three preset buttons appears selected
+    active_preset(NULL)
+    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
+  })
+
+  # Custom Scenario Builder: Expand all / Collapse all accordion controls.
+  # Purely UI — does not touch table_state, active_preset, or run_state.
+  observeEvent(input$csb_expand_all, {
+    bslib::accordion_panel_open("assumptions_accordion", values = TRUE)
+  })
+  observeEvent(input$csb_collapse_all, {
+    bslib::accordion_panel_close("assumptions_accordion", values = TRUE)
   })
 
   # ============================================================================
@@ -537,7 +783,7 @@ server <- function(input, output, session) {
   # Helper function to reset all tables to baseline
   reset_all_tables_to_baseline <- function() {
     initialize_tables(force = TRUE)
-    refresh_hot_tables()
+    refresh_delta_inputs()
   }
 
   # Helper function to update a table with shocks
@@ -556,13 +802,13 @@ server <- function(input, output, session) {
     table_data[TABLE_ROW_LEVEL, fy_cols] <- baseline_vals + shock_values
 
     table_state[[table_name]] <- table_data
-    refresh_hot_tables()
+    refresh_delta_inputs()
   }
 
   apply_single_preset <- function(table_name, shock_values) {
     reset_all_tables_to_baseline()
     update_table_with_shocks(table_name, shock_values)
-    set_run_state("dirty", "Preset applied. Press Run to update results")
+    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
   apply_multi_preset <- function(presets_list) {
@@ -572,13 +818,14 @@ server <- function(input, output, session) {
       shock_values <- presets_list[[i]]
       update_table_with_shocks(table_name, shock_values)
     }
-    set_run_state("dirty", "Preset applied. Press Run to update results")
+    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
   # Preset 1: Rapid AI Adoption
   # Source: BLSMM_1_8_20260326_links_rapidAI.xlsm
   # Three simultaneous shocks: productivity boost, LFPR decline, outlay rise
   observeEvent(input$preset_rapid_ai, {
+    preset_apply_time(as.numeric(Sys.time()))
     apply_multi_preset(list(
       table_productivity = c(1.60, 1.50, 1.50, 1.60, 1.60,
                              1.70, 1.70, 1.80, 1.80, 1.80),
@@ -586,22 +833,26 @@ server <- function(input, output, session) {
                               0.00,  0.00,  0.00,  0.00,  0.00),
       table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40)
     ))
+    active_preset("rapid_ai")
   })
 
   # Preset 2: Persistent Inflation
   # Source: BLSMM_1_8_20260326_links_persistentinflation.xlsm
   # Front-loaded inflation shock (3 nonzero years)
   observeEvent(input$preset_persistent_infl, {
+    preset_apply_time(as.numeric(Sys.time()))
     apply_single_preset(
       "table_inflation_shock",
       c(0.0, 0.1, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     )
+    active_preset("persistent_infl")
   })
 
   # Preset 3: Military Conflict
   # Source: defense_outlays_data.xlsx, "Primary Outlays Delta" col
   # Defense outlay path including +$350B FY2027 mandatory spending
   observeEvent(input$preset_military_conflict, {
+    preset_apply_time(as.numeric(Sys.time()))
     apply_single_preset(
       "table_outlays",
       c(0.05926643923051801, 1.4648663376827828,
@@ -610,7 +861,59 @@ server <- function(input, output, session) {
         0.785826175398481,   0.7236216101604063,
         0.6726591880611538,  0.6147969334429797)
     )
+    active_preset("military_conflict")
   })
+
+  # ============================================================================
+  # SIMPLE-MODE INPUTS
+  # ----------------------------------------------------------------------------
+  # Each input in the Custom Scenario Builder has a shape picker + magnitude input
+  # (see simple_input_card() in blsmm_helpers.R). When those change we compute
+  # the 10-year delta via build_shape_delta() and write it into the underlying
+  # handsontable via update_table_with_shocks(). The handsontable (under
+  # "Edit year-by-year") remains the single source of truth consumed by the
+  # solver; simple mode is a "quick-fill" overlay.
+  #
+  # Preview text for each input is derived from the table state (not from the
+  # simple inputs), so presets and direct handsontable edits also appear in
+  # the preview.
+  # ============================================================================
+
+  simple_input_keys <- c(
+    "productivity", "lf_growth", "receipts", "outlays",
+    "rfstar", "inflation_target", "monetary_rule",
+    "output_gap", "inflation_shock"
+  )
+
+  for (key in simple_input_keys) {
+    local({
+      k         <- key
+      shape_id  <- paste0("shape_",     k)
+      mag_id    <- paste0("magnitude_", k)
+      tbl_name  <- paste0("table_",     k)
+
+      # Observer: write simple-mode delta into the table when user edits
+      # shape or magnitude. update_table_with_shocks() already writes
+      # the new delta into table_state and calls refresh_delta_inputs()
+      # to sync the per-year numericInput strip.
+      observeEvent(
+        list(input[[shape_id]], input[[mag_id]]),
+        ignoreInit = TRUE,
+        {
+          shape <- input[[shape_id]] %||% "onetime"
+          mag   <- input[[mag_id]]
+          delta <- build_shape_delta(shape, mag, N_PERIODS)
+          update_table_with_shocks(tbl_name, delta)
+          # Any simple-mode edit means the scenario diverges from any
+          # preset — clear the preset highlight so only Custom Scenario
+          # can light up.
+          active_preset(NULL)
+          set_run_state("dirty",
+                        "Inputs Changed. Run Simulation to Update Results")
+        }
+      )
+    })
+  }
 
   # ============================================================================
   # SSE CONVERGENCE DISPLAY
@@ -742,10 +1045,9 @@ server <- function(input, output, session) {
 
   # Ensure dashboard plots update immediately when simulation runs,
   # even if Dashboard tab is not currently visible
-  # All 13 charts:
+  # All 12 charts:
   outputOptions(output, "plot_unemployment", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_inflation", suspendWhenHidden = FALSE)
-  outputOptions(output, "plot_real_gdp_indexed", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_10yr_yield", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_federal_funds", suspendWhenHidden = FALSE)
   outputOptions(output, "plot_budget_balance", suspendWhenHidden = FALSE)
@@ -758,19 +1060,6 @@ server <- function(input, output, session) {
   outputOptions(output, "plot_primary_balance", suspendWhenHidden = FALSE)
   outputOptions(output, "kpi_final_debt", suspendWhenHidden = FALSE)
   outputOptions(output, "kpi_max_unemployment", suspendWhenHidden = FALSE)
-
-  # Ensure input tables are always rendered (even when Inputs tab not visible)
-  # This is critical for reset and preset scenarios to work from Dashboard tab
-  # All 9 input tables
-  outputOptions(output, "table_lf_growth", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_productivity", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_receipts", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_outlays", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_rfstar", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_output_gap", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_inflation_shock", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_monetary_rule", suspendWhenHidden = FALSE)
-  outputOptions(output, "table_inflation_target", suspendWhenHidden = FALSE)
 
   # ============================================================================
   # DEVIATION PLOTS (Tab 3)
@@ -794,7 +1083,7 @@ server <- function(input, output, session) {
         y = budget_deviation,
         name = "Budget Balance Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = full_data$baseline$fy_label,
@@ -804,15 +1093,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Budget Balance Deviation from Baseline (pp of GDP)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Budget Balance Deviation from Baseline (pp of GDP)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 2: Unemployment
@@ -828,7 +1118,7 @@ server <- function(input, output, session) {
         y = data$d_U,
         name = "Unemployment Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.3f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.3f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -838,15 +1128,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Unemployment Rate Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Unemployment Rate Deviation from Baseline (pp)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 3: Real GDP Growth
@@ -865,7 +1156,7 @@ server <- function(input, output, session) {
         y = data$d_real_gdp_growth[valid_idx],
         name = "Real GDP Growth Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.3f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.3f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label[valid_idx],
@@ -875,15 +1166,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Real GDP Growth Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Real GDP Growth Deviation from Baseline (pp)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 4: Inflation
@@ -899,7 +1191,7 @@ server <- function(input, output, session) {
         y = data$d_PI,
         name = "Inflation Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.3f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.3f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -909,15 +1201,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Inflation Rate Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Inflation Rate Deviation from Baseline (pp)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 5: Debt/GDP
@@ -927,16 +1220,13 @@ server <- function(input, output, session) {
     data <- simulation_results()$deviations
     th <- plot_theme()
 
-    # Add shaded area for cumulative effect
     plot_ly() %>%
       add_lines(
         x = data$fy_label,
         y = data$d_D_pct_GDP,
         name = "Debt/GDP Deviation",
         line = list(color = th$line_scenario, width = 3),
-        fill = 'tozeroy',
-        fillcolor = th$debt_fill,
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -946,15 +1236,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Debt/GDP Deviation from Baseline (pp of GDP)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Debt/GDP Deviation from Baseline (pp of GDP)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 6: Federal Funds Rate
@@ -970,7 +1261,7 @@ server <- function(input, output, session) {
         y = data$d_RF,
         name = "Federal Funds Rate Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -980,15 +1271,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Federal Funds Rate Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Federal Funds Rate Deviation from Baseline (pp)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 7: 10-Year Treasury Yield
@@ -1004,7 +1296,7 @@ server <- function(input, output, session) {
         y = data$d_R10,
         name = "10-Year Yield Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -1014,15 +1306,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "10-Year Treasury Yield Deviation from Baseline (pp)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>10-Year Treasury Yield Deviation from Baseline (pp)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Deviation Plot 8: Primary Balance
@@ -1038,7 +1331,7 @@ server <- function(input, output, session) {
         y = data$d_rbudp_star,
         name = "Primary Balance Deviation",
         line = list(color = th$line_scenario, width = 3),
-        hovertemplate = paste0("%{x}<br>Deviation: %{y:.2f} pp<extra></extra>")
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
       add_lines(
         x = data$fy_label,
@@ -1048,15 +1341,16 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "Primary Balance Deviation from Baseline (pp of GDP)",
-        xaxis = list(title = "Fiscal Year", gridcolor = th$grid, zerolinecolor = th$zero),
+        title = "<b>Primary Balance Deviation from Baseline (pp of GDP)</b>",
+        xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
+        dragmode = FALSE,
         paper_bgcolor = th$paper_bg,
         plot_bgcolor = th$plot_bg,
-        font = list(color = th$font)
+        font = list(color = th$font, family = th$font_family)
     ) %>%
-    config(displayModeBar = FALSE)
+    config(displayModeBar = FALSE, doubleClick = FALSE)
   })
 
   # Fiscal Multiplier Calculation
@@ -1222,10 +1516,12 @@ server <- function(input, output, session) {
         pageLength = 10,
         scrollX = TRUE,
         dom = 't',
-        compact = TRUE
+        compact = TRUE,
+        ordering = FALSE
       ),
       rownames = FALSE,
-      class = 'compact stripe'
+      selection = "none",  # no persistent row-click highlight
+      class = 'compact stripe hover'  # hover class -> light highlight on hover only
     ) %>%
       formatRound(columns = 2:8, digits = 2) %>%
       formatStyle(
@@ -1301,11 +1597,13 @@ server <- function(input, output, session) {
   # USER DELTAS SUMMARY TABLE (BLSMM) - CONSOLIDATED
   # ============================================================================
 
-  # Consolidated summary: All 9 input types in one table
-  output$summary_all_deltas <- renderDT({
+  # Consolidated summary: All 9 input types in one table.
+  # Data assembled into a shared reactive so we can render the same
+  # table into two outputs — inside the Custom Scenario Builder drawer
+  # AND on the Results tab's "Scenario Summary" nav panel.
+  summary_all_deltas_df <- reactive({
     table_deltas <- collect_table_deltas(require_valid = FALSE)
 
-    # Create data frame with all shock types
     df <- data.frame(
       Shock = c(
         "Labor Force Growth (pp)",
@@ -1321,7 +1619,6 @@ server <- function(input, output, session) {
       stringsAsFactors = FALSE
     )
 
-    # Add year columns
     fy_labels <- create_fy_labels()
     for (i in 1:N_PERIODS) {
       df[[fy_labels[i]]] <- c(
@@ -1336,18 +1633,35 @@ server <- function(input, output, session) {
         table_deltas$table_monetary_rule[i]
       )
     }
+    df
+  })
 
-    datatable(df,
+  # Shared renderer: no row-selection highlight, hover-only row tint,
+  # matches the Key Variable Deviations table treatment.
+  render_summary_all_deltas <- function() {
+    datatable(summary_all_deltas_df(),
               options = list(
                 dom = 't',
                 pageLength = 15,
                 scrollX = TRUE,
-                compact = TRUE
+                compact = TRUE,
+                ordering = FALSE
               ),
               rownames = FALSE,
-              class = 'compact stripe') %>%
-      formatRound(columns = 2:(N_PERIODS+1), digits = 2)
-  })
+              selection = "none",
+              class = 'compact stripe hover') %>%
+      formatRound(columns = 2:(N_PERIODS + 1), digits = 2) %>%
+      formatStyle(
+        columns = 2:(N_PERIODS + 1),
+        backgroundColor = styleInterval(c(-1e-9, 1e-9),
+                                        c("#9ec5e8", "transparent", "#9ec5e8"))
+      )
+  }
+
+  # Render #1: inside the Custom Scenario Builder drawer
+  output$summary_all_deltas <- renderDT({ render_summary_all_deltas() })
+  # Render #2: on the Results tab's "Scenario Summary" sub-tab
+  output$summary_all_deltas_results <- renderDT({ render_summary_all_deltas() })
 
   # ============================================================================
   # EXPORT HANDLERS

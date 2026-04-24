@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLSMM — Embed Preview</title>
+  <style>
+    :root {
+      --navy: #101f5b;
+      --blue: #286dc0;
+      --body: #4a4a4a;
+      --muted: #888;
+      --border: #e5e5e5;
+      --bg: #f6f7f9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif;
+      color: var(--body);
+      background: var(--bg);
+    }
+    header {
+      max-width: 2800px;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    p { margin: 0 0 12px; font-size: 13px; color: var(--body); }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .controls label { font-size: 12px; color: var(--muted); }
+    .controls input[type="text"] {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      flex: 1;
+      max-width: 400px;
+      font-family: inherit;
+    }
+    .controls button {
+      padding: 6px 14px;
+      background: var(--navy);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .controls button:hover { background: #1a2d72; }
+    .frames {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      max-width: 2800px;
+      margin: 0 auto;
+    }
+    .frame {
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .frame-label {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--navy);
+      background: #f0f2f7;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .frame-label .dims { color: var(--muted); font-weight: 400; font-size: 11px; }
+    .frame iframe {
+      border: 0;
+      display: block;
+      background: white;
+      /* No fixed height: iframe-resizer sets it to content height. */
+      min-height: 400px;
+      width: 100%;
+    }
+    .frame-400 { width: 400px; }
+    .frame-600 { width: 600px; }
+    .frame-900 { width: 900px; }
+    .frame-1145 { width: 1145px; }
+    .frame-1305 { width: 1305px; }
+
+    .status {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 2800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .status code {
+      background: #f0f2f7;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: var(--navy);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>BLSMM — Embed Preview</h1>
+  <p>Iframes at target embed widths. 400 / 600 / 900 px are narrow-embed stress tests; 1145 px (laptop, ~1280 viewport) and 1305 px (desktop, 1440+ viewport) match the actual content-column width of a Budget Lab publication page. Refresh after restarting the app.</p>
+  <div class="controls">
+    <label for="src">App URL:</label>
+    <input type="text" id="src" value="http://127.0.0.1:8100/">
+    <button onclick="updateSources()">Reload frames</button>
+  </div>
+</header>
+
+<div class="frames">
+  <div class="frame frame-400">
+    <div class="frame-label">
+      Narrow embed <span class="dims">400px</span>
+    </div>
+    <iframe id="f400" src="http://127.0.0.1:8100/"></iframe>
+  </div>
+  <div class="frame frame-600">
+    <div class="frame-label">
+      Medium embed <span class="dims">600px</span>
+    </div>
+    <iframe id="f600" src="http://127.0.0.1:8100/"></iframe>
+  </div>
+  <div class="frame frame-900">
+    <div class="frame-label">
+      Wide embed <span class="dims">900px</span>
+    </div>
+    <iframe id="f900" src="http://127.0.0.1:8100/"></iframe>
+  </div>
+  <div class="frame frame-1145">
+    <div class="frame-label">
+      Laptop (1280 viewport) <span class="dims">1145px</span>
+    </div>
+    <iframe id="f1145" src="http://127.0.0.1:8100/"></iframe>
+  </div>
+  <div class="frame frame-1305">
+    <div class="frame-label">
+      Desktop (1440+ viewport) <span class="dims">1305px</span>
+    </div>
+    <iframe id="f1305" src="http://127.0.0.1:8100/"></iframe>
+  </div>
+</div>
+
+<div class="status">
+  <strong>How to use:</strong>
+  Run <code>source("app.R")</code> in RStudio, then open this file in a browser.
+  The app is pinned to port <code>8100</code> by <code>app.R</code> so the URL above is stable across sessions.
+  If the port is already in use, change it in <code>app.R</code> and update the URL above, then click Reload frames.
+  <br><br>
+  <strong>Auto-height:</strong> iframes use <code>iframe-resizer</code> to size themselves to content height, so you see the
+  full app under each width without nested scrollbars. Production embed pages on budgetlab.yale.edu will need the same
+  <code>iframeResizer.min.js</code> script loaded and initialized with <code>iFrameResize()</code>.
+</div>
+
+<!-- iframe-resizer parent script. Pairs with the contentWindow script
+     loaded inside the Shiny app (see blsmm_ui.R tags$head) to size each
+     iframe to its content height without nested scrollbars. -->
+<script src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.min.js"></script>
+<script>
+  const FRAME_IDS = ['f400', 'f600', 'f900', 'f1145', 'f1305'];
+
+  function initResizers() {
+    if (typeof iFrameResize !== 'function') return;
+    FRAME_IDS.forEach(id => {
+      iFrameResize(
+        {
+          log: true,                   // temporarily on while diagnosing resize behavior
+          checkOrigin: false,          // local file:// parent -> http://127.0.0.1 iframe
+          heightCalculationMethod: 'bodyScroll',
+          tolerance: 4,
+          scrolling: false
+        },
+        '#' + id
+      );
+    });
+  }
+
+  function updateSources() {
+    const url = document.getElementById('src').value.trim();
+    FRAME_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el.iFrameResizer) el.iFrameResizer.close();
+      el.src = url;
+    });
+    // Re-init after the new src loads.
+    setTimeout(initResizers, 600);
+  }
+
+  window.addEventListener('load', initResizers);
+</script>
+
+</body>
+</html>

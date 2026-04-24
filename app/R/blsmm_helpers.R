@@ -274,6 +274,249 @@ summarise_lfpr_scenario <- function(
 }
 
 # ==============================================================================
+# SIMPLE-MODE INPUT HELPERS
+# ==============================================================================
+
+#' Build a 10-year delta vector from a shape + magnitude
+#'
+#' Simple-mode inputs in the Assumptions drawer let the user pick a shape
+#' ("permanent", "onetime", "ramp", "temporary3") and a magnitude rather
+#' than typing 10 individual values. This function translates that pair
+#' into the year-by-year vector the solver expects.
+#'
+#' @param shape One of "permanent", "onetime", "ramp", "temporary3".
+#' @param magnitude Numeric scalar. If NA or NULL, returns all zeros.
+#' @param n Integer. Horizon length (default N_PERIODS = 10).
+#' @return Numeric vector of length n.
+#' Format a delta value with an explicit sign prefix to reinforce that
+#' the field is a change from baseline. Zero renders without a sign.
+format_signed_delta <- function(val) {
+  v <- suppressWarnings(as.numeric(val))
+  if (is.na(v) || abs(v) < 1e-12) return("0.00")
+  sprintf("%+.2f", v)
+}
+
+build_shape_delta <- function(shape, magnitude, n = N_PERIODS) {
+  if (is.null(magnitude) || is.na(magnitude) || !is.finite(magnitude)) {
+    return(rep(0, n))
+  }
+  shape <- shape %||% "permanent"
+  switch(
+    shape,
+    "permanent"   = rep(magnitude, n),
+    "onetime"     = c(magnitude, rep(0, n - 1)),
+    "ramp"        = seq(0, magnitude, length.out = n),
+    "temporary3"  = c(rep(magnitude, min(3, n)), rep(0, max(0, n - 3))),
+    rep(0, n)
+  )
+}
+
+#' Short preview string for a shape+magnitude delta vector.
+#' Example: "0.20, 0.20, 0.20, ... 0.20" for a permanent +0.20.
+format_shape_preview <- function(delta_vec, digits = 2) {
+  if (length(delta_vec) <= 4) {
+    return(paste(sprintf(paste0("%.", digits, "f"), delta_vec), collapse = ", "))
+  }
+  first3 <- sprintf(paste0("%.", digits, "f"), head(delta_vec, 3))
+  last   <- sprintf(paste0("%.", digits, "f"), tail(delta_vec, 1))
+  paste0(paste(first3, collapse = ", "), ", ..., ", last)
+}
+
+# Shape options presented in every simple-mode select input. Ordered
+# from the most localized pulse (single year) to the slowest onset
+# (linear ramp).
+BLSMM_SHAPE_CHOICES <- c(
+  "One-time (year 1)"           = "onetime",
+  "Temporary (3 years)"         = "temporary3",
+  "Permanent shift"             = "permanent",
+  "Linear ramp (0 → magnitude)" = "ramp"
+)
+
+# Restricted shape set for shock-style inputs where a sustained
+# "permanent" or slow "ramp" doesn't correspond to a meaningful
+# scenario (e.g., an unexpected inflation shock is inherently transient).
+BLSMM_SHAPE_CHOICES_SHOCK <- c(
+  "One-time (year 1)"   = "onetime",
+  "Temporary (3 years)" = "temporary3"
+)
+
+#' Render the year-by-year native input strip for one input category.
+#'
+#' Returns a CSS-grid table with 4 rows and 11 columns:
+#'   row 1: (blank) | FY26 | FY27 | ... | FY35   (year headers)
+#'   row 2: Baseline        | baseline values    (textOutput, muted)
+#'   row 3: Input Delta     | numericInputs      (editable)
+#'   row 4: Scenario Level  | level values       (textOutput, muted)
+#'
+#' The leftmost column carries the row labels. Item order in the DOM
+#' is flat row-major; CSS grid auto-places them into the matrix.
+#'
+#' Server input ids:  delta_<table_id>_fy<yyyy>
+#' Server output ids: baseline_<table_id>_fy<yyyy>,
+#'                    level_<table_id>_fy<yyyy>
+#' where <table_id> is `paste0("table_", table_key)`, matching the
+#' names(table_state) keys the server uses.
+year_by_year_input_strip <- function(table_key, n_years = N_PERIODS,
+                                     start_year = 2026) {
+  table_id <- paste0("table_", table_key)
+  years <- seq(start_year, start_year + n_years - 1)
+
+  header_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label")),       # corner
+    lapply(years, function(yr) {
+      shiny::div(class = "blsmm-year-label",
+                 paste0("FY", yr %% 100))
+    })
+  )
+
+  baseline_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label", "Baseline")),
+    lapply(years, function(yr) {
+      shiny::div(
+        class = "blsmm-year-baseline",
+        shiny::textOutput(paste0("baseline_", table_id, "_fy", yr),
+                          inline = TRUE)
+      )
+    })
+  )
+
+  input_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label", "Input Delta")),
+    lapply(years, function(yr) {
+      # textInput (not numericInput) so we can display an explicit "+"
+      # prefix on positive values; the server parses with as.numeric().
+      # The browser's number-input spinner arrows are hidden as a side
+      # benefit — text inputs don't render them.
+      ti <- shiny::textInput(
+        inputId = paste0("delta_", table_id, "_fy", yr),
+        label   = NULL,
+        value   = "0.00",
+        width   = "100%"
+      )
+      ti$children[[2]]$attribs$class <- paste(
+        ti$children[[2]]$attribs$class, "blsmm-delta-input"
+      )
+      ti$children[[2]]$attribs$inputmode <- "decimal"
+      ti
+    })
+  )
+
+  level_row <- c(
+    list(shiny::div(class = "blsmm-year-row-label", "Scenario Level")),
+    lapply(years, function(yr) {
+      shiny::div(
+        class = "blsmm-year-level",
+        shiny::textOutput(paste0("level_", table_id, "_fy", yr),
+                          inline = TRUE)
+      )
+    })
+  )
+
+  shiny::div(
+    class = "blsmm-year-strip",
+    header_row, baseline_row, input_row, level_row
+  )
+}
+
+#' Render a simple-mode input card for the Assumptions drawer
+#'
+#' Generates the per-input UI block: heading + example text, a shape
+#' selector and magnitude input (side-by-side under wide drawer, stacked
+#' under narrow), a small computed preview, and an expandable
+#' "Edit year-by-year" details block that hosts the native numeric-input
+#' strip (see year_by_year_input_strip()).
+#'
+#' Server inputs created (example for `table_key = "productivity"`):
+#'   input$shape_productivity, input$magnitude_productivity,
+#'   input$delta_table_productivity_fy2026 ... _fy2035
+#' Server outputs expected:
+#'   output$preview_productivity (text rendering of the computed delta)
+#'   output$baseline_table_productivity_fy2026..fy2035
+#'   output$level_table_productivity_fy2026..fy2035
+#'
+#' @param table_key Short key used to derive input/output ids. The
+#'   per-year strip uses the full table_id (prefixed "table_").
+#' @param label Heading above the controls.
+#' @param units Short units label placed after "Magnitude".
+#' @param example Short example line shown in muted text.
+#' @param shape_choices Named character vector of shape options to offer.
+#'   Defaults to BLSMM_SHAPE_CHOICES (all four shapes). Pass
+#'   BLSMM_SHAPE_CHOICES_SHOCK for inputs where permanent / ramp are
+#'   not meaningful (one-off shocks).
+simple_input_card <- function(table_key, label, units = "pp", example = NULL,
+                              shape_choices = BLSMM_SHAPE_CHOICES) {
+  shape_id <- paste0("shape_",     table_key)
+  mag_id   <- paste0("magnitude_", table_key)
+
+  # Default selection: the first choice in the supplied list.
+  default_shape <- unname(shape_choices[1])
+
+  shiny::div(
+    class = "blsmm-input-card",
+
+    shiny::h5(label),
+    if (!is.null(example)) {
+      shiny::p(class = "text-muted-custom", style = "font-size: 0.85em; margin-bottom: 10px;",
+               shiny::HTML(example))
+    },
+
+    # Shape + magnitude side-by-side (stack under narrow drawer)
+    bslib::layout_column_wrap(
+      width = "200px",
+      gap = "12px",
+      shiny::selectInput(
+        inputId = shape_id,
+        label   = "Shape",
+        choices = shape_choices,
+        selected = default_shape,
+        width = "100%"
+      ),
+      shiny::numericInput(
+        inputId = mag_id,
+        label   = paste0("Magnitude (", units, ")"),
+        value   = 0,
+        step    = 0.1,
+        width   = "100%"
+      )
+    ),
+
+    # Advanced: expandable year-by-year native-input strip.
+    shiny::tags$details(
+      class = "blsmm-input-advanced",
+      shiny::tags$summary(
+        class = "text-link",
+        "Edit year-by-year"
+      ),
+      year_by_year_input_strip(table_key)
+    )
+  )
+}
+
+#' One row in the Scenario card: preset button on the left, ? popover trigger
+#' on the right. Click the button to apply the preset; click the ? to see a
+#' one-line description without consuming sidebar vertical space.
+preset_row <- function(input_id, label, description) {
+  shiny::div(
+    class = "d-flex gap-2 mb-2 blsmm-preset-row align-items-stretch",
+    shiny::actionButton(
+      inputId = input_id,
+      label   = label,
+      class   = "btn btn-outline-primary btn-sm blsmm-preset-btn flex-grow-1"
+    ),
+    bslib::popover(
+      trigger = shiny::tags$button(
+        type  = "button",
+        class = "blsmm-info-trigger",
+        `aria-label` = paste0("About ", label),
+        shiny::tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
+      ),
+      description,
+      placement = "right"
+    )
+  )
+}
+
+# ==============================================================================
 # USER INTERFACE
 # ==============================================================================
 
