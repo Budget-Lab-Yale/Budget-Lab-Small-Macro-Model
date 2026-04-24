@@ -191,9 +191,9 @@
     FRAME_IDS.forEach(id => {
       iFrameResize(
         {
-          log: false,
+          log: true,                   // temporarily on while diagnosing resize behavior
           checkOrigin: false,          // local file:// parent -> http://127.0.0.1 iframe
-          heightCalculationMethod: 'lowestElement',
+          heightCalculationMethod: 'bodyScroll',
           tolerance: 4,
           scrolling: false
         },

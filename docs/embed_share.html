@@ -39,7 +39,10 @@
       display: block;
       background: white;
       width: 100%;
-      min-height: 2400px;
+      /* Fallback floor for the few seconds before iframe-resizer handshakes.
+         Once iframe-resizer connects, it sets the iframe's height inline and
+         overrides this. Keep small so it doesn't fight shrink on short tabs. */
+      min-height: 400px;
     }
   </style>
 </head>
@@ -69,9 +72,9 @@
     if (typeof iFrameResize === 'function') {
       iFrameResize(
         {
-          log: false,
+          log: true,                 // temporarily on while diagnosing resize behavior
           checkOrigin: false,
-          heightCalculationMethod: 'lowestElement',
+          heightCalculationMethod: 'bodyScroll',
           tolerance: 4,
           scrolling: false
         },

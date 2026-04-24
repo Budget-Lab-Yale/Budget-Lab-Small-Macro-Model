@@ -9,10 +9,21 @@ ui <- fluidPage(
     bl_css_vars_block(),
     # Brand overrides: body/heading fonts, primary colors
     bl_brand_overrides_block(),
+    # Detect iframe embedding and mark <html> so CSS can drop the 100vh floor.
+    tags$script(HTML(
+      "try { if (window.self !== window.top) { document.documentElement.classList.add('blsmm-embedded'); } } catch(e) { document.documentElement.classList.add('blsmm-embedded'); }"
+    )),
     # iframe-resizer child script: lets a parent page auto-size this iframe
     # to its content height so there are no nested scrollbars. Safe to load
     # when not embedded - it's a no-op unless a parent calls iFrameResize().
     tags$script(src = "https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.contentWindow.min.js"),
+    # Explicitly signal iframe-resizer after each Bootstrap tab switch.
+    # MutationObserver alone can miss height changes when display:none toggles.
+    tags$script(HTML(
+      "document.addEventListener('shown.bs.tab', function() {
+         if (window.parentIFrame) window.parentIFrame.size();
+       });"
+    )),
     tags$style(HTML("
       /* Yellow highlight for editable row (User Delta row = row 2) */
       .handsontable tbody tr:nth-child(2) td {
@@ -470,7 +481,10 @@ ui <- fluidPage(
 
         # Export section
         div(class = "sidebar-section",
+          `aria-describedby` = "export_sr_note",
           h4("Export Results"),
+          tags$p(id = "export_sr_note", class = "sr-only",
+            "Export provides full numeric data for all charts as a downloadable file."),
           downloadButton("download_csv",
                         "Export to CSV",
                         class = "btn-outline-primary",
@@ -578,18 +592,78 @@ ui <- fluidPage(
               br(),
               layout_column_wrap(
                 width = "400px",
-                plotlyOutput("plot_budget_balance",     height = "360px"),
-                plotlyOutput("plot_debt",               height = "360px"),
-                plotlyOutput("plot_avg_interest_rate",  height = "360px"),
-                plotlyOutput("plot_total_receipts",     height = "360px"),
-                plotlyOutput("plot_total_outlays",      height = "360px"),
-                plotlyOutput("plot_unemployment",       height = "360px"),
-                plotlyOutput("plot_inflation",          height = "360px"),
-                plotlyOutput("plot_10yr_yield",         height = "360px"),
-                plotlyOutput("plot_federal_funds",      height = "360px"),
-                plotlyOutput("plot_primary_outlays",    height = "360px"),
-                plotlyOutput("plot_real_gdp_growth",    height = "360px"),
-                plotlyOutput("plot_primary_balance",    height = "360px")
+                tags$figure(`aria-labelledby` = "fig_plot_budget_balance_label",
+                  tags$figcaption(id = "fig_plot_budget_balance_label", class = "sr-only",
+                    "Chart: Total budget balance as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_budget_balance_sr"),
+                  plotlyOutput("plot_budget_balance", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_debt_label",
+                  tags$figcaption(id = "fig_plot_debt_label", class = "sr-only",
+                    "Chart: Federal debt held by the public as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_debt_sr"),
+                  plotlyOutput("plot_debt", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_avg_interest_rate_label",
+                  tags$figcaption(id = "fig_plot_avg_interest_rate_label", class = "sr-only",
+                    "Chart: Average interest rate on federal debt, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_avg_interest_rate_sr"),
+                  plotlyOutput("plot_avg_interest_rate", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_total_receipts_label",
+                  tags$figcaption(id = "fig_plot_total_receipts_label", class = "sr-only",
+                    "Chart: Total federal receipts as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_total_receipts_sr"),
+                  plotlyOutput("plot_total_receipts", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_total_outlays_label",
+                  tags$figcaption(id = "fig_plot_total_outlays_label", class = "sr-only",
+                    "Chart: Total federal outlays as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_total_outlays_sr"),
+                  plotlyOutput("plot_total_outlays", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_unemployment_label",
+                  tags$figcaption(id = "fig_plot_unemployment_label", class = "sr-only",
+                    "Chart: Unemployment rate, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_unemployment_sr"),
+                  plotlyOutput("plot_unemployment", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_inflation_label",
+                  tags$figcaption(id = "fig_plot_inflation_label", class = "sr-only",
+                    "Chart: Inflation rate (GDP deflator), baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_inflation_sr"),
+                  plotlyOutput("plot_inflation", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_10yr_yield_label",
+                  tags$figcaption(id = "fig_plot_10yr_yield_label", class = "sr-only",
+                    "Chart: 10-year Treasury yield (nominal and real), baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_10yr_yield_sr"),
+                  plotlyOutput("plot_10yr_yield", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_federal_funds_label",
+                  tags$figcaption(id = "fig_plot_federal_funds_label", class = "sr-only",
+                    "Chart: Federal Funds rate and neutral rate (r-star), baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_federal_funds_sr"),
+                  plotlyOutput("plot_federal_funds", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_primary_outlays_label",
+                  tags$figcaption(id = "fig_plot_primary_outlays_label", class = "sr-only",
+                    "Chart: Primary federal outlays (excluding net interest) as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_primary_outlays_sr"),
+                  plotlyOutput("plot_primary_outlays", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_real_gdp_growth_label",
+                  tags$figcaption(id = "fig_plot_real_gdp_growth_label", class = "sr-only",
+                    "Chart: Real GDP growth rate, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_real_gdp_growth_sr"),
+                  plotlyOutput("plot_real_gdp_growth", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_primary_balance_label",
+                  tags$figcaption(id = "fig_plot_primary_balance_label", class = "sr-only",
+                    "Chart: Primary budget balance as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_primary_balance_sr"),
+                  plotlyOutput("plot_primary_balance", height = "360px")
+                )
               )
             ),
 
@@ -621,14 +695,54 @@ ui <- fluidPage(
               br(),
               layout_column_wrap(
                 width = "400px",
-                plotlyOutput("dev_plot_primary_balance", height = "360px"),
-                plotlyOutput("dev_plot_debt",            height = "360px"),
-                plotlyOutput("dev_plot_unemployment",    height = "360px"),
-                plotlyOutput("dev_plot_inflation",       height = "360px"),
-                plotlyOutput("dev_plot_10yr_yield",      height = "360px"),
-                plotlyOutput("dev_plot_federal_funds",   height = "360px"),
-                plotlyOutput("dev_plot_real_gdp_growth", height = "360px"),
-                plotlyOutput("dev_plot_output_gap",      height = "360px")
+                tags$figure(`aria-labelledby` = "fig_dev_plot_primary_balance_label",
+                  tags$figcaption(id = "fig_dev_plot_primary_balance_label", class = "sr-only",
+                    "Chart: Primary budget balance deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                  uiOutput("dev_plot_primary_balance_sr"),
+                  plotlyOutput("dev_plot_primary_balance", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_debt_label",
+                  tags$figcaption(id = "fig_dev_plot_debt_label", class = "sr-only",
+                    "Chart: Debt-to-GDP deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                  uiOutput("dev_plot_debt_sr"),
+                  plotlyOutput("dev_plot_debt", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_unemployment_label",
+                  tags$figcaption(id = "fig_dev_plot_unemployment_label", class = "sr-only",
+                    "Chart: Unemployment rate deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_unemployment_sr"),
+                  plotlyOutput("dev_plot_unemployment", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_inflation_label",
+                  tags$figcaption(id = "fig_dev_plot_inflation_label", class = "sr-only",
+                    "Chart: Inflation rate deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_inflation_sr"),
+                  plotlyOutput("dev_plot_inflation", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_10yr_yield_label",
+                  tags$figcaption(id = "fig_dev_plot_10yr_yield_label", class = "sr-only",
+                    "Chart: 10-year Treasury yield deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_10yr_yield_sr"),
+                  plotlyOutput("dev_plot_10yr_yield", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_federal_funds_label",
+                  tags$figcaption(id = "fig_dev_plot_federal_funds_label", class = "sr-only",
+                    "Chart: Federal Funds rate deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_federal_funds_sr"),
+                  plotlyOutput("dev_plot_federal_funds", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_real_gdp_growth_label",
+                  tags$figcaption(id = "fig_dev_plot_real_gdp_growth_label", class = "sr-only",
+                    "Chart: Real GDP growth deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_real_gdp_growth_sr"),
+                  plotlyOutput("dev_plot_real_gdp_growth", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_output_gap_label",
+                  tags$figcaption(id = "fig_dev_plot_output_gap_label", class = "sr-only",
+                    "Chart: Budget balance deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                  uiOutput("dev_plot_output_gap_sr"),
+                  plotlyOutput("dev_plot_output_gap", height = "360px")
+                )
               ),
 
               br(),

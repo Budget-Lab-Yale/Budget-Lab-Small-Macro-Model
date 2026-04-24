@@ -11,8 +11,8 @@ id = '019dbb60-80bf-7410-afdf-cf819558d9f1'
 dashboard_url = 'https://connect.posit.cloud/kroeber-budget-lab/content/019dbb60-80bf-7410-afdf-cf819558d9f1'
 direct_url = 'https://019dbb60-80bf-7410-afdf-cf819558d9f1.share.connect.posit.cloud'
 logs_url = 'https://connect.posit.cloud/kroeber-budget-lab/content/019dbb60-80bf-7410-afdf-cf819558d9f1/history'
-deployed_at = '2026-04-23T13:30:47-04:00'
-bundle_id = '019dbb64-c1ca-732d-87ad-86148bf79832'
+deployed_at = '2026-04-24T15:16:21-04:00'
+bundle_id = '019dc0eb-bb29-b4b2-65b5-d23ed747e99d'
 files = [
   '.Rprofile',
   '.posit/publish/Budget-Lab-Small-Macro-Model-75LB.toml',

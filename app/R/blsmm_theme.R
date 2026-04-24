@@ -18,7 +18,7 @@ bl_colors <- list(
 
   # Text
   body          = "#4a4a4a",
-  muted         = "#888888",
+  muted         = "#6d6d6d",
   heading       = "#1a1a2e",
 
   # Surfaces
@@ -339,7 +339,7 @@ bl_brand_overrides_block <- function() {
          Full-height grid cell (align-self) so the corner cell covers
          the FY header row for year cells scrolling left behind it. */
       background: #fff;
-      box-shadow: 6px 0 0 0 #fff;
+      box-shadow: -8px 0 0 0 #fff, 6px 0 0 0 #fff;
       align-self: stretch;
       display: flex;
       align-items: center;
@@ -394,6 +394,9 @@ bl_brand_overrides_block <- function() {
 
     .blsmm-shell {
       min-height: 100vh;
+    }
+    html.blsmm-embedded .blsmm-shell {
+      min-height: 0;
     }
 
     /* Main content area: flex-grow so it fills remaining width next to
@@ -882,6 +885,19 @@ bl_brand_overrides_block <- function() {
     .blsmm-checkbox-row .form-group,
     .blsmm-checkbox-row .shiny-input-container {
       margin-bottom: 0;
+    }
+
+    /* Screen-reader-only utility: hides content visually while keeping
+       it in the accessibility tree for AT. Used for chart figcaptions
+       and live data summaries. */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
     }
 
     /* Preset buttons: active state (sticky highlight until another preset

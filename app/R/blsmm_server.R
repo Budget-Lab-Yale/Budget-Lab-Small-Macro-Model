@@ -141,8 +141,206 @@ server <- function(input, output, session) {
       pos_bg  = "rgba(40, 167, 69, 0.15)",
       neg_fg  = "#dc3545",
       zero_fg = "#6c757d",
-      pos_fg  = "#28a745"
+      pos_fg  = "#1a7a2e"
     )
+  })
+
+  # ============================================================================
+  # SCREEN-READER CHART DESCRIPTIONS
+  # sr_level_desc: summarises a two-line (baseline + scenario) levels chart.
+  # sr_dev_desc:   summarises a single-line deviation chart.
+  # Both return a plain string used inside a sr-only aria-live paragraph in
+  # the corresponding output$<id>_sr renderUI block below.
+  # ============================================================================
+
+  sr_level_desc <- function(b, s, fy, fmt, unit, label) {
+    valid <- !is.na(b) & !is.na(s)
+    if (!any(valid)) return(label)
+    b <- b[valid]; s <- s[valid]; fy <- fy[valid]; n <- length(b)
+    dev <- s[n] - b[n]
+    dir <- if (abs(dev) < 0.005) "no significant change" else sprintf("%+.2f%s", dev, unit)
+    sprintf(
+      "%s. Baseline: %s%s in %s, ending %s%s in %s. Scenario ends at %s%s (%s from baseline).",
+      label,
+      sprintf(fmt, b[1]), unit, fy[1],
+      sprintf(fmt, b[n]), unit, fy[n],
+      sprintf(fmt, s[n]), unit,
+      dir
+    )
+  }
+
+  sr_dev_desc <- function(dev, fy, fmt, unit, label) {
+    valid <- !is.na(dev)
+    if (!any(valid)) return(label)
+    dev <- dev[valid]; fy <- fy[valid]; n <- length(dev)
+    peak_i <- which.max(abs(dev))
+    dir <- if (abs(dev[n]) < 0.005) "returns near zero" else sprintf("%+.2f%s", dev[n], unit)
+    sprintf(
+      "%s. Peak deviation %+.2f%s in %s. Final: %s in %s.",
+      label,
+      dev[peak_i], unit, fy[peak_i],
+      dir, fy[n]
+    )
+  }
+
+  # -- Levels tab SR outputs (12 charts) --
+
+  output$plot_unemployment_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$U, d$scenario$U, d$baseline$fy_label,
+                    "%.2f", " percent", "Unemployment rate"))
+  })
+
+  output$plot_inflation_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$PI, d$scenario$PI, d$baseline$fy_label,
+                    "%.2f", " percent", "Inflation rate"))
+  })
+
+  output$plot_10yr_yield_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$R10, d$scenario$R10, d$baseline$fy_label,
+                    "%.2f", " percent", "Nominal 10-year Treasury yield"))
+  })
+
+  output$plot_federal_funds_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$RF, d$scenario$RF, d$baseline$fy_label,
+                    "%.2f", " percent", "Federal Funds rate"))
+  })
+
+  output$plot_budget_balance_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- (d$baseline$BUD / d$baseline[["GDP$"]]) * 100
+    s <- (d$scenario$BUD  / d$scenario[["GDP$"]])  * 100
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Total budget balance"))
+  })
+
+  output$plot_debt_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$D_pct_GDP, d$scenario$D_pct_GDP, d$baseline$fy_label,
+                    "%.1f", "% of GDP", "Federal debt held by the public"))
+  })
+
+  output$plot_avg_interest_rate_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$RG, d$scenario$RG, d$baseline$fy_label,
+                    "%.2f", " percent", "Average interest rate on federal debt"))
+  })
+
+  output$plot_total_receipts_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- d$baseline$rgfr_star * (d$baseline$GDPstar / d$baseline$GDP)
+    s <- d$scenario$rgfr_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Total federal receipts"))
+  })
+
+  output$plot_total_outlays_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- (d$baseline$rgfop_star * (d$baseline$GDPstar / d$baseline$GDP)) +
+         ((d$baseline$NI / d$baseline[["GDP$"]]) * 100)
+    s <- (d$scenario$rgfop_star  * (d$scenario$GDPstar  / d$scenario$GDP))  +
+         ((d$scenario$NI  / d$scenario[["GDP$"]])  * 100)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Total federal outlays (including net interest)"))
+  })
+
+  output$plot_primary_outlays_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- d$baseline$rgfop_star * (d$baseline$GDPstar / d$baseline$GDP)
+    s <- d$scenario$rgfop_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Primary federal outlays (excluding interest)"))
+  })
+
+  output$plot_real_gdp_growth_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(d$baseline$real_gdp_growth, d$scenario$real_gdp_growth,
+                    d$baseline$fy_label,
+                    "%.2f", " percent", "Real GDP growth rate"))
+  })
+
+  output$plot_primary_balance_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()
+    b <- d$baseline$rbudp_star * (d$baseline$GDPstar / d$baseline$GDP)
+    s <- d$scenario$rbudp_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_level_desc(b, s, d$baseline$fy_label,
+                    "%.2f", "% of GDP", "Primary budget balance"))
+  })
+
+  # -- Deviations tab SR outputs (8 charts) --
+
+  output$dev_plot_primary_balance_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_rbudp_star, d$fy_label,
+                  "%.2f", " pp of GDP", "Primary balance deviation from baseline"))
+  })
+
+  output$dev_plot_debt_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_D_pct_GDP, d$fy_label,
+                  "%.2f", " pp of GDP", "Debt-to-GDP deviation from baseline"))
+  })
+
+  output$dev_plot_unemployment_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_U, d$fy_label,
+                  "%.3f", " pp", "Unemployment rate deviation from baseline"))
+  })
+
+  output$dev_plot_inflation_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_PI, d$fy_label,
+                  "%.3f", " pp", "Inflation rate deviation from baseline"))
+  })
+
+  output$dev_plot_10yr_yield_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_R10, d$fy_label,
+                  "%.2f", " pp", "10-year Treasury yield deviation from baseline"))
+  })
+
+  output$dev_plot_federal_funds_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_RF, d$fy_label,
+                  "%.2f", " pp", "Federal Funds rate deviation from baseline"))
+  })
+
+  output$dev_plot_real_gdp_growth_sr <- renderUI({
+    req(simulation_results()); d <- simulation_results()$deviations
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(d$d_real_gdp_growth, d$fy_label,
+                  "%.3f", " pp", "Real GDP growth deviation from baseline"))
+  })
+
+  output$dev_plot_output_gap_sr <- renderUI({
+    req(simulation_results()); full <- simulation_results()
+    b_pct <- (full$baseline$BUD / full$baseline[["GDP$"]]) * 100
+    s_pct <- (full$scenario$BUD  / full$scenario[["GDP$"]])  * 100
+    dev <- s_pct - b_pct
+    tags$p(class = "sr-only", `aria-live` = "polite",
+      sr_dev_desc(dev, full$baseline$fy_label,
+                  "%.2f", " pp of GDP", "Budget balance deviation from baseline"))
   })
 
   # ============================================================================
