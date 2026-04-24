@@ -29,9 +29,9 @@ is_baseline_only <- function(data) {
 
 # Chart 1: Unemployment rate (%)
 output$plot_unemployment <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -82,9 +82,9 @@ output$plot_unemployment <- renderPlotly({
 
 # Chart 2: Inflation (%)
 output$plot_inflation <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -196,11 +196,72 @@ output$plot_real_gdp_indexed <- renderPlotly({
     config(displayModeBar = FALSE)
 })
 
+# Chart 3: Real GDP indexed (100 = FY2025)
+output$plot_real_gdp_indexed <- renderPlotly({
+  req(simulation_results_for_plots())
+
+  data <- simulation_results_for_plots()
+  th <- plot_theme()
+  baseline_only <- is_baseline_only(data)
+
+  # Get FY2025 GDP value as base (first value since FY2025 is now included)
+  gdp_base_2025 <- data$baseline$GDP[1]
+
+  # Calculate indexed values (FY2025 = 100)
+  baseline_indexed <- (data$baseline$GDP / gdp_base_2025) * 100
+  scenario_indexed <- (data$scenario$GDP / gdp_base_2025) * 100
+
+  p <- plot_ly()
+
+  if (baseline_only) {
+    # Only show baseline line when no deltas
+    p <- p %>%
+      add_lines(
+        x = data$baseline$fy_label,
+        y = baseline_indexed,
+        name = "Baseline",
+        line = list(color = th$line_baseline, width = 2.5),
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}<extra></extra>")
+      )
+  } else {
+    # Show both lines when there are deltas
+    p <- p %>%
+      add_lines(
+        x = data$baseline$fy_label,
+        y = baseline_indexed,
+        name = "Baseline",
+        line = list(color = th$line_baseline, dash = "dash", width = 2.5),
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}<extra></extra>")
+      ) %>%
+      add_lines(
+        x = data$scenario$fy_label,
+        y = scenario_indexed,
+        name = "Scenario",
+        line = list(color = th$line_scenario, width = 3),
+        hovertemplate = paste0("%{fullData.name}: %{y:.2f}<extra></extra>")
+      )
+  }
+
+  p %>%
+    layout(
+      title = "<b>Real GDP indexed (100 = FY2025)</b>",
+      xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
+      yaxis = list(title = "Index (FY2025 = 100)", gridcolor = th$grid, zerolinecolor = th$zero),
+      hovermode = "x unified",
+      dragmode = FALSE,
+      legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
+      paper_bgcolor = th$paper_bg,
+      plot_bgcolor = th$plot_bg,
+      font = list(color = th$font, family = th$font_family)
+    ) %>%
+    config(displayModeBar = FALSE, doubleClick = FALSE)
+})
+
 # Chart 4: 10-year Treasury yield (%) - 4 series
 output$plot_10yr_yield <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -282,9 +343,9 @@ output$plot_10yr_yield <- renderPlotly({
 
 # Chart 5: Federal Funds rate (%) - 4 series
 output$plot_federal_funds <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -362,9 +423,9 @@ output$plot_federal_funds <- renderPlotly({
 
 # Chart 6: Budget balance % of nominal GDP
 output$plot_budget_balance <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -422,9 +483,9 @@ output$plot_budget_balance <- renderPlotly({
 
 # Chart 7: Debt % of GDP
 output$plot_debt <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -475,9 +536,9 @@ output$plot_debt <- renderPlotly({
 
 # Chart 8: Average interest rate on federal debt (%) - Combo chart
 output$plot_avg_interest_rate <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -534,9 +595,9 @@ output$plot_avg_interest_rate <- renderPlotly({
 
 # Chart 9: Total Receipts, % of nominal GDP
 output$plot_total_receipts <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -593,9 +654,9 @@ output$plot_total_receipts <- renderPlotly({
 
 # Chart 10: Total Outlays, % of nominal GDP
 output$plot_total_outlays <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -654,9 +715,9 @@ output$plot_total_outlays <- renderPlotly({
 
 # Chart 11: Primary Outlays, % of nominal GDP
 output$plot_primary_outlays <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
@@ -713,13 +774,14 @@ output$plot_primary_outlays <- renderPlotly({
 
 # Chart 12: Real GDP growth (bars) - Combo chart
 output$plot_real_gdp_growth <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # Remove NA values (first period has NA since growth is year-over-year)
+  # All values should be valid now (FY2025 growth is calculated from FY2024)
+  # But check just in case
   valid_idx <- !is.na(data$baseline$real_gdp_growth)
 
   p <- plot_ly()
@@ -775,9 +837,9 @@ output$plot_real_gdp_growth <- renderPlotly({
 
 # Chart 13: Primary budget balance % of nominal GDP
 output$plot_primary_balance <- renderPlotly({
-  req(simulation_results())
+  req(simulation_results_for_plots())
 
-  data <- simulation_results()
+  data <- simulation_results_for_plots()
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 

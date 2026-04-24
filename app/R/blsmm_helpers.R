@@ -9,6 +9,11 @@ create_fy_labels <- function(start_year = 2026, n_years = N_PERIODS) {
   paste0("FY", start_year:(start_year + n_years - 1))
 }
 
+# Create fiscal year labels for plots including historical FY2025
+create_fy_labels_with_history <- function(start_year = 2025, n_years = 11) {
+  paste0("FY", start_year:(start_year + n_years - 1))
+}
+
 # Create baseline data for input tables (3 rows: baseline, delta, level)
 create_input_table <- function(baseline_values, variable_name) {
   n_periods <- length(baseline_values)

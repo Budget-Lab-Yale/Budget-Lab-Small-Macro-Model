@@ -424,6 +424,90 @@ server <- function(input, output, session) {
     )
   }
 
+  # Helper to add FY2025 historical data to results for plotting
+  add_fy2025_to_results <- function(results) {
+    # Load historical data to get both FY2024 and FY2025
+    historical <- read.csv(file.path("data", "blsmm_v1_8_historical.csv"))
+    fy2024 <- historical[historical$year == 2024, ]
+    fy2025 <- historical[historical$year == 2025, ]
+
+    # Get columns from baseline to ensure compatibility
+    baseline_cols <- names(results$baseline)
+
+    # Create FY2025 data frame with matching structure
+    fy2025_data <- results$baseline[1, , drop = FALSE]  # Copy structure from first row
+    rownames(fy2025_data) <- NULL
+
+    # Set FY2025 values for existing columns
+    if ("fy_label" %in% baseline_cols) fy2025_data$fy_label <- "FY25"
+    if ("year" %in% baseline_cols) fy2025_data$year <- 2025
+    if ("U" %in% baseline_cols) fy2025_data$U <- fy2025$U
+    if ("PI" %in% baseline_cols) fy2025_data$PI <- fy2025$PI
+    if ("PIE" %in% baseline_cols) fy2025_data$PIE <- fy2025$PIE
+    if ("GDP" %in% baseline_cols) fy2025_data$GDP <- fy2025$GDPstar
+    if ("R10" %in% baseline_cols) fy2025_data$R10 <- fy2025$R10
+    if ("RF" %in% baseline_cols) fy2025_data$RF <- fy2025$RF
+    if ("D_pct_GDP" %in% baseline_cols) fy2025_data$D_pct_GDP <- fy2025$debt_proxy_user
+    if ("BUD" %in% baseline_cols) fy2025_data$BUD <- fy2025$BUD
+    if ("NI" %in% baseline_cols) fy2025_data$NI <- fy2025$NI
+    if ("BUDP" %in% baseline_cols) fy2025_data$BUDP <- fy2025$BUDP
+    if ("D" %in% baseline_cols) fy2025_data$D <- fy2025$D
+
+    # Add additional fields needed for fiscal plots
+    if ("GDPstar" %in% baseline_cols) fy2025_data$GDPstar <- fy2025$GDPstar
+    if ("GDP$" %in% baseline_cols) fy2025_data[["GDP$"]] <- fy2025$GDP.
+    if ("GDP$star" %in% baseline_cols) fy2025_data[["GDP$star"]] <- fy2025$GDP.star
+    if ("GDP$star2" %in% baseline_cols) fy2025_data[["GDP$star2"]] <- fy2025$GDP.star2
+
+    # Calculate fiscal metrics as % of potential GDP for FY2025
+    # For historical year, use typical values and budget identity
+    if ("rgfr_star" %in% baseline_cols) {
+      # Use approximate receipts % GDP from nearby years (around 17.7%)
+      # This is a reasonable estimate for FY2025
+      fy2025_data$rgfr_star <- 17.7
+    }
+    if ("rgfop_star" %in% baseline_cols) {
+      # Primary outlays = Receipts - Primary balance
+      # Using rgfr_star estimate and actual BUDP
+      receipts_nominal <- 17.7 * fy2025$GDPstar / 100
+      prim_outlays_nominal <- receipts_nominal - fy2025$BUDP
+      fy2025_data$rgfop_star <- (prim_outlays_nominal / fy2025$GDPstar) * 100
+    }
+    if ("rbudp_star" %in% baseline_cols) {
+      # Primary balance as % of potential GDP
+      fy2025_data$rbudp_star <- (fy2025$BUDP / fy2025$GDPstar) * 100
+    }
+
+    # Calculate FY2025 real GDP growth using FY2024 data
+    if ("real_gdp_growth" %in% baseline_cols && nrow(fy2024) > 0) {
+      fy2025_growth <- (fy2025$GDPstar - fy2024$GDPstar) / fy2024$GDPstar * 100
+      fy2025_data$real_gdp_growth <- fy2025_growth
+    } else if ("real_gdp_growth" %in% baseline_cols) {
+      fy2025_data$real_gdp_growth <- NA
+    }
+
+    # Add FY2025 to baseline
+    results$baseline_with_history <- rbind(fy2025_data, results$baseline)
+    results$baseline_with_history$fy_label <- create_fy_labels_with_history()[1:nrow(results$baseline_with_history)]
+
+    # Add FY2025 to scenario (same as baseline for historical year)
+    results$scenario_with_history <- rbind(fy2025_data, results$scenario)
+    results$scenario_with_history$fy_label <- create_fy_labels_with_history()[1:nrow(results$scenario_with_history)]
+
+    # Recalculate real GDP growth for combined data (FY2026 onward)
+    if ("GDP" %in% names(results$baseline_with_history)) {
+      gdp_baseline <- results$baseline_with_history$GDP
+      gdp_scenario <- results$scenario_with_history$GDP
+      # Keep FY2025 growth as calculated above, recalculate FY2026+
+      baseline_growth <- c(fy2025_data$real_gdp_growth, diff(gdp_baseline) / head(gdp_baseline, -1) * 100)
+      scenario_growth <- c(fy2025_data$real_gdp_growth, diff(gdp_scenario) / head(gdp_scenario, -1) * 100)
+      results$baseline_with_history$real_gdp_growth <- baseline_growth
+      results$scenario_with_history$real_gdp_growth <- scenario_growth
+    }
+
+    return(results)
+  }
+
   # Initialize with baseline simulation on app launch
   simulation_results <- reactiveVal({
     baseline_old_format <- convert_to_old_structure(baseline_v1_8, baseline_v1_8)
@@ -432,6 +516,28 @@ server <- function(input, output, session) {
     # Baseline has no shocks applied
     baseline_old_format$shock_spec <- NULL
     baseline_old_format
+  })
+
+  # Reactive to provide plotting data with FY2025 included
+  simulation_results_for_plots <- reactive({
+    results <- simulation_results()
+    if (is.null(results)) return(NULL)
+
+    # Add FY2025 historical data to the results
+    results_with_history <- add_fy2025_to_results(results)
+
+    # Return structure with both versions of the data
+    list(
+      # Original data for compatibility
+      baseline = results_with_history$baseline_with_history,
+      scenario = results_with_history$scenario_with_history,
+      deviations = results$deviations,
+      # Keep original data available if needed
+      baseline_original = results$baseline,
+      scenario_original = results$scenario,
+      # Preserve shock spec
+      shock_spec = results$shock_spec
+    )
   })
 
   # Update simulation when button is clicked
