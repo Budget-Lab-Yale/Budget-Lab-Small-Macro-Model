@@ -4,6 +4,26 @@ ui <- fluidPage(
 
   # Custom CSS for Excel-like styling
   tags$head(
+    # Budget Lab design tokens (colors, fonts, spacing) as CSS custom properties
+    bl_webfonts_block(),
+    bl_css_vars_block(),
+    # Brand overrides: body/heading fonts, primary colors
+    bl_brand_overrides_block(),
+    # Detect iframe embedding and mark <html> so CSS can drop the 100vh floor.
+    tags$script(HTML(
+      "try { if (window.self !== window.top) { document.documentElement.classList.add('blsmm-embedded'); } } catch(e) { document.documentElement.classList.add('blsmm-embedded'); }"
+    )),
+    # iframe-resizer child script: lets a parent page auto-size this iframe
+    # to its content height so there are no nested scrollbars. Safe to load
+    # when not embedded - it's a no-op unless a parent calls iFrameResize().
+    tags$script(src = "https://cdn.jsdelivr.net/npm/iframe-resizer@4.4.5/js/iframeResizer.contentWindow.min.js"),
+    # Explicitly signal iframe-resizer after each Bootstrap tab switch.
+    # MutationObserver alone can miss height changes when display:none toggles.
+    tags$script(HTML(
+      "document.addEventListener('shown.bs.tab', function() {
+         if (window.parentIFrame) window.parentIFrame.size();
+       });"
+    )),
     tags$style(HTML("
       /* Yellow highlight for editable row (User Delta row = row 2) */
       .handsontable tbody tr:nth-child(2) td {
@@ -39,14 +59,7 @@ ui <- fluidPage(
         border-radius: 8px;
         border: 2px solid #ddd;
       }
-
-      /* Dark mode base styling */
-      [data-bs-theme='dark'] .sse-display {
-        border-color: #4b5563;
-        color: #e5e7eb;
-      }
-
-      /* Light mode colors */
+/* Light mode colors */
       .sse-solved {
         background-color: #d4edda;
         color: #155724;
@@ -59,19 +72,6 @@ ui <- fluidPage(
         border-color: #ffeaa7;
       }
 
-      /* Dark mode colors - darker backgrounds with lighter text */
-      [data-bs-theme='dark'] .sse-solved {
-        background-color: #1e4620;
-        color: #a8e6a8 !important;
-        border-color: #2d6930;
-      }
-
-      [data-bs-theme='dark'] .sse-not-solved {
-        background-color: #4d3800;
-        color: #ffdf80 !important;
-        border-color: #665000;
-      }
-
       /* Input table styling */
       .handsontable td {
         text-align: right;
@@ -81,59 +81,7 @@ ui <- fluidPage(
         color: #999;
       }
 
-      /* Dark mode table styling (all input/output tables) */
-      html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(2) td {
-        background-color: #6B5D2F !important;
-        color: #FEFCE8 !important;
-      }
-      html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(1) td,
-      html[data-bs-theme='dark'] .handsontable tbody tr:nth-child(3) td {
-        background-color: #1F2937 !important;
-        color: #D1D5DB !important;
-      }
-      html[data-bs-theme='dark'] .handsontable tbody tr td:first-child {
-        background-color: #374151 !important;
-        color: #F3F4F6 !important;
-      }
-      html[data-bs-theme='dark'] .handsontable td,
-      html[data-bs-theme='dark'] .handsontable th {
-        border-color: #4b5563 !important;
-      }
-      html[data-bs-theme='dark'] .handsontable .htDimmed {
-        color: #b6bec9 !important;
-      }
-
-      /* Dark mode DataTables styling */
-      html[data-bs-theme='dark'] table.dataTable,
-      html[data-bs-theme='dark'] table.dataTable tbody tr,
-      html[data-bs-theme='dark'] table.dataTable tbody td,
-      html[data-bs-theme='dark'] table.dataTable thead th {
-        background-color: #1f2630 !important;
-        color: #e9ecef !important;
-        border-color: #3a424a !important;
-      }
-      html[data-bs-theme='dark'] table.dataTable.stripe tbody tr.odd,
-      html[data-bs-theme='dark'] table.dataTable.display tbody tr.odd {
-        background-color: #242d37 !important;
-      }
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_info,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_length,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_filter,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_processing {
-        color: #c9d1d9 !important;
-      }
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate .paginate_button {
-        color: #c9d1d9 !important;
-      }
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate .paginate_button.current,
-      html[data-bs-theme='dark'] .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-        background: #2f81f7 !important;
-        color: #ffffff !important;
-        border-color: #2f81f7 !important;
-      }
-
-      /* Fiscal year note */
+/* Fiscal year note */
       .fy-note {
         font-size: 0.875em;
         color: #666;
@@ -141,11 +89,7 @@ ui <- fluidPage(
         margin-top: -8px;
         margin-bottom: 8px;
       }
-      html[data-bs-theme='dark'] .fy-note {
-        color: #9ca3af;
-      }
-
-      /* Run status pill */
+/* Run status pill */
       .run-status {
         font-family: monospace;
         font-size: 0.875em;
@@ -154,83 +98,44 @@ ui <- fluidPage(
         padding: 8px 16px;
         display: inline-block;
         border: 1px solid transparent;
+        text-align: center;
+        line-height: 1.35;
       }
       .run-ready { background: #e9ecef; color: #343a40; border-color: #ced4da; }
       .run-dirty { background: #fff3cd; color: #856404; border-color: #ffe69c; }
       .run-running { background: #cfe2ff; color: #084298; border-color: #9ec5fe; }
       .run-solved { background: #d1e7dd; color: #0f5132; border-color: #a3cfbb; }
       .run-error { background: #f8d7da; color: #842029; border-color: #f1aeb5; }
-
-      /* Dark mode run status pills */
-      html[data-bs-theme='dark'] .run-ready { background: #374151; color: #d1d5db; border-color: #4b5563; }
-      html[data-bs-theme='dark'] .run-dirty { background: #78350f; color: #fcd34d; border-color: #a16207; }
-      html[data-bs-theme='dark'] .run-running { background: #1e3a8a; color: #93c5fd; border-color: #2563eb; }
-      html[data-bs-theme='dark'] .run-solved { background: #14532d; color: #86efac; border-color: #166534; }
-      html[data-bs-theme='dark'] .run-error { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
-
-      /* Muted text color class */
+/* Muted text color class */
       .text-muted-custom {
         color: #666;
       }
-      html[data-bs-theme='dark'] .text-muted-custom {
-        color: #9ca3af;
-      }
-
-      /* Link color class */
+/* Link color class */
       .text-link {
         color: #0066cc;
       }
-      html[data-bs-theme='dark'] .text-link {
-        color: #60a5fa;
-      }
-
-      /* Warning text color */
+/* Warning text color */
       .text-warning-custom {
         color: #cc0000;
       }
-      html[data-bs-theme='dark'] .text-warning-custom {
-        color: #f87171;
-      }
-
-      /* Info box backgrounds */
+/* Info box backgrounds */
       .bg-info-light {
         background-color: #f8f9fa;
       }
-      html[data-bs-theme='dark'] .bg-info-light {
-        background-color: #1f2937;
-      }
-
-      .bg-blue-light {
+.bg-blue-light {
         background-color: #e7f3ff;
         border-left: 4px solid #0066cc;
       }
-      html[data-bs-theme='dark'] .bg-blue-light {
-        background-color: #1e3a5f;
-        border-left: 4px solid #3b82f6;
-      }
-
-      .bg-yellow-light {
+.bg-yellow-light {
         background-color: #fff9e6;
       }
-      html[data-bs-theme='dark'] .bg-yellow-light {
-        background-color: #3f2f1a;
-      }
-
-      .bg-blue-pale {
+.bg-blue-pale {
         background-color: #f0f8ff;
       }
-      html[data-bs-theme='dark'] .bg-blue-pale {
-        background-color: #1e293b;
-      }
-
-      .bg-red-light {
+.bg-red-light {
         background-color: #fff0f0;
       }
-      html[data-bs-theme='dark'] .bg-red-light {
-        background-color: #3f1f1f;
-      }
-
-      /* SSE Display Box */
+/* SSE Display Box */
       .sse-box {
         font-family: monospace;
         font-size: 0.875em;
@@ -239,55 +144,7 @@ ui <- fluidPage(
         border-radius: 4px;
         border: 1px solid #dee2e6;
       }
-      html[data-bs-theme='dark'] .sse-box {
-        background: #2b3138;
-        border-color: #4b5563;
-        color: #e9ecef;
-      }
-
-      /* Dark mode button improvements */
-      html[data-bs-theme='dark'] .btn-outline-primary {
-        color: #60a5fa;
-        border-color: #3b82f6;
-        background-color: rgba(59, 130, 246, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-primary:hover {
-        color: #ffffff;
-        background-color: #3b82f6;
-        border-color: #3b82f6;
-      }
-      html[data-bs-theme='dark'] .btn-outline-danger {
-        color: #f87171;
-        border-color: #dc2626;
-        background-color: rgba(220, 38, 38, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-danger:hover {
-        color: #ffffff;
-        background-color: #dc2626;
-        border-color: #dc2626;
-      }
-      html[data-bs-theme='dark'] .btn-outline-success {
-        color: #86efac;
-        border-color: #16a34a;
-        background-color: rgba(22, 163, 74, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-success:hover {
-        color: #ffffff;
-        background-color: #16a34a;
-        border-color: #16a34a;
-      }
-      html[data-bs-theme='dark'] .btn-outline-warning {
-        color: #fcd34d;
-        border-color: #ca8a04;
-        background-color: rgba(202, 138, 4, 0.1);
-      }
-      html[data-bs-theme='dark'] .btn-outline-warning:hover {
-        color: #000000;
-        background-color: #fbbf24;
-        border-color: #ca8a04;
-      }
-
-      /* Sidebar section styling for visual separation */
+/* Sidebar section styling for visual separation */
       .sidebar-section {
         padding: 16px;
         margin-bottom: 16px;
@@ -295,12 +152,7 @@ ui <- fluidPage(
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
       }
-      html[data-bs-theme='dark'] .sidebar-section {
-        background-color: #1f2937;
-        border-color: #374151;
-      }
-
-      .sidebar-section h4 {
+.sidebar-section h4 {
         margin-top: 0;
         margin-bottom: 16px;
         font-size: 1.125em;
@@ -347,37 +199,133 @@ ui <- fluidPage(
       .nav-tabs .nav-link[data-value='dashboard']:not(.active) {
         background-color: rgba(0, 102, 204, 0.05);
       }
-
-      /* Dark mode support for primary tabs */
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='inputs']:not(.active),
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='dashboard']:not(.active) {
-        background-color: rgba(96, 165, 250, 0.1);
-      }
-
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='inputs'].active,
-      [data-bs-theme='dark'] .nav-tabs .nav-link[data-value='dashboard'].active {
-        border-bottom: 3px solid #60a5fa;
-      }
-    ")),
+")),
     tags$script(HTML("
-      // rhandsontable can mis-measure width when rendered in hidden tabs.
-      // Refresh dimensions whenever a tab becomes visible.
-      function refreshAllHotTables() {
-        if (!window.HTMLWidgets || !HTMLWidgets.find) return;
-        document.querySelectorAll('.rhandsontable').forEach(function(el) {
-          var widget = HTMLWidgets.find('#' + el.id);
-          if (widget && widget.hot) {
-            try {
-              widget.hot.render();
-              if (widget.hot.refreshDimensions) widget.hot.refreshDimensions();
-            } catch (e) {}
+      // Year-by-year delta inputs: format the displayed value with an
+      // explicit sign prefix (+ / -) on blur so users see the field is
+      // a delta. Zero renders as '0.00' with no sign. Dispatches a
+      // 'change' event so Shiny's text input binding picks up the
+      // reformatted value — but the all.equal short-circuit in the
+      // server observer keeps this from clearing active_preset.
+      document.addEventListener('blur', function(e) {
+        var el = e.target;
+        if (!el || !el.classList || !el.classList.contains('blsmm-delta-input')) return;
+        var raw = el.value;
+        var v = parseFloat(raw);
+        if (isNaN(v)) v = 0;
+        var next;
+        if (Math.abs(v) < 1e-12) {
+          next = '0.00';
+        } else {
+          next = (v > 0 ? '+' : '') + v.toFixed(2);
+        }
+        if (next !== raw) {
+          el.value = next;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }, true);
+
+      // Only one Bootstrap popover open at a time. When a popover is
+      // about to be shown, hide every other currently-open popover.
+      document.addEventListener('show.bs.popover', function(e) {
+        var opening = e.target;
+        document.querySelectorAll('.popover.show').forEach(function(popEl) {
+          var describedTrigger = document.querySelector(
+            '[aria-describedby=\"' + popEl.id + '\"]'
+          );
+          if (describedTrigger && describedTrigger !== opening &&
+              window.bootstrap && bootstrap.Popover) {
+            var inst = bootstrap.Popover.getInstance(describedTrigger);
+            if (inst) inst.hide();
           }
         });
-        window.dispatchEvent(new Event('resize'));
-      }
+      });
 
-      document.addEventListener('shown.bs.tab', function() {
-        setTimeout(refreshAllHotTables, 80);
+      // Click outside an open popover -> close it. A click INSIDE the
+      // popover itself, or ON its trigger, is left alone (trigger click
+      // is Bootstrap's own toggle behavior).
+      document.addEventListener('click', function(e) {
+        if (!window.bootstrap || !bootstrap.Popover) return;
+        if (e.target.closest('.popover')) return;                   // inside popover body
+        if (e.target.closest('[data-bs-toggle=\"popover\"]')) return; // trigger element
+        if (e.target.closest('.blsmm-info-trigger')) return;          // our info trigger class
+        document.querySelectorAll('.popover.show').forEach(function(popEl) {
+          var describedTrigger = document.querySelector(
+            '[aria-describedby=\"' + popEl.id + '\"]'
+          );
+          if (describedTrigger) {
+            var inst = bootstrap.Popover.getInstance(describedTrigger);
+            if (inst) inst.hide();
+          }
+        });
+      });
+
+      // Safety-net handler for offcanvas dismiss (X close button).
+      // Bootstrap's auto-wiring sometimes misses clicks on .btn-close
+      // inside responsive offcanvases (.offcanvas-md). This delegates
+      // a click listener to the document so the X button always works.
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-bs-dismiss=\"offcanvas\"]');
+        if (!btn) return;
+        var container = btn.closest(
+          '.offcanvas, .offcanvas-md, .offcanvas-sm, .offcanvas-lg, .offcanvas-xl'
+        );
+        if (container && window.bootstrap && bootstrap.Offcanvas) {
+          bootstrap.Offcanvas.getOrCreateInstance(container).hide();
+        }
+      });
+
+      // Clicking the dark .offcanvas-backdrop dismisses every visible
+      // offcanvas. Bootstrap normally wires this itself but misses when
+      // multiple offcanvases share a stack (e.g., the Controls drawer
+      // open at the same time as the Custom Scenario Builder).
+      document.addEventListener('click', function(e) {
+        if (!e.target.classList ||
+            !e.target.classList.contains('offcanvas-backdrop')) return;
+        if (!window.bootstrap || !bootstrap.Offcanvas) return;
+        document.querySelectorAll(
+          '.offcanvas.show, .offcanvas-md.show, .offcanvas-sm.show, .offcanvas-lg.show, .offcanvas-xl.show'
+        ).forEach(function(el) {
+          bootstrap.Offcanvas.getOrCreateInstance(el).hide();
+        });
+      });
+
+      // On narrow widths, opening the Custom Scenario Builder while the
+      // Controls drawer is also open leaves Controls behind with no tint
+      // (Bootstrap reuses a single backdrop for both). Close Controls
+      // first, then let Bootstrap's toggle handler open CSB. On wide
+      // widths Controls is inline (no .show class) so this is a no-op.
+      //
+      // Track whether Controls was open so we can restore it when CSB
+      // closes — the user's next action is almost always Run Simulation,
+      // which lives in Controls.
+      var __blsmmControlsWasOpen = false;
+      document.addEventListener('click', function(e) {
+        var customBtn = e.target.closest('#open_assumptions');
+        if (!customBtn) return;
+        var controlsDrawer = document.getElementById('controls_drawer');
+        if (!controlsDrawer || !controlsDrawer.classList.contains('show')) return;
+        if (!window.bootstrap || !bootstrap.Offcanvas) return;
+        var inst = bootstrap.Offcanvas.getInstance(controlsDrawer);
+        if (inst) {
+          __blsmmControlsWasOpen = true;
+          inst.hide();
+        }
+      });
+      // When CSB closes, reopen Controls if it was open before. Listen
+      // on hide.bs.offcanvas (START of hide animation) rather than
+      // hidden.bs.offcanvas (end), so Controls starts sliding IN while
+      // CSB slides OUT — parallel animations that mirror the smooth
+      // forward transition (Controls -> CSB). Bootstrap offcanvas events
+      // bubble, so a document-level listener catches it.
+      document.addEventListener('hide.bs.offcanvas', function(e) {
+        if (!e.target || e.target.id !== 'assumptions_drawer') return;
+        if (!__blsmmControlsWasOpen) return;
+        __blsmmControlsWasOpen = false;
+        var controlsDrawer = document.getElementById('controls_drawer');
+        if (controlsDrawer && window.bootstrap && bootstrap.Offcanvas) {
+          bootstrap.Offcanvas.getOrCreateInstance(controlsDrawer).show();
+        }
       });
 
       document.addEventListener('DOMContentLoaded', function() {
@@ -411,429 +359,434 @@ ui <- fluidPage(
     "))
   ),
 
-  # Modern theme with dark mode support
+  # Budget Lab-themed bslib theme.
+  # Bootstrap 5 defaults (no bootswatch). "flatly" brought in a green-teal
+  # accent that clashed with the Budget Lab palette; with flatly dropped we
+  # set brand colors directly.
   theme = bs_theme(
-    bootswatch = "flatly",
-    base_font = font_google("Inter"),
-    heading_font = font_google("Inter")
+    version      = 5,
+    base_font    = font_google("Source Sans 3"),
+    heading_font = font_google("Source Sans 3"),
+    primary      = bl_colors$navy,
+    secondary    = "#6c757d",
+    success      = "#2a7a2a",
+    info         = bl_colors$blue,
+    warning      = "#b45309",
+    danger       = "#9b2226"
   ),
 
   tags$a(href = "#main-content", class = "skip-link", "Skip to main content"),
 
-  # Application title with dark mode toggle
-  fluidRow(
-    column(10,
-      h2("The Budget Lab's Small Macro Model (BLSMM)"),
-      h4("Interactive Policy Simulation Tool", class = "text-muted-custom"),
-      div(class = "fy-note",
-          "Note: All years are fiscal years (October 1 - September 30)")
-    ),
-    column(2, style = "text-align: right; padding-top: 15px;",
-      input_dark_mode(id = "dark_mode", mode = "light")
-    )
-  ),
+  # No in-app header: the title, subtitle, and FY note are duplicative of
+  # the Budget Lab website page that embeds this iframe. Fiscal year
+  # context is carried in the Getting Started alert on the Results tab
+  # and in the About tab for anyone who needs it.
 
-  br(),
+  # App shell: responsive Bootstrap offcanvas for Controls + main content.
+  # At >= md (768px): the Controls drawer renders inline as a 280px left
+  # column (Bootstrap's .offcanvas-md reverts to normal flow at md+).
+  # At < md: Controls is hidden behind an offcanvas drawer, opened by the
+  # sticky toggle button at the top of the main area. Bootstrap handles the
+  # dark backdrop, focus trap, Escape key, click-outside-to-close, and ARIA
+  # state natively — same mechanism as the Custom Scenario Builder drawer.
+  div(class = "d-flex flex-row blsmm-shell", `data-iframe-height` = NA,
 
-  # Sidebar layout
-  sidebarLayout(
+    # ------------------------------------------------------------------
+    # CONTROLS — responsive offcanvas drawer
+    # ------------------------------------------------------------------
+    tags$div(
+      class = "offcanvas-md offcanvas-start blsmm-controls-drawer",
+      id = "controls_drawer",
+      tabindex = "-1",
+      `aria-labelledby` = "controls_drawer_label",
 
-    # Sidebar panel - simplified for controls only
-    sidebarPanel(
-      width = 3,
-
-      # SSE Display - simplified
-      div(style = "position: sticky; top: 8px; z-index: 100; background: var(--bs-body-bg); padding-bottom: 8px;",
-          h4("Solver Status"),
-          div(class = "sse-box",
-              textOutput("sse_display", inline = TRUE))
-      ),
-      div(
-        role = "status",
-        `aria-live` = "polite",
-        style = "margin-top: 8px;",
-        uiOutput("run_status_bar")
-      ),
-
-      # Main action buttons
-      div(class = "sidebar-section",
-        h4("Simulation Controls"),
-        actionButton("run_sim",
-                     "Run Simulation",
-                     icon = icon("play"),
-                     class = "btn-primary btn-lg",
-                     style = "width: 100%; margin-bottom: 8px;"),
-
-        actionButton("reset_inputs",
-                     "Reset to Defaults",
-                     icon = icon("rotate-right"),
-                     class = "btn-secondary",
-                     style = "width: 100%; margin-bottom: 16px;"),
-
-        helpText("Configure shocks in the Inputs tab, then click Run Simulation."),
-        helpText("Keyboard shortcut: Alt+R = Run")
+      # Drawer header: visible at every width so the sidebar is always
+      # identifiable as "Controls". The close (X) button is hidden at md+
+      # via CSS since the sidebar is always visible there.
+      tags$div(class = "offcanvas-header blsmm-controls-header",
+        h4(id = "controls_drawer_label", class = "offcanvas-title mb-0",
+           "Controls"),
+        tags$button(type = "button",
+                    class = "btn-close blsmm-controls-close",
+                    `data-bs-dismiss` = "offcanvas",
+                    `data-bs-target` = "#controls_drawer",
+                    `aria-label` = "Close")
       ),
 
-      # Preset Scenarios
-      div(class = "sidebar-section",
-        h4("Preset Scenarios"),
-        p("Quick-start common scenarios:", class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 16px;"),
+      tags$div(class = "offcanvas-body blsmm-controls-body",
 
-        helpText("Productivity boost + LFPR decline + outlay rise (Karger et al.)",
-                 style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
-        actionButton("preset_rapid_ai",
-                     "Rapid AI Adoption",
-                     class = "btn-outline-primary btn-sm",
-                     style = "width: 100%; margin-bottom: 8px;"),
+        # SCENARIO: Custom (opens Custom Scenario Builder drawer) or
+        # one of three presets. Reset to Defaults also lives here since
+        # it's a scenario-level control (wipes the current scenario
+        # back to baseline).
+        div(class = "sidebar-section",
+          h4("Scenario"),
 
-        helpText("Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030",
-                 style = "margin-top: -4px; margin-bottom: 8px; font-size: 0.875em;"),
-        actionButton("preset_persistent_infl",
-                     "Persistent Inflation",
-                     class = "btn-outline-warning btn-sm",
-                     style = "width: 100%; margin-bottom: 8px;"),
-
-        helpText("Defense outlays rise per BR2027 (incl. +$350B FY2027 mandatory)",
-                 style = "margin-top: -4px; font-size: 0.875em;"),
-        actionButton("preset_military_conflict",
-                     "Higher Defense Spending",
-                     class = "btn-outline-danger btn-sm",
-                     style = "width: 100%; margin-bottom: 8px;")
-      ),
-
-      # Export section
-      div(class = "sidebar-section",
-        h4("Export Results"),
-        downloadButton("download_csv",
-                      "Export to CSV",
-                      class = "btn-outline-primary",
-                      style = "width: 100%; margin-bottom: 8px;"),
-
-        downloadButton("download_excel",
-                      "Export to Excel",
-                      class = "btn-outline-primary",
-                      style = "width: 100%;")
-      ),
-
-      div(class = "text-muted-custom", style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
-          "Version 1.0. Updated April 2026.")
-    ),
-
-    # Main panel for outputs
-    mainPanel(
-      id = "main-content",
-      width = 9,
-
-      tabsetPanel(
-        id = "main_tabs",
-        selected = "dashboard",
-
-        # ======================================================================
-        # TAB 1: INPUTS
-        # ======================================================================
-        tabPanel(
-          value = "inputs",
-          tagList(icon("sliders"), " ", tags$b(tags$u("Inputs"))),
-          br(),
-
-          # Streamlined Introduction
-          p(style = "font-size: 1.1em; margin-bottom: 16px;",
-            strong("Enter policy changes below."), " Edit yellow cells to create your scenario. ",
-            strong("Zeros = no change from baseline."),
-            " Click 'Run Simulation' when ready."
+          # Custom Scenario — the primary option. Larger button.
+          # Outline by default; fills navy via .preset-active when the
+          # user has a custom scenario live (server toggles the class
+          # via the custom_scenario_active reactive).
+          tags$button(
+            id = "open_assumptions",
+            type = "button",
+            class = "btn btn-outline-primary blsmm-action-btn blsmm-scenario-primary blsmm-preset-btn",
+            style = "width: 100%; margin-bottom: 14px;",
+            `data-bs-toggle` = "offcanvas",
+            `data-bs-target` = "#assumptions_drawer",
+            `aria-controls` = "assumptions_drawer",
+            tags$i(class = "fa fa-sliders", `aria-hidden` = "true"),
+            tags$span(" Custom Scenario")
           ),
 
-          p(class = "text-muted-custom", style = "margin-bottom: 24px;",
-            icon("info-circle"), " ",
-            strong("New users:"), " Start with Primary Budget Balance to simulate a tax or spending policy. ",
-            strong("Note:"), " \"pp\" = percentage points (e.g., a change from 2.0% to 2.5% is +0.5 pp)."
-          ),
+          p("Or start from a preset:", class = "text-muted-custom",
+            style = "font-size: 0.875em; margin-bottom: 8px;"),
 
-          # Sub-tabs for organizing inputs by category
-          tabsetPanel(
-            id = "input_subtabs",
-            selected = "fiscal_policy",
+          # Presets: all uniform (outline-primary). Description lives in a
+          # popover triggered by the ? icon to the right of each button.
+          preset_row("preset_rapid_ai", "Rapid AI Adoption",
+                     "Productivity boost + labor-force participation decline + outlay rise (Karger et al.)."),
+          preset_row("preset_persistent_infl", "Persistent Inflation",
+                     "Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030."),
+          preset_row("preset_military_conflict", "Higher Defense Spending",
+                     "Defense outlays rise per BR2027, including a +$350B mandatory bump in FY2027."),
 
-            # Sub-tab 1: Potential Growth
-            tabPanel(
-              value = "potential_growth",
-              "Potential Growth",
-              br(),
+          # Reset — scenario-level control. Softer visual weight than Custom.
+          actionButton("reset_inputs",
+                       "Reset to Defaults",
+                       icon = icon("rotate-right"),
+                       class = "btn btn-outline-secondary btn-sm",
+                       style = "width: 100%; margin-top: 10px;")
+        ),
 
-              p(strong("What this does: "), "Adjust long-run economic growth by changing labor force and productivity growth rates.", style = "font-size: 1.05em;"),
-              p(icon("info-circle"), " Changes here automatically affect the neutral interest rate (r*) and government spending.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
+        # SIMULATION: Run button + run-status pill.
+        # (The raw SSE pill was removed as visual noise; run_status_bar
+        # already surfaces Complete/Error/etc. in a user-friendly form.
+        # The sse_display output is still rendered server-side but no
+        # longer shown in the UI.)
+        div(class = "sidebar-section",
+          h4("Simulation"),
+          actionButton("run_sim",
+                       "Run Simulation",
+                       icon = icon("play"),
+                       class = "btn-primary blsmm-action-btn",
+                       style = "width: 100%; margin-bottom: 12px;"),
 
-              h4("Potential Productivity Growth Delta (pp)"),
-              p(strong("Example:"), " +0.20 increases productivity (GDP per worker) growth by 0.2 percentage points per year"),
-              rHandsontableOutput("table_productivity", height = "180px"),
-              br(),
-
-              h4("Potential Labor Force Growth Delta (pp)"),
-              p(strong("Example:"), " +0.10 increases labor force growth rate by 0.1 percentage points per year"),
-              rHandsontableOutput("table_lf_growth", height = "180px")
-            ),
-
-            # Sub-tab 2: Primary Budget Balance
-            tabPanel(
-              value = "fiscal_policy",
-              "Primary Budget Balance",
-              br(),
-
-              p(strong("What this does: "), "Simulate tax and spending policies by changing federal receipts and outlays as a percent of GDP.", style = "font-size: 1.05em;"),
-              p(icon("arrow-right"), " ", strong("How to use: "), "Enter positive values to increase receipts or outlays, negative values to decrease them.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
-
-              h4("Federal Receipts Delta (pp of GDP)"),
-              p(strong("Example:"), " +1.00 = tax increase of 1% of GDP | -1.00 = tax cut of 1% of GDP"),
-              rHandsontableOutput("table_receipts", height = "180px"),
-              br(),
-
-              h4("Federal Primary Outlays Delta (pp of GDP)"),
-              p(strong("Example:"), " +1.00 = spending increase of 1% of GDP | -1.00 = spending cut of 1% of GDP"),
-              p(class = "text-muted-custom", style = "font-size: 0.875em; margin-top: -8px;", icon("info-circle"), " Primary outlays exclude interest payments on the debt"),
-              rHandsontableOutput("table_outlays", height = "180px"),
-              br(),
-              br(),
-
-              tags$details(
-                tags$summary(strong("Advanced: View calculated effects"), class = "text-link", style = "cursor: pointer;"),
-                br(),
-                h5("Additional Outlay Changes from Economic Growth"),
-                p("The model automatically adjusts outlays when economic growth changes:"),
-                verbatimTextOutput("outlays_indirect_display"),
-                br(),
-                h5("Implied Primary Budget Balance Delta"),
-                p("Primary balance = Receipts - Outlays (excluding interest payments)"),
-                verbatimTextOutput("primary_balance_derived")
-              )
-            ),
-
-            # Sub-tab 3: Neutral Rate (r*)
-            tabPanel(
-              value = "neutral_rate",
-              "Neutral Rate (r*)",
-              br(),
-
-              p(strong("What this does: "), "Change the neutral interest rate - the rate that neither stimulates nor restrains the economy.", style = "font-size: 1.05em;"),
-              p(icon("info-circle"), " Use this to model structural changes like demographic shifts or global savings trends.", class = "text-muted-custom", style = "margin-bottom: 16px;"),
-
-              h4("Real Neutral Federal Funds Rate Direct Delta (pp)"),
-              p(strong("Example:"), " +0.25 increases r* by 0.25 percentage points | -0.25 decreases r* by 0.25 pp"),
-              rHandsontableOutput("table_rfstar", height = "180px"),
-              br(),
-
-              tags$details(
-                tags$summary(strong("Advanced: View automatic r* adjustments"), class = "text-link", style = "cursor: pointer;"),
-                br(),
-                p("The neutral rate adjusts automatically based on economic growth and government debt levels:"),
-                verbatimTextOutput("rfstar_indirect_display")
-              )
-            ),
-
-            # Sub-tab 4: Monetary Policy
-            tabPanel(
-              value = "monetary_policy",
-              "Monetary Policy",
-              br(),
-
-              h4("Inflation Target Delta (pp)"),
-              p(strong("Example:"), " +0.50 = Fed raises target from 2.0% to 2.5% | -0.50 = Fed lowers target to 1.5%"),
-              rHandsontableOutput("table_inflation_target", height = "180px"),
-              br(),
-              checkboxInput("expectations_speed",
-                           "Fast Expectations Adjustment",
-                           value = FALSE),
-              helpText("Check this box if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment."),
-
-              hr(),
-
-              h4("Fed Interest Rate Adjustment (pp)"),
-              p("Sets interest rates higher or lower than the Fed would normally choose based on economic conditions. Use this to model unusual Fed actions like forward guidance."),
-              p(strong("Example:"), " +0.50 = Fed Funds rate is 0.5 pp higher than normal | -0.50 = 0.5 pp lower than normal"),
-              rHandsontableOutput("table_monetary_rule", height = "180px")
-            ),
-
-            # Sub-tab 5: Demand Shocks
-            tabPanel(
-              value = "demand_shocks",
-              "Demand Shocks",
-              br(),
-              h4("Output Gap Shock Delta (pp)"),
-              p("Model changes in private sector demand (consumer/business confidence, wealth effects from stock markets)."),
-              p(strong("Example:"), " +2.00 = positive demand shock pushing output 2 pp above potential | -2.00 = negative demand shock"),
-              rHandsontableOutput("table_output_gap", height = "180px")
-            ),
-
-            # Sub-tab 6: Unexpected Shocks
-            tabPanel(
-              value = "unexpected_shocks",
-              "Unexpected Shocks",
-              br(),
-
-              h4("Unexpected Inflation Shock Delta (pp)"),
-              p("Model temporary supply shocks like oil price spikes or pandemic disruptions. These are one-time events."),
-              p(strong("Example:"), " +1.00 means inflation is 1 percentage point higher than baseline for that year"),
-              rHandsontableOutput("table_inflation_shock", height = "180px")
-            ),
-
-            # Sub-tab 7: User Deltas Summary
-            tabPanel(
-              value = "user_deltas_summary",
-              tagList(icon("list-check"), " User Deltas Summary"),
-              br(),
-
-              h4("Consolidated View of All User Inputs"),
-              helpText("This table consolidates all your inputs from the Inputs tab. All values are read-only. If any value is non-zero, that scenario is active."),
-
-              br(),
-
-              DTOutput("summary_all_deltas")
-            )
+          # Run status pill (READY / DIRTY / Complete / ERROR)
+          div(class = "blsmm-sim-status-wrap",
+              role = "status",
+              `aria-live` = "polite",
+              uiOutput("run_status_bar")
           )
         ),
 
+        # Export section
+        div(class = "sidebar-section",
+          `aria-describedby` = "export_sr_note",
+          h4("Export Results"),
+          tags$p(id = "export_sr_note", class = "sr-only",
+            "Export provides full numeric data for all charts as a downloadable file."),
+          downloadButton("download_csv",
+                        "Export to CSV",
+                        class = "btn-outline-primary",
+                        style = "width: 100%; margin-bottom: 8px;"),
+
+          downloadButton("download_excel",
+                        "Export to Excel",
+                        class = "btn-outline-primary",
+                        style = "width: 100%;")
+        ),
+
+        div(class = "text-muted-custom",
+            style = "text-align: center; font-size: 0.875em; margin-top: 24px;",
+            "Version 1.0")
+      )
+    ),
+
+    # ------------------------------------------------------------------
+    # MAIN CONTENT
+    # ------------------------------------------------------------------
+    tags$main(
+      id = "main-content",
+      class = "blsmm-main flex-grow-1",
+
+      # Mobile-only top bar with a hamburger menu toggle. Hidden at >= md
+      # via d-md-none. Sticky so it stays reachable as the user scrolls.
+      # Hamburger icon (fa-bars) signals "drawer from the left" to users
+      # familiar with mobile app top-bar patterns. Subtle styling — not a
+      # navy primary button — so it doesn't compete with Run Simulation
+      # as an action.
+      tags$button(
+        id = "toggle_controls",
+        type = "button",
+        class = "d-md-none blsmm-controls-toggle",
+        `data-bs-toggle` = "offcanvas",
+        `data-bs-target` = "#controls_drawer",
+        `aria-controls` = "controls_drawer",
+        `aria-label` = "Open controls menu",
+        tags$i(class = "fa fa-bars", `aria-hidden` = "true"),
+        tags$span(class = "blsmm-controls-toggle-label", "Controls")
+      ),
+
+      tabsetPanel(
+        id = "main_tabs",
+        selected = "results",
+
         # ======================================================================
-        # TAB 3: DASHBOARD
+        # INPUTS — removed. The 9 input categories live in an offcanvas
+        # drawer opened by the Custom Scenario button in the sidebar; see
+        # the drawer definition at the end of this UI. Each category's
+        # "Edit year-by-year" disclosure renders a native numericInput
+        # strip (see year_by_year_input_strip() in blsmm_helpers.R).
+        # ======================================================================
+
+        # ======================================================================
+        # TAB: RESULTS (merged Dashboard + Deviations)
         # ======================================================================
         tabPanel(
-          value = "dashboard",
-          tagList(icon("gauge-high"), " ", tags$b(tags$u("Dashboard"))),
+          value = "results",
+          tagList(icon("gauge-high"), " Results"),
           br(),
 
-          div(class = "alert alert-secondary",
-              strong("Getting started: "),
-              "Configure your inputs in the sidebar and click 'Run Simulation' to see results. ",
-              strong("How to read: "),
-              "All charts compare Baseline (dashed) vs Scenario (solid). ",
-              "Rates and inflation are percentage points; debt and balances are percent of GDP. ",
-              "For budget charts, more negative values indicate larger deficits."
-          ),
+          # Getting started box removed — tutorial content lives in the
+          # About tab and the Controls sidebar is visible / self-evident.
 
-          # KPI Value Boxes
-          layout_columns(
-            col_widths = c(6, 6),
+          # KPI Value Boxes — always visible above the level/deviation toggle.
+          # 200px min so two fit side-by-side in a 900px iframe's main area;
+          # labels wrap to multiple lines inside each card when tight.
+          # showcase_left_center pins the icon to a left column that never
+          # wraps above the text block.
+          layout_column_wrap(
+            width = "200px",
+            gap = "12px",
             value_box(
               title = "Final Debt Impact",
               value = textOutput("kpi_final_debt"),
               showcase = icon("scale-balanced"),
-              theme = "secondary",
-              p("Change in debt/GDP ratio", style = "font-size: 0.85em;")
+              showcase_layout = showcase_left_center(),
+              theme = value_box_theme(bg = "#ffffff", fg = bl_colors$navy),
+              class = "blsmm-kpi-card",
+              p("Change in debt/GDP ratio")
             ),
             value_box(
               title = "Max Unemployment Effect",
               value = textOutput("kpi_max_unemployment"),
               showcase = icon("users"),
-              theme = "secondary",
-              p("Peak change in unemployment", style = "font-size: 0.85em;")
+              showcase_layout = showcase_left_center(),
+              theme = value_box_theme(bg = "#ffffff", fg = bl_colors$navy),
+              class = "blsmm-kpi-card",
+              p("Peak change in unemployment")
             )
           ),
 
-          br(),
+          # br() removed — navset_underline's own top margin gives
+          # enough space; matches the gap above the KPI cards.
 
-          # All 13 Charts from BLSMM_v1_8_UI.pdf specification
-          fluidRow(
-            column(6, plotlyOutput("plot_unemployment", height = "400px")),
-            column(6, plotlyOutput("plot_inflation", height = "400px"))
-          ),
+          # Tab toggle between Levels and Deviations-from-baseline views.
+          navset_underline(
+            id = "results_view",
 
-          fluidRow(
-            column(6, plotlyOutput("plot_real_gdp_indexed", height = "400px")),
-            column(6, plotlyOutput("plot_10yr_yield", height = "400px"))
-          ),
+            # Levels view: 13 plots showing absolute values (baseline +
+            # scenario lines on each chart).
+            nav_panel(
+              title = "Levels",
+              br(),
+              layout_column_wrap(
+                width = "400px",
+                tags$figure(`aria-labelledby` = "fig_plot_budget_balance_label",
+                  tags$figcaption(id = "fig_plot_budget_balance_label", class = "sr-only",
+                    "Chart: Total budget balance as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_budget_balance_sr"),
+                  plotlyOutput("plot_budget_balance", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_debt_label",
+                  tags$figcaption(id = "fig_plot_debt_label", class = "sr-only",
+                    "Chart: Federal debt held by the public as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_debt_sr"),
+                  plotlyOutput("plot_debt", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_avg_interest_rate_label",
+                  tags$figcaption(id = "fig_plot_avg_interest_rate_label", class = "sr-only",
+                    "Chart: Average interest rate on federal debt, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_avg_interest_rate_sr"),
+                  plotlyOutput("plot_avg_interest_rate", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_total_receipts_label",
+                  tags$figcaption(id = "fig_plot_total_receipts_label", class = "sr-only",
+                    "Chart: Total federal receipts as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_total_receipts_sr"),
+                  plotlyOutput("plot_total_receipts", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_total_outlays_label",
+                  tags$figcaption(id = "fig_plot_total_outlays_label", class = "sr-only",
+                    "Chart: Total federal outlays as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_total_outlays_sr"),
+                  plotlyOutput("plot_total_outlays", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_unemployment_label",
+                  tags$figcaption(id = "fig_plot_unemployment_label", class = "sr-only",
+                    "Chart: Unemployment rate, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_unemployment_sr"),
+                  plotlyOutput("plot_unemployment", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_inflation_label",
+                  tags$figcaption(id = "fig_plot_inflation_label", class = "sr-only",
+                    "Chart: Inflation rate (GDP deflator), baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_inflation_sr"),
+                  plotlyOutput("plot_inflation", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_10yr_yield_label",
+                  tags$figcaption(id = "fig_plot_10yr_yield_label", class = "sr-only",
+                    "Chart: 10-year Treasury yield (nominal and real), baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_10yr_yield_sr"),
+                  plotlyOutput("plot_10yr_yield", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_federal_funds_label",
+                  tags$figcaption(id = "fig_plot_federal_funds_label", class = "sr-only",
+                    "Chart: Federal Funds rate and neutral rate (r-star), baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_federal_funds_sr"),
+                  plotlyOutput("plot_federal_funds", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_primary_outlays_label",
+                  tags$figcaption(id = "fig_plot_primary_outlays_label", class = "sr-only",
+                    "Chart: Primary federal outlays (excluding net interest) as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_primary_outlays_sr"),
+                  plotlyOutput("plot_primary_outlays", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_real_gdp_growth_label",
+                  tags$figcaption(id = "fig_plot_real_gdp_growth_label", class = "sr-only",
+                    "Chart: Real GDP growth rate, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_real_gdp_growth_sr"),
+                  plotlyOutput("plot_real_gdp_growth", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_plot_primary_balance_label",
+                  tags$figcaption(id = "fig_plot_primary_balance_label", class = "sr-only",
+                    "Chart: Primary budget balance as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                  uiOutput("plot_primary_balance_sr"),
+                  plotlyOutput("plot_primary_balance", height = "360px")
+                )
+              )
+            ),
 
-          fluidRow(
-            column(6, plotlyOutput("plot_federal_funds", height = "400px")),
-            column(6, plotlyOutput("plot_budget_balance", height = "400px"))
-          ),
+            # Deviations view: key variable table, 8 deviation plots,
+            # fiscal multiplier + deviation summary.
+            nav_panel(
+              title = "Deviations from baseline",
+              br(),
 
-          fluidRow(
-            column(6, plotlyOutput("plot_debt", height = "400px")),
-            column(6, plotlyOutput("plot_avg_interest_rate", height = "400px"))
-          ),
+              div(class = "d-flex align-items-center gap-2 mb-2",
+                h4("Key Variable Deviations", class = "mb-0"),
+                bslib::popover(
+                  trigger = tags$button(
+                    type  = "button",
+                    class = "blsmm-info-trigger blsmm-info-trigger-inline",
+                    `aria-label` = "How to read deviations",
+                    tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
+                  ),
+                  "Deviations = Scenario - Baseline. Positive means the scenario is higher than baseline; negative means lower.",
+                  placement = "right"
+                )
+              ),
+              DTOutput("deviation_table"),
 
-          fluidRow(
-            column(6, plotlyOutput("plot_total_receipts", height = "400px")),
-            column(6, plotlyOutput("plot_total_outlays", height = "400px"))
-          ),
+              br(),
+              hr(),
 
-          fluidRow(
-            column(6, plotlyOutput("plot_primary_outlays", height = "400px")),
-            column(6, plotlyOutput("plot_real_gdp_growth", height = "400px"))
-          ),
+              h4("Impact Analysis"),
+              br(),
+              layout_column_wrap(
+                width = "400px",
+                tags$figure(`aria-labelledby` = "fig_dev_plot_primary_balance_label",
+                  tags$figcaption(id = "fig_dev_plot_primary_balance_label", class = "sr-only",
+                    "Chart: Primary budget balance deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                  uiOutput("dev_plot_primary_balance_sr"),
+                  plotlyOutput("dev_plot_primary_balance", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_debt_label",
+                  tags$figcaption(id = "fig_dev_plot_debt_label", class = "sr-only",
+                    "Chart: Debt-to-GDP deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                  uiOutput("dev_plot_debt_sr"),
+                  plotlyOutput("dev_plot_debt", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_unemployment_label",
+                  tags$figcaption(id = "fig_dev_plot_unemployment_label", class = "sr-only",
+                    "Chart: Unemployment rate deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_unemployment_sr"),
+                  plotlyOutput("dev_plot_unemployment", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_inflation_label",
+                  tags$figcaption(id = "fig_dev_plot_inflation_label", class = "sr-only",
+                    "Chart: Inflation rate deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_inflation_sr"),
+                  plotlyOutput("dev_plot_inflation", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_10yr_yield_label",
+                  tags$figcaption(id = "fig_dev_plot_10yr_yield_label", class = "sr-only",
+                    "Chart: 10-year Treasury yield deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_10yr_yield_sr"),
+                  plotlyOutput("dev_plot_10yr_yield", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_federal_funds_label",
+                  tags$figcaption(id = "fig_dev_plot_federal_funds_label", class = "sr-only",
+                    "Chart: Federal Funds rate deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_federal_funds_sr"),
+                  plotlyOutput("dev_plot_federal_funds", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_real_gdp_growth_label",
+                  tags$figcaption(id = "fig_dev_plot_real_gdp_growth_label", class = "sr-only",
+                    "Chart: Real GDP growth deviation from baseline (percentage points), FY2026–FY2035."),
+                  uiOutput("dev_plot_real_gdp_growth_sr"),
+                  plotlyOutput("dev_plot_real_gdp_growth", height = "360px")
+                ),
+                tags$figure(`aria-labelledby` = "fig_dev_plot_output_gap_label",
+                  tags$figcaption(id = "fig_dev_plot_output_gap_label", class = "sr-only",
+                    "Chart: Budget balance deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                  uiOutput("dev_plot_output_gap_sr"),
+                  plotlyOutput("dev_plot_output_gap", height = "360px")
+                )
+              ),
 
-          fluidRow(
-            column(6, plotlyOutput("plot_primary_balance", height = "400px"))
+              br(),
+              hr(),
+
+              layout_column_wrap(
+                width = "280px",
+                div(
+                  h4("Fiscal Multiplier"),
+                  verbatimTextOutput("multiplier_display")
+                ),
+                div(
+                  h4("Deviation Summary Statistics"),
+                  verbatimTextOutput("deviation_summary")
+                )
+              )
+            )
           )
         ),
 
         # ======================================================================
-        # TAB 4: DEVIATIONS
+        # TAB: SCENARIO SUMMARY (read-only table of all 9 user deltas;
+        # mirrored inside the Custom Scenario Builder drawer accordion)
         # ======================================================================
         tabPanel(
-          tagList(icon("chart-line"), " Deviations"),
+          value = "scenario_summary",
+          tagList(icon("list-check"), " Scenario Summary"),
           br(),
-
-          # Key Variable Deviations Table
-          h4("Key Variable Deviations"),
-          helpText("Difference between scenario and baseline (Scenario - Baseline)"),
-          DTOutput("deviation_table"),
-
-          br(),
-          hr(),
-
-          # Deviation Charts
-          h4("Impact Analysis"),
-          helpText("Deviations = Scenario - Baseline. Positive means the scenario is higher than baseline; negative means lower."),
-
-          br(),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_output_gap", height = "400px")),
-            column(6, plotlyOutput("dev_plot_unemployment", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_real_gdp_growth", height = "400px")),
-            column(6, plotlyOutput("dev_plot_inflation", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_debt", height = "400px")),
-            column(6, plotlyOutput("dev_plot_federal_funds", height = "400px"))
-          ),
-
-          fluidRow(
-            column(6, plotlyOutput("dev_plot_10yr_yield", height = "400px")),
-            column(6, plotlyOutput("dev_plot_primary_balance", height = "400px"))
-          ),
-
-          br(),
-          hr(),
-
-          # Fiscal Multiplier and Summary Statistics
-          fluidRow(
-            column(6,
-                   h4("Fiscal Multiplier"),
-                   verbatimTextOutput("multiplier_display")
-            ),
-            column(6,
-                   h4("Deviation Summary Statistics"),
-                   verbatimTextOutput("deviation_summary")
-            )
-          )
+          helpText("All deltas in current scenario"),
+          DTOutput("summary_all_deltas_results")
         ),
 
         # ======================================================================
-        # TAB 6: ABOUT
+        # TAB: ABOUT
         # ======================================================================
         tabPanel(
           tagList(icon("info-circle"), " About"),
           br(),
 
-          h3("The Budget Lab's Small Macro Model"),
-
           div(class = "bg-info-light", style = "font-size: 1.05em; padding: 24px; border-radius: 8px; margin-bottom: 24px;",
-              p(strong("What is BLSMM?"), style = "margin-bottom: 8px;"),
-              p("An interactive tool for exploring how fiscal and monetary policies affect the economy over 10 years. Simulate the interactions between government spending, taxation, Federal Reserve policy, economic growth, interest rates, and national debt.", style = "margin-bottom: 16px;"),
+              p(
+                strong("The Budget Lab Small Macro Model (BLSMM)"),
+                " is an interactive tool for exploring how fiscal and monetary policies affect the U.S. economy over a 10-year horizon (FY2026–FY2035). The model simulates interactions between government spending, taxation, Federal Reserve policy, potential growth, interest rates, and national debt.",
+                style = "margin-bottom: 16px;"),
 
               p(strong("Who should use it:"), style = "margin-bottom: 8px;"),
               tags$ul(style = "margin-bottom: 16px;",
@@ -850,42 +803,52 @@ ui <- fluidPage(
               )
           ),
 
-          h4(icon("rocket"), " Quick Start: Your First Simulation", style = "margin-top: 32px; margin-bottom: 16px;"),
+          h4("Getting started", style = "margin-top: 32px; margin-bottom: 16px;"),
 
-          div(class = "card bg-blue-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
+          div(class = "bg-info-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
               tags$ol(style = "line-height: 2;",
-                tags$li(strong("Go to the Inputs tab"), " (first tab at top)"),
-                tags$li(strong("Click 'Primary Budget Balance'"), " sub-tab (selected by default)"),
-                tags$li(strong("Click on a yellow cell"), " in the Receipts table (e.g., FY2027 column)"),
-                tags$li(strong("Type: 1.0"), " and press Enter (simulates a 1% of GDP tax increase)"),
-                tags$li(strong("Click 'Run Simulation'"), " in the left sidebar"),
-                tags$li(strong("Wait for 'Complete'"), " status"),
-                tags$li(strong("Explore results:"),
-                  tags$ul(
-                    tags$li("Dashboard tab - all economic variables over time"),
-                    tags$li("Deviations tab - how your scenario differs from baseline")
-                  )
-                )
+                tags$li("Build a custom scenario in the Controls sidebar or start with a preset (Rapid AI Adoption, Persistent Inflation, Higher Defense Spending)."),
+                tags$li("Click ", strong("Run Simulation"), " and wait for the status indicator to read ", strong("Simulation Complete"), "."),
+                tags$li("Use the ", strong("Levels"), " / ", strong("Deviations from baseline"), " tabs on the Results page to compare baseline and scenario."),
+                tags$li("Download the raw numbers via ", strong("Export Results"), " (CSV or Excel) in the sidebar.")
               ),
               p(style = "margin-top: 16px; font-style: italic; margin-bottom: 0;",
-                icon("check-circle"), " Success! You've simulated a tax increase and seen its economic effects.")
+                icon("check-circle"), " Tip: most scenarios only need one or two assumption categories. The preset buttons populate realistic multi-category shocks if you want a starting point.")
           ),
 
-          h4("How to Use", style = "margin-top: 32px; margin-bottom: 16px;"),
+          h4("Reading the results", style = "margin-top: 32px; margin-bottom: 16px;"),
 
-          tags$ol(style = "line-height: 1.8; margin-bottom: 16px;",
-            tags$li(strong("Inputs tab:"), " Enter policy changes (zeros = no change from baseline)"),
-            tags$li(strong("Run Simulation:"), " Click button in sidebar and wait for 'Complete' status"),
-            tags$li(strong("Dashboard:"), " View all economic variables over time"),
-            tags$li(strong("Deviations:"), " See how your scenario differs from baseline"),
-            tags$li(strong("Export:"), " Download results as CSV or Excel")
+          div(class = "bg-info-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 16px;",
+              p(strong("Chart conventions:"), style = "margin-bottom: 8px;"),
+              tags$ul(style = "margin-bottom: 16px; line-height: 1.6;",
+                tags$li("Baseline lines are ", strong("dashed"), "; scenario lines are ", strong("solid"), ". Both use the same color because they represent the same variable."),
+                tags$li("Rates and inflation are in percentage points. Debt and budget balances are percent of GDP."),
+                tags$li("For budget-balance charts, more negative = larger deficit.")
+              ),
+              p(strong("Key variables to watch:"), style = "margin-bottom: 8px;"),
+              tags$ul(style = "margin-bottom: 0; line-height: 1.6;",
+                tags$li(strong("Output Gap:"), " Positive = economy overheating. Negative = economic slack. The Fed tries to close this gap."),
+                tags$li(strong("Unemployment:"), " Connected to the output gap through Okun's Law."),
+                tags$li(strong("Inflation:"), " Above baseline means the scenario is inflationary."),
+                tags$li(strong("Debt / GDP:"), " The key long-run fiscal indicator."),
+                tags$li(strong("Interest Rates:"), " Fed response (Federal Funds) and market response (10-year yield, r*)."),
+                tags$li(strong("Primary Balance:"), " Deficit before interest costs. Compare to debt/GDP for sustainability.")
+              )
           ),
 
-          p(icon("info-circle"), " ", strong("Tip: "), "Most scenarios only need 1-2 input categories. Start with Primary Budget Balance for fiscal policy.", class = "text-link", style = "margin-bottom: 32px;"),
+          div(class = "bg-red-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
+              p(strong("Warning signs in your simulation:"), class = "text-warning-custom", style = "margin-bottom: 8px;"),
+              tags$ul(style = "margin-bottom: 0; line-height: 1.6;",
+                tags$li("Debt/GDP rising sharply without stabilizing"),
+                tags$li("Inflation persistently far from the Fed's 2% target"),
+                tags$li("Interest rates hitting zero (the model has limitations at the zero lower bound)"),
+                tags$li("Unrealistic combinations (e.g., very large deficits with no interest-rate response)")
+              )
+          ),
 
-          h4("Example Use Cases", style = "margin-bottom: 16px;"),
+          h4("Example use cases", style = "margin-bottom: 16px;"),
 
-          div(class = "bg-yellow-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
+          div(class = "bg-info-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
               tags$ul(style = "line-height: 1.8; margin-bottom: 0;",
                 tags$li(strong("Tax Reform Analysis:"), " Model a corporate tax cut and see effects on growth, deficits, and interest rates"),
                 tags$li(strong("Fiscal Consolidation:"), " Test different paths to reduce debt-to-GDP (spending cuts vs. tax increases vs. growth)"),
@@ -895,69 +858,233 @@ ui <- fluidPage(
               )
           ),
 
-          h4("Understanding Your Results", style = "margin-bottom: 16px;"),
-
-          p("After running a simulation, here's what to look for:", style = "margin-bottom: 16px;"),
-
-          div(class = "bg-blue-pale", style = "padding: 24px; border-radius: 8px; margin-bottom: 16px;",
-              p(strong("Key Variables to Watch:"), style = "margin-bottom: 8px;"),
-              tags$ul(style = "margin-bottom: 0; line-height: 1.8;",
-                tags$li(strong("Output Gap:"), " Positive = economy overheating. Negative = economic slack. The Fed tries to close this gap."),
-                tags$li(strong("Unemployment:"), " How your policy affects jobs. Connected to output gap through Okun's Law."),
-                tags$li(strong("Inflation:"), " Higher than baseline means your policy is inflationary. Watch how it evolves over time."),
-                tags$li(strong("Debt/GDP:"), " The key long-run fiscal indicator. Rising debt means policy worsens the fiscal outlook."),
-                tags$li(strong("Interest Rates:"), " Shows Fed response and market rates. Higher rates can dampen stimulus effects."),
-                tags$li(strong("Primary Balance:"), " Deficit before interest costs. Compare to Debt/GDP for sustainability.")
-              )
-          ),
-
-          div(class = "bg-red-light", style = "padding: 24px; border-radius: 8px; margin-bottom: 32px;",
-              p(strong("Warning Signs:"), class = "text-warning-custom", style = "margin-bottom: 8px;"),
-              tags$ul(style = "margin-bottom: 0; line-height: 1.8;",
-                tags$li("Debt/GDP rising sharply without stabilizing"),
-                tags$li("Inflation persistently far from the Fed's 2% target"),
-                tags$li("Interest rates hitting zero (model has limitations at zero lower bound)"),
-                tags$li("Unrealistic combinations (e.g., large deficits with no interest rate response)")
-              )
-          ),
-
           tags$details(
-            tags$summary(strong("Advanced: Technical Details"), class = "text-muted-custom", style = "cursor: pointer; font-size: 1.1em;"),
+            tags$summary(strong("Advanced: technical details"), class = "text-muted-custom", style = "cursor: pointer; font-size: 1.1em;"),
             br(),
 
-            h5("Model Overview"),
+            h5("Model overview"),
             tags$ul(
               tags$li(strong("Type:"), " Structural macroeconomic model"),
-              tags$li(strong("Frequency:"), " Annual (Fiscal Years: October 1 - September 30)"),
-              tags$li(strong("Version:"), " 1.8 (with endogenous r* and fiscal feedback)"),
+              tags$li(strong("Frequency:"), " Annual (fiscal years, October 1 – September 30)"),
+              tags$li(strong("Version:"), " 1.0"),
               tags$li(strong("Structure:"), " 9 simultaneous equations + pre-simulation block + fiscal block"),
               tags$li(strong("Parameters:"), " 39 calibrated parameters")
             ),
 
-            h5("Model Components"),
+            h5("Model components"),
             tags$ul(
-              tags$li(strong("Macro Block:"), " Output gap with 8-period distributed lags, unemployment (Okun's law), inflation (Phillips curve), inflation expectations"),
-              tags$li(strong("Monetary Block:"), " Taylor rule, term structure of interest rates, endogenous real neutral rate (r*)"),
-              tags$li(strong("Fiscal Block:"), " Debt dynamics, net interest payments, primary balance, fiscal feedback to outlays"),
-              tags$li(strong("Neutral Rate Block:"), " r* responds to potential growth and debt/GDP")
+              tags$li(strong("Macro block:"), " Output gap with 8-period distributed lags, unemployment (Okun's law), inflation (Phillips curve), inflation expectations"),
+              tags$li(strong("Monetary block:"), " Taylor rule, term structure of interest rates, endogenous real neutral rate (r*)"),
+              tags$li(strong("Fiscal block:"), " Debt dynamics, net interest payments, primary balance, fiscal feedback to outlays"),
+              tags$li(strong("Neutral rate block:"), " r* responds to potential growth and debt/GDP")
             ),
 
-            h5("Key Features"),
+            h5("Simple vs. year-by-year inputs"),
+            p("Each assumption in the drawer defaults to a simple shape + magnitude UI (permanent / one-time / linear ramp / three-year temporary). If you need the full 10-year path, expand the ", strong("Edit year-by-year"), " disclosure under any input to edit individual FY2026–FY2035 cells directly."),
+
+            h5("Key features"),
             tags$ul(
               tags$li("Endogenous neutral rate that responds to growth and debt"),
               tags$li("Automatic fiscal feedback (spending adjusts to growth)"),
               tags$li("Rich dynamics through distributed lags"),
-              tags$li("Year-by-year control over all inputs (FY2026-FY2035)"),
-              tags$li("Real-time convergence diagnostics")
+              tags$li("Year-by-year control over all inputs (FY2026–FY2035)"),
+              tags$li("Real-time convergence diagnostics in the sidebar")
             )
           ),
 
           hr(),
 
-          p(em("For questions or support, contact The Budget Lab at Yale.")),
-
-          p(strong("Last Updated:"), " April 2026")
+          p(HTML('For questions or support, contact <a href="mailto:budgetlab@yale.edu">The Budget Lab</a>.'))
         )
+      )
+    )
+  ),
+
+  # ============================================================================
+  # CUSTOM SCENARIO BUILDER (Bootstrap 5 offcanvas)
+  # Opened by the "Custom Scenario" button in the sidebar. Holds the 9 input
+  # shape+magnitude controls (with handsontable fallback under Edit year-by-
+  # year), organized into three accordion sections plus a read-only
+  # consolidated summary. Slides in from the right so it does not overlap
+  # the left sidebar or obscure the Results view while editing.
+  # ============================================================================
+  tags$div(
+    class = "offcanvas offcanvas-end blsmm-assumptions-drawer",
+    id = "assumptions_drawer",
+    tabindex = "-1",
+    `aria-labelledby` = "assumptions_drawer_label",
+
+    tags$div(
+      class = "offcanvas-header blsmm-controls-header",
+      h4(id = "assumptions_drawer_label", class = "offcanvas-title mb-0",
+         "Custom Scenario Builder"),
+      tags$button(
+        type = "button",
+        class = "btn-close",
+        `data-bs-dismiss` = "offcanvas",
+        `aria-label` = "Close"
+      )
+    ),
+
+    tags$div(
+      class = "offcanvas-body",
+
+      p(style = "margin-bottom: 16px;",
+        "Edit yellow cells to create your scenario. Zeros = no change from baseline. ",
+        "Close this drawer and click ", strong("Run Simulation"), " when ready."
+      ),
+      p(class = "text-muted-custom", style = "font-size: 0.875em; margin-bottom: 12px;",
+        icon("info-circle"), " ",
+        strong("\"pp\""), " = percentage points (e.g., a change from 2.0% to 2.5% is +0.5 pp)."
+      ),
+
+      div(class = "blsmm-csb-toolbar",
+        actionButton("csb_expand_all", "Expand all",
+                     class = "btn btn-outline-secondary btn-sm"),
+        actionButton("csb_collapse_all", "Collapse all",
+                     class = "btn btn-outline-secondary btn-sm")
+      ),
+
+      accordion(
+        id = "assumptions_accordion",
+        multiple = TRUE,
+        open = FALSE,
+
+        # ---- Growth & Productivity -----------------------------------------
+        accordion_panel(
+          title = "Growth & Productivity",
+          value = "growth",
+          icon = icon("seedling"),
+          p(class = "text-muted-custom", style = "font-size: 0.9em;",
+            strong("What this does:"), " Adjust long-run growth via labor force and productivity. ",
+            "Changes here automatically affect r* and government spending."),
+
+          simple_input_card(
+            table_key = "productivity",
+            label     = "Potential Productivity Growth Delta (pp)",
+            example   = "<strong>Example:</strong> +0.20 raises productivity growth by 0.2 pp/year."
+          ),
+          hr(),
+          simple_input_card(
+            table_key = "lf_growth",
+            label     = "Potential Labor Force Growth Delta (pp)",
+            example   = "<strong>Example:</strong> +0.10 raises labor force growth by 0.1 pp/year."
+          )
+        ),
+
+        # ---- Fiscal Policy -------------------------------------------------
+        accordion_panel(
+          title = "Fiscal Policy",
+          value = "fiscal",
+          icon = icon("building-columns"),
+          p(class = "text-muted-custom", style = "font-size: 0.9em;",
+            strong("What this does:"), " Simulate tax and spending policies by changing federal receipts and primary outlays as a percent of GDP. ",
+            "Positive values raise receipts or outlays; negative values cut."),
+
+          simple_input_card(
+            table_key = "receipts",
+            label     = "Federal Receipts Delta (pp of GDP)",
+            units     = "pp of GDP",
+            example   = "<strong>Example:</strong> +1.00 = tax increase of 1% of GDP; -1.00 = tax cut."
+          ),
+          hr(),
+          simple_input_card(
+            table_key = "outlays",
+            label     = "Federal Primary Outlays Delta (pp of GDP)",
+            units     = "pp of GDP",
+            example   = "<strong>Example:</strong> +1.00 = spending increase of 1% of GDP; -1.00 = spending cut.<br><em>Primary outlays exclude interest payments on the debt.</em>"
+          ),
+
+          tags$details(
+            class = "blsmm-details-muted",
+            tags$summary("Advanced: calculated effects"),
+            br(),
+            h6("Additional Outlay Changes from Economic Growth"),
+            p(class = "text-muted-custom", style = "font-size: 0.85em;",
+              "The model automatically adjusts outlays when economic growth changes:"),
+            verbatimTextOutput("outlays_indirect_display"),
+            br(),
+            h6("Implied Primary Budget Balance Delta"),
+            p(class = "text-muted-custom", style = "font-size: 0.85em;",
+              "Primary balance = Receipts - Outlays (excluding interest payments)."),
+            verbatimTextOutput("primary_balance_derived")
+          )
+        ),
+
+        # ---- Monetary & Shocks ---------------------------------------------
+        accordion_panel(
+          title = "Monetary & Shocks",
+          value = "monetary",
+          icon = icon("chart-line"),
+          p(class = "text-muted-custom", style = "font-size: 0.9em;",
+            strong("What this does:"), " Override the neutral rate, the Fed's inflation target or rate path, or apply demand and inflation shocks."),
+
+          simple_input_card(
+            table_key = "rfstar",
+            label     = "Neutral Rate (r*) Delta (pp)",
+            example   = "<strong>Example:</strong> +0.25 raises r* by 0.25 pp; -0.25 lowers it."
+          ),
+          tags$details(
+            class = "blsmm-details-muted",
+            tags$summary("Advanced: automatic r* adjustments"),
+            br(),
+            p(class = "text-muted-custom", style = "font-size: 0.85em;",
+              "The neutral rate adjusts automatically based on growth and debt levels."),
+            verbatimTextOutput("rfstar_indirect_display")
+          ),
+          hr(),
+
+          simple_input_card(
+            table_key = "inflation_target",
+            label     = "Inflation Target Delta (pp)",
+            example   = "<strong>Example:</strong> +0.50 = Fed raises target from 2.0% to 2.5%."
+          ),
+          div(class = "blsmm-checkbox-row",
+            checkboxInput("expectations_speed",
+                          "Fast Expectations Adjustment",
+                          value = FALSE),
+            bslib::popover(
+              trigger = tags$button(
+                type  = "button",
+                class = "blsmm-info-trigger blsmm-info-trigger-inline",
+                `aria-label` = "About Fast Expectations Adjustment",
+                tags$i(class = "fa fa-circle-question", `aria-hidden` = "true")
+              ),
+              "Check if the public immediately adjusts inflation expectations. Uncheck for gradual adjustment.",
+              placement = "right"
+            )
+          ),
+          hr(),
+
+          simple_input_card(
+            table_key = "monetary_rule",
+            label     = "Fed Interest Rate Adjustment (pp)",
+            example   = "Sets Fed Funds higher or lower than the rule-based path. <strong>Example:</strong> +0.50 = 0.5 pp above normal; -0.50 = 0.5 pp below."
+          ),
+          hr(),
+
+          simple_input_card(
+            table_key = "output_gap",
+            label     = "Output Gap Shock (pp)",
+            example   = "Private demand shocks (confidence, wealth effects). <strong>Example:</strong> +2.00 = output 2 pp above potential."
+          ),
+          hr(),
+
+          simple_input_card(
+            table_key = "inflation_shock",
+            label     = "Unexpected Inflation Shock (pp)",
+            example   = "Temporary supply shocks (oil prices, pandemic disruptions). <strong>Example:</strong> +1.00 = inflation 1 pp above baseline that year.",
+            shape_choices = BLSMM_SHAPE_CHOICES_SHOCK
+          )
+        )
+      ),
+
+      # ---- All Deltas Summary (always visible, outside the accordion) ------
+      div(class = "blsmm-csb-summary",
+        hr(),
+        h5(icon("list-check"), " All Deltas Summary"),
+        helpText("All deltas in current scenario"),
+        DTOutput("summary_all_deltas")
       )
     )
   )
