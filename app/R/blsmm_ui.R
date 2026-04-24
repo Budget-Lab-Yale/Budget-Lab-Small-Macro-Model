@@ -389,7 +389,7 @@ ui <- fluidPage(
   # sticky toggle button at the top of the main area. Bootstrap handles the
   # dark backdrop, focus trap, Escape key, click-outside-to-close, and ARIA
   # state natively — same mechanism as the Custom Scenario Builder drawer.
-  div(class = "d-flex flex-row blsmm-shell",
+  div(class = "d-flex flex-row blsmm-shell", `data-iframe-height` = NA,
 
     # ------------------------------------------------------------------
     # CONTROLS — responsive offcanvas drawer
