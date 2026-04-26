@@ -128,7 +128,7 @@ compute_debt_proxy_base_v1_8 <- function(debt_proxy_lag, rbudp_star_base,
 #' @param gstar_base Baseline potential growth
 #' @param PISTAR Current (user-adjusted) inflation target
 #' @param PISTAR_base Baseline inflation target
-#' @param RG_base Baseline effective interest rate (from forecast exog data)
+#' @param RG_base Baseline effective interest rate (constant parameter, in percent)
 #' @param GR_LR Long-run growth effect (from neutral_rate.R)
 #' @param year_index Year of simulation (1-10)
 #' @param params Parameter list

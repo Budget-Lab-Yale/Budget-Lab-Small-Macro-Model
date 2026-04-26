@@ -375,7 +375,7 @@ server <- function(input, output, session) {
     # Shock input tables (baseline from residuals)
     table_output_gap = list(source = "resid", column = "epsxgap", label = "Output Gap Shock"),
     table_inflation_shock = list(source = "resid", column = "epspi", label = "Inflation Shock"),
-    table_monetary_rule = list(source = "resid", column = "epsmpe", label = "Monetary Rule Shock"),
+    table_monetary_rule = list(source = "resid", column = "epsrf", label = "Monetary Rule Shock"),
     table_inflation_target = list(source = "exog", column = "pistar", label = "Inflation Target")
   )
   table_ids <- names(table_specs)
@@ -665,7 +665,11 @@ server <- function(input, output, session) {
     if ("U" %in% baseline_cols) fy2025_data$U <- fy2025$U
     if ("PI" %in% baseline_cols) fy2025_data$PI <- fy2025$PI
     if ("PIE" %in% baseline_cols) fy2025_data$PIE <- fy2025$PIE
-    if ("GDP" %in% baseline_cols) fy2025_data$GDP <- fy2025$GDPstar
+    if ("GDP" %in% baseline_cols) {
+      # Calculate actual real GDP from potential GDP and output gap
+      # GDP = GDPstar * (1 + xgap/100)
+      fy2025_data$GDP <- fy2025$GDPstar * (1 + fy2025$xgap / 100)
+    }
     if ("R10" %in% baseline_cols) fy2025_data$R10 <- fy2025$R10
     if ("RF" %in% baseline_cols) fy2025_data$RF <- fy2025$RF
     if ("D_pct_GDP" %in% baseline_cols) fy2025_data$D_pct_GDP <- fy2025$debt_proxy_user
@@ -680,25 +684,42 @@ server <- function(input, output, session) {
     if ("GDP$star" %in% baseline_cols) fy2025_data[["GDP$star"]] <- fy2025$GDP.star
     if ("GDP$star2" %in% baseline_cols) fy2025_data[["GDP$star2"]] <- fy2025$GDP.star2
 
-    # Calculate fiscal metrics as % of potential GDP for FY2025
-    # For historical year, use typical values and budget identity
+    # ========================================================================
+    # FISCAL METRICS AS % OF POTENTIAL GDP FOR FY2025
+    # ========================================================================
+    # NOTE: Historical data includes some fiscal variables but not all.
+    # - rbudp_star: Available in historical CSV, use directly
+    # - rgfr_star, rgfop_star: NOT in historical CSV, must approximate
+    #
+    # Approximation approach for receipts/outlays:
+    # - Use rgfr_star = 17.3% (actual CBO published value for FY2025)
+    # - Calculate rgfop_star from budget identity: Primary Outlays = Receipts - BUDP
+    # - These approximations ensure smooth chart transitions at FY2025/FY2026 boundary
+    
     if ("rgfr_star" %in% baseline_cols) {
-      # Use approximate receipts % GDP from nearby years (around 17.7%)
-      # This is a reasonable estimate for FY2025
-      fy2025_data$rgfr_star <- 17.7
+      # Federal receipts as % of GDP for FY2025
+      # Source: CBO Monthly Budget Review for FY2025 (Nov 2025)
+      # https://www.cbo.gov/publication/61307
+      # FY2025 receipts = 17.3% of GDP (final reconciled value)
+      fy2025_data$rgfr_star <- 17.3
     }
     if ("rgfop_star" %in% baseline_cols) {
-      # Primary outlays = Receipts - Primary balance
-      # Using rgfr_star estimate and actual BUDP
-      receipts_nominal <- 17.7 * fy2025$GDPstar / 100
+      # Primary outlays as % of potential GDP
+      # Derived from: Primary Outlays = Receipts - Primary Balance
+      receipts_nominal <- 17.3 * fy2025$GDPstar / 100
       prim_outlays_nominal <- receipts_nominal - fy2025$BUDP
       fy2025_data$rgfop_star <- (prim_outlays_nominal / fy2025$GDPstar) * 100
     }
     if ("rbudp_star" %in% baseline_cols) {
       # Primary balance as % of potential GDP
-      fy2025_data$rbudp_star <- (fy2025$BUDP / fy2025$GDPstar) * 100
+      # Use historical value directly (available in blsmm_v1_8_historical.csv)
+      if (!is.null(fy2025$rbudp_star) && !is.na(fy2025$rbudp_star)) {
+        fy2025_data$rbudp_star <- fy2025$rbudp_star
+      } else {
+        # Fallback: calculate from BUDP if historical value not available
+        fy2025_data$rbudp_star <- (fy2025$BUDP / fy2025$GDPstar) * 100
+      }
     }
-
     # Calculate FY2025 real GDP growth using FY2024 data
     if ("real_gdp_growth" %in% baseline_cols && nrow(fy2024) > 0) {
       fy2025_growth <- (fy2025$GDPstar - fy2024$GDPstar) / fy2024$GDPstar * 100
@@ -930,6 +951,12 @@ server <- function(input, output, session) {
   # Preset 1: Rapid AI Adoption
   # Source: BLSMM_1_8_20260326_links_rapidAI.xlsm
   # Three simultaneous shocks: productivity boost, LFPR decline, outlay rise
+  # NOTE: This preset uses the SIMPLIFIED rapid-AI calibration from the
+  # official Excel workbook (flat LF/outlays shocks for the alternate-
+  # scenarios article single-line figure). For the detailed Karger-
+  # calibrated year-by-year LF deltas used in the AI article's S2 line,
+  # see scenarios/inputs/ai_s2_prod_lf.R. These two calibrations are
+  # intentionally different and both correct for their respective figures.
   observeEvent(input$preset_rapid_ai, {
     preset_apply_time(as.numeric(Sys.time()))
     apply_multi_preset(list(
@@ -1020,19 +1047,6 @@ server <- function(input, output, session) {
       )
     })
   }
-
-  # ============================================================================
-  # SSE CONVERGENCE DISPLAY
-  # ============================================================================
-
-  output$sse_display <- renderText({
-    req(simulation_results())
-
-    solver <- attr(simulation_results()$scenario, "solver_summary")
-    sse <- solver$final_sse
-    status <- if (isTRUE(solver$overall_converged)) "CONVERGED" else "NOT CONVERGED"
-    sprintf("SSE: %.6f | %s", sse, status)
-  })
 
   # ============================================================================
   # KPI VALUE BOXES

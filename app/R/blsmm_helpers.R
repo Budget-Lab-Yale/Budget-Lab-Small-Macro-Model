@@ -86,7 +86,7 @@ map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
 #' Convert LFPR target path to glfstar delta for BLSMM v1.8
 #'
 #' Given a target LFPR path and CBO population forecast, computes the glfstar
-#' delta (in percentage points) that must be assigned to user_delta_glfstar
+#' delta (in percentage points) that must be assigned to user_delta_lf
 #' to achieve that LFPR path in the model. The model internally uses potential
 #' labor force growth rates (glfstar), not LFPR directly.
 #'
@@ -104,7 +104,7 @@ map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
 #' @return A list with four elements:
 #'   \describe{
 #'     \item{delta}{Length-10 numeric. The glfstar delta (pp) to assign to
-#'       user_delta_glfstar[FY2026:FY2035] to achieve the target LFPR path.}
+#'       user_delta_lf[FY2026:FY2035] to achieve the target LFPR path.}
 #'     \item{glfstar}{Length-10 numeric. Absolute glfstar values (audit only).}
 #'     \item{lf_target}{Length-10 numeric. Implied LFstar levels in millions
 #'       (audit only).}
@@ -248,7 +248,7 @@ build_lfpr_path <- function(
 #'     \item{lf_implied_M}{Implied LFstar level (millions).}
 #'     \item{glfstar_abs}{Absolute glfstar growth rate (%).}
 #'     \item{delta_glfstar}{Delta vs baseline (pp). This column should be
-#'       assigned to user_delta_glfstar.}
+#'       assigned to user_delta_lf.}
 #'   }
 summarise_lfpr_scenario <- function(
   lfpr_target_vec,

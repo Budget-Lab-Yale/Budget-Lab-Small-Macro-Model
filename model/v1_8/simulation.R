@@ -231,8 +231,10 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     # ==========================================================================
     # DEBT PROXY CALCULATIONS
     # ==========================================================================
-    # Need RG_base from baseline exog for CHI calculation
-    RG_base <- if ("rg_base" %in% names(baseline_exog)) baseline_exog$rg_base[t] else 3.25  # fallback
+    # RG_base: Calibrated long-run baseline effective interest rate (percent)
+    # Used as anchor in CHI calculations for debt dynamics
+    # This is a model parameter, not a time-varying exogenous input
+    RG_base <- 3.25
 
     # For GR_LR, need growth deviations (will be computed in neutral rate block)
     # For now, compute simplified version

@@ -460,9 +460,7 @@ ui <- fluidPage(
 
         # SIMULATION: Run button + run-status pill.
         # (The raw SSE pill was removed as visual noise; run_status_bar
-        # already surfaces Complete/Error/etc. in a user-friendly form.
-        # The sse_display output is still rendered server-side but no
-        # longer shown in the UI.)
+        # already surfaces Complete/Error/etc. in a user-friendly form.)
         div(class = "sidebar-section",
           h4("Simulation"),
           actionButton("run_sim",
