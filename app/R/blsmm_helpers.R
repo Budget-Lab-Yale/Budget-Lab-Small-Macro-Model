@@ -75,6 +75,40 @@ map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
   return(user_deltas)
 }
 
+# Source a scenarios/inputs/*.R file and return the `scenario` list it
+# defines. Errors clearly if the file does not define `scenario`.
+load_scenario_file <- function(path) {
+  if (!file.exists(path)) {
+    stop(sprintf("Scenario file not found: %s", path))
+  }
+  env <- new.env()
+  source(path, local = env)
+  if (is.null(env$scenario)) {
+    stop(sprintf("File '%s' does not define `scenario`", path))
+  }
+  env$scenario
+}
+
+# Inverse of map_tables_to_user_deltas(): convert a scenario list's
+# `user_deltas` (user_delta_* keys) into the table_* shape the preset
+# apply functions consume. NULL fields are dropped so apply_multi_preset()
+# only writes to tables the scenario specifies.
+scenario_to_table_deltas <- function(scenario) {
+  ud <- scenario$user_deltas %||% list()
+  out <- list(
+    table_lf_growth        = ud$user_delta_lf,
+    table_productivity     = ud$user_delta_prod,
+    table_receipts         = ud$user_delta_rgfr,
+    table_outlays          = ud$user_delta_rgfop,
+    table_rfstar           = ud$user_delta_rfstar_direct,
+    table_output_gap       = ud$user_delta_ADshock,
+    table_inflation_shock  = ud$user_delta_inflshock,
+    table_monetary_rule    = ud$user_delta_MPshock,
+    table_inflation_target = ud$user_delta_pistar
+  )
+  Filter(Negate(is.null), out)
+}
+
 # ==============================================================================
 # LFPR CONVERSION UTILITIES
 # ==============================================================================

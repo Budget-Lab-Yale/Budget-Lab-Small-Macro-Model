@@ -26,6 +26,17 @@ server <- function(input, output, session) {
     persistent_infl   = "preset_persistent_infl",
     military_conflict = "preset_military_conflict"
   )
+  # Single source of truth for preset values. Loaded from scenarios/inputs/
+  # once at server init — same files used by scenarios/make_all_figures.R.
+  # To change preset values, edit the scenario files there, not this server.
+  preset_table_deltas <- list(
+    rapid_ai          = scenario_to_table_deltas(
+                          load_scenario_file("scenarios/inputs/ai_s2_prod_lf.R")),
+    persistent_infl   = scenario_to_table_deltas(
+                          load_scenario_file("scenarios/inputs/alt_persistent_inflation.R")),
+    military_conflict = scenario_to_table_deltas(
+                          load_scenario_file("scenarios/inputs/alt_military_conflict.R"))
+  )
   observe({
     ap <- active_preset()
     for (key in names(preset_button_ids)) {
@@ -948,52 +959,27 @@ server <- function(input, output, session) {
     set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
-  # Preset 1: Rapid AI Adoption
-  # Source: BLSMM_1_8_20260326_links_rapidAI.xlsm
-  # Three simultaneous shocks: productivity boost, LFPR decline, outlay rise
-  # NOTE: This preset uses the SIMPLIFIED rapid-AI calibration from the
-  # official Excel workbook (flat LF/outlays shocks for the alternate-
-  # scenarios article single-line figure). For the detailed Karger-
-  # calibrated year-by-year LF deltas used in the AI article's S2 line,
-  # see scenarios/inputs/ai_s2_prod_lf.R. These two calibrations are
-  # intentionally different and both correct for their respective figures.
+  # Preset observers. Values come from scenarios/inputs/ via
+  # preset_table_deltas above; do not hardcode numbers here.
+
+  # Source: scenarios/inputs/ai_s2_prod_lf.R
   observeEvent(input$preset_rapid_ai, {
     preset_apply_time(as.numeric(Sys.time()))
-    apply_multi_preset(list(
-      table_productivity = c(1.60, 1.50, 1.50, 1.60, 1.60,
-                             1.70, 1.70, 1.80, 1.80, 1.80),
-      table_lf_growth    = c(-0.40, -0.40, -0.40, -0.40, -0.40,
-                              0.00,  0.00,  0.00,  0.00,  0.00),
-      table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40)
-    ))
+    apply_multi_preset(preset_table_deltas$rapid_ai)
     active_preset("rapid_ai")
   })
 
-  # Preset 2: Persistent Inflation
-  # Source: BLSMM_1_8_20260326_links_persistentinflation.xlsm
-  # Front-loaded inflation shock (3 nonzero years)
+  # Source: scenarios/inputs/alt_persistent_inflation.R
   observeEvent(input$preset_persistent_infl, {
     preset_apply_time(as.numeric(Sys.time()))
-    apply_single_preset(
-      "table_inflation_shock",
-      c(0.0, 0.1, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-    )
+    apply_multi_preset(preset_table_deltas$persistent_infl)
     active_preset("persistent_infl")
   })
 
-  # Preset 3: Military Conflict
-  # Source: defense_outlays_data.xlsx, "Primary Outlays Delta" col
-  # Defense outlay path including +$350B FY2027 mandatory spending
+  # Source: scenarios/inputs/alt_military_conflict.R
   observeEvent(input$preset_military_conflict, {
     preset_apply_time(as.numeric(Sys.time()))
-    apply_single_preset(
-      "table_outlays",
-      c(0.05926643923051801, 1.4648663376827828,
-        0.6024768143143505,  0.7583951483560541,
-        0.7938454047864912,  0.8164223748813694,
-        0.785826175398481,   0.7236216101604063,
-        0.6726591880611538,  0.6147969334429797)
-    )
+    apply_multi_preset(preset_table_deltas$military_conflict)
     active_preset("military_conflict")
   })
 
