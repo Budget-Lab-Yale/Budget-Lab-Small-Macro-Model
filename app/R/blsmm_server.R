@@ -547,7 +547,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
 
-  collect_table_deltas <- function(require_valid = TRUE) {
+  collect_table_deltas <- function() {
     deltas <- list()
     for (table_id in table_ids) {
       tbl <- table_state[[table_id]]
@@ -791,7 +791,7 @@ server <- function(input, output, session) {
       incProgress(0.2, detail = "Extracting inputs...")
 
       # Extract deltas from all tables
-      table_deltas <- collect_table_deltas(require_valid = TRUE)
+      table_deltas <- collect_table_deltas()
       if (is.null(table_deltas)) return(invisible(NULL))
       expectations_fast <- isTRUE(input$expectations_speed)
       cache_key <- make_cache_key(table_deltas, expectations_fast)
@@ -1102,7 +1102,7 @@ server <- function(input, output, session) {
   # Display primary balance derivation
   output$primary_balance_derived <- renderText({
     # Get user deltas from tables
-    table_deltas <- collect_table_deltas(require_valid = FALSE)
+    table_deltas <- collect_table_deltas()
 
     if (!is.null(table_deltas) && !is.null(simulation_results())) {
       receipts_delta <- table_deltas$table_receipts
@@ -1722,7 +1722,7 @@ server <- function(input, output, session) {
   # table into two outputs — inside the Custom Scenario Builder drawer
   # AND on the Results tab's "Scenario Summary" nav panel.
   summary_all_deltas_df <- reactive({
-    table_deltas <- collect_table_deltas(require_valid = FALSE)
+    table_deltas <- collect_table_deltas()
 
     df <- data.frame(
       Shock = c(

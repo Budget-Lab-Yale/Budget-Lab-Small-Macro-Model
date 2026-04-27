@@ -56,10 +56,6 @@ parse_table_deltas <- function(hot_data, n_periods = N_PERIODS) {
   list(values = parsed, invalid_idx = invalid_idx)
 }
 
-extract_deltas <- function(hot_data, n_periods = N_PERIODS) {
-  parse_table_deltas(hot_data, n_periods)$values
-}
-
 # Map app tables to user_deltas structure (all 9 input types)
 map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
   # Create empty user_deltas data frame
@@ -316,17 +312,6 @@ build_shape_delta <- function(shape, magnitude, n = N_PERIODS) {
   )
 }
 
-#' Short preview string for a shape+magnitude delta vector.
-#' Example: "0.20, 0.20, 0.20, ... 0.20" for a permanent +0.20.
-format_shape_preview <- function(delta_vec, digits = 2) {
-  if (length(delta_vec) <= 4) {
-    return(paste(sprintf(paste0("%.", digits, "f"), delta_vec), collapse = ", "))
-  }
-  first3 <- sprintf(paste0("%.", digits, "f"), head(delta_vec, 3))
-  last   <- sprintf(paste0("%.", digits, "f"), tail(delta_vec, 1))
-  paste0(paste(first3, collapse = ", "), ", ..., ", last)
-}
-
 # Shape options presented in every simple-mode select input. Ordered
 # from the most localized pulse (single year) to the slowest onset
 # (linear ramp).
@@ -435,7 +420,6 @@ year_by_year_input_strip <- function(table_key, n_years = N_PERIODS,
 #'   input$shape_productivity, input$magnitude_productivity,
 #'   input$delta_table_productivity_fy2026 ... _fy2035
 #' Server outputs expected:
-#'   output$preview_productivity (text rendering of the computed delta)
 #'   output$baseline_table_productivity_fy2026..fy2035
 #'   output$level_table_productivity_fy2026..fy2035
 #'

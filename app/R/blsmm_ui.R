@@ -25,70 +25,6 @@ ui <- fluidPage(
        });"
     )),
     tags$style(HTML("
-      /* Yellow highlight for editable row (User Delta row = row 2) */
-      .handsontable tbody tr:nth-child(2) td {
-        background-color: #FFF9E6 !important;
-        font-weight: normal;
-      }
-
-      /* Gray background for read-only rows (Baseline = row 1, Level = row 3) */
-      .handsontable tbody tr:nth-child(1) td,
-      .handsontable tbody tr:nth-child(3) td {
-        background-color: #F9FAFB !important;
-        color: #6B7280;
-      }
-
-      /* Keep first column (Row labels) readable */
-      .handsontable tbody tr td:first-child {
-        background-color: #F3F4F6 !important;
-        font-weight: bold;
-        color: #374151;
-      }
-
-      /* Green highlight for deviation tables */
-      .deviation-highlight {
-        background-color: #E2EFDA !important;
-      }
-
-      /* SSE indicator styling */
-      .sse-display {
-        font-size: 16px;
-        font-weight: bold;
-        padding: 8px;
-        margin: 8px 0;
-        border-radius: 8px;
-        border: 2px solid #ddd;
-      }
-/* Light mode colors */
-      .sse-solved {
-        background-color: #d4edda;
-        color: #155724;
-        border-color: #c3e6cb;
-      }
-
-      .sse-not-solved {
-        background-color: #fff3cd;
-        color: #856404;
-        border-color: #ffeaa7;
-      }
-
-      /* Input table styling */
-      .handsontable td {
-        text-align: right;
-      }
-
-      .handsontable .htDimmed {
-        color: #999;
-      }
-
-/* Fiscal year note */
-      .fy-note {
-        font-size: 0.875em;
-        color: #666;
-        font-style: italic;
-        margin-top: -8px;
-        margin-bottom: 8px;
-      }
 /* Run status pill */
       .run-status {
         font-family: monospace;
@@ -122,27 +58,8 @@ ui <- fluidPage(
       .bg-info-light {
         background-color: #f8f9fa;
       }
-.bg-blue-light {
-        background-color: #e7f3ff;
-        border-left: 4px solid #0066cc;
-      }
-.bg-yellow-light {
-        background-color: #fff9e6;
-      }
-.bg-blue-pale {
-        background-color: #f0f8ff;
-      }
 .bg-red-light {
         background-color: #fff0f0;
-      }
-/* SSE Display Box */
-      .sse-box {
-        font-family: monospace;
-        font-size: 0.875em;
-        padding: 8px;
-        background: #f5f5f5;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
       }
 /* Sidebar section styling for visual separation */
       .sidebar-section {
@@ -326,10 +243,6 @@ ui <- fluidPage(
         if (controlsDrawer && window.bootstrap && bootstrap.Offcanvas) {
           bootstrap.Offcanvas.getOrCreateInstance(controlsDrawer).show();
         }
-      });
-
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(refreshAllHotTables, 120);
       });
 
       // Keyboard shortcuts for faster workflow.
