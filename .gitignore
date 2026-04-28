@@ -144,3 +144,9 @@ renv/lock/
 renv/python/
 renv/sandbox/
 renv/staging/
+
+# ==============================================================================
+# Per-scenario dashboards (regenerated on demand by
+# scenarios/lib/generate_scenario_dashboard.R; iteration aids, not artifacts)
+# ==============================================================================
+scenarios/figures/dashboards/
