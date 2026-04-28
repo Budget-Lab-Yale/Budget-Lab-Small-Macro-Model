@@ -26,6 +26,17 @@ server <- function(input, output, session) {
     persistent_infl   = "preset_persistent_infl",
     military_conflict = "preset_military_conflict"
   )
+  # Single source of truth for preset values. Loaded from scenarios/inputs/
+  # once at server init — same files used by scenarios/make_all_figures.R.
+  # To change preset values, edit the scenario files there, not this server.
+  preset_table_deltas <- list(
+    rapid_ai          = scenario_to_table_deltas(
+                          load_scenario_file("scenarios/inputs/ai_s2_prod_lf.R")),
+    persistent_infl   = scenario_to_table_deltas(
+                          load_scenario_file("scenarios/inputs/alt_persistent_inflation.R")),
+    military_conflict = scenario_to_table_deltas(
+                          load_scenario_file("scenarios/inputs/alt_military_conflict.R"))
+  )
   observe({
     ap <- active_preset()
     for (key in names(preset_button_ids)) {
@@ -375,7 +386,7 @@ server <- function(input, output, session) {
     # Shock input tables (baseline from residuals)
     table_output_gap = list(source = "resid", column = "epsxgap", label = "Output Gap Shock"),
     table_inflation_shock = list(source = "resid", column = "epspi", label = "Inflation Shock"),
-    table_monetary_rule = list(source = "resid", column = "epsmpe", label = "Monetary Rule Shock"),
+    table_monetary_rule = list(source = "resid", column = "epsrf", label = "Monetary Rule Shock"),
     table_inflation_target = list(source = "exog", column = "pistar", label = "Inflation Target")
   )
   table_ids <- names(table_specs)
@@ -547,7 +558,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
 
-  collect_table_deltas <- function(require_valid = TRUE) {
+  collect_table_deltas <- function() {
     deltas <- list()
     for (table_id in table_ids) {
       tbl <- table_state[[table_id]]
@@ -645,6 +656,111 @@ server <- function(input, output, session) {
     )
   }
 
+  # Helper to add FY2025 historical data to results for plotting
+  add_fy2025_to_results <- function(results) {
+    # Load historical data to get both FY2024 and FY2025
+    historical <- read.csv(file.path("data", "blsmm_v1_8_historical.csv"))
+    fy2024 <- historical[historical$year == 2024, ]
+    fy2025 <- historical[historical$year == 2025, ]
+
+    # Get columns from baseline to ensure compatibility
+    baseline_cols <- names(results$baseline)
+
+    # Create FY2025 data frame with matching structure
+    fy2025_data <- results$baseline[1, , drop = FALSE]  # Copy structure from first row
+    rownames(fy2025_data) <- NULL
+
+    # Set FY2025 values for existing columns
+    if ("fy_label" %in% baseline_cols) fy2025_data$fy_label <- "FY25"
+    if ("year" %in% baseline_cols) fy2025_data$year <- 2025
+    if ("U" %in% baseline_cols) fy2025_data$U <- fy2025$U
+    if ("PI" %in% baseline_cols) fy2025_data$PI <- fy2025$PI
+    if ("PIE" %in% baseline_cols) fy2025_data$PIE <- fy2025$PIE
+    if ("GDP" %in% baseline_cols) {
+      # Calculate actual real GDP from potential GDP and output gap
+      # GDP = GDPstar * (1 + xgap/100)
+      fy2025_data$GDP <- fy2025$GDPstar * (1 + fy2025$xgap / 100)
+    }
+    if ("R10" %in% baseline_cols) fy2025_data$R10 <- fy2025$R10
+    if ("RF" %in% baseline_cols) fy2025_data$RF <- fy2025$RF
+    if ("D_pct_GDP" %in% baseline_cols) fy2025_data$D_pct_GDP <- fy2025$debt_proxy_user
+    if ("BUD" %in% baseline_cols) fy2025_data$BUD <- fy2025$BUD
+    if ("NI" %in% baseline_cols) fy2025_data$NI <- fy2025$NI
+    if ("BUDP" %in% baseline_cols) fy2025_data$BUDP <- fy2025$BUDP
+    if ("D" %in% baseline_cols) fy2025_data$D <- fy2025$D
+
+    # Add additional fields needed for fiscal plots
+    if ("GDPstar" %in% baseline_cols) fy2025_data$GDPstar <- fy2025$GDPstar
+    if ("GDP$" %in% baseline_cols) fy2025_data[["GDP$"]] <- fy2025$GDP.
+    if ("GDP$star" %in% baseline_cols) fy2025_data[["GDP$star"]] <- fy2025$GDP.star
+    if ("GDP$star2" %in% baseline_cols) fy2025_data[["GDP$star2"]] <- fy2025$GDP.star2
+
+    # ========================================================================
+    # FISCAL METRICS AS % OF POTENTIAL GDP FOR FY2025
+    # ========================================================================
+    # NOTE: Historical data includes some fiscal variables but not all.
+    # - rbudp_star: Available in historical CSV, use directly
+    # - rgfr_star, rgfop_star: NOT in historical CSV, must approximate
+    #
+    # Approximation approach for receipts/outlays:
+    # - Use rgfr_star = 17.3% (actual CBO published value for FY2025)
+    # - Calculate rgfop_star from budget identity: Primary Outlays = Receipts - BUDP
+    # - These approximations ensure smooth chart transitions at FY2025/FY2026 boundary
+    
+    if ("rgfr_star" %in% baseline_cols) {
+      # Federal receipts as % of GDP for FY2025
+      # Source: CBO Monthly Budget Review for FY2025 (Nov 2025)
+      # https://www.cbo.gov/publication/61307
+      # FY2025 receipts = 17.3% of GDP (final reconciled value)
+      fy2025_data$rgfr_star <- 17.3
+    }
+    if ("rgfop_star" %in% baseline_cols) {
+      # Primary outlays as % of potential GDP
+      # Derived from: Primary Outlays = Receipts - Primary Balance
+      receipts_nominal <- 17.3 * fy2025$GDPstar / 100
+      prim_outlays_nominal <- receipts_nominal - fy2025$BUDP
+      fy2025_data$rgfop_star <- (prim_outlays_nominal / fy2025$GDPstar) * 100
+    }
+    if ("rbudp_star" %in% baseline_cols) {
+      # Primary balance as % of potential GDP
+      # Use historical value directly (available in blsmm_v1_8_historical.csv)
+      if (!is.null(fy2025$rbudp_star) && !is.na(fy2025$rbudp_star)) {
+        fy2025_data$rbudp_star <- fy2025$rbudp_star
+      } else {
+        # Fallback: calculate from BUDP if historical value not available
+        fy2025_data$rbudp_star <- (fy2025$BUDP / fy2025$GDPstar) * 100
+      }
+    }
+    # Calculate FY2025 real GDP growth using FY2024 data
+    if ("real_gdp_growth" %in% baseline_cols && nrow(fy2024) > 0) {
+      fy2025_growth <- (fy2025$GDPstar - fy2024$GDPstar) / fy2024$GDPstar * 100
+      fy2025_data$real_gdp_growth <- fy2025_growth
+    } else if ("real_gdp_growth" %in% baseline_cols) {
+      fy2025_data$real_gdp_growth <- NA
+    }
+
+    # Add FY2025 to baseline
+    results$baseline_with_history <- rbind(fy2025_data, results$baseline)
+    results$baseline_with_history$fy_label <- create_fy_labels_with_history()[1:nrow(results$baseline_with_history)]
+
+    # Add FY2025 to scenario (same as baseline for historical year)
+    results$scenario_with_history <- rbind(fy2025_data, results$scenario)
+    results$scenario_with_history$fy_label <- create_fy_labels_with_history()[1:nrow(results$scenario_with_history)]
+
+    # Recalculate real GDP growth for combined data (FY2026 onward)
+    if ("GDP" %in% names(results$baseline_with_history)) {
+      gdp_baseline <- results$baseline_with_history$GDP
+      gdp_scenario <- results$scenario_with_history$GDP
+      # Keep FY2025 growth as calculated above, recalculate FY2026+
+      baseline_growth <- c(fy2025_data$real_gdp_growth, diff(gdp_baseline) / head(gdp_baseline, -1) * 100)
+      scenario_growth <- c(fy2025_data$real_gdp_growth, diff(gdp_scenario) / head(gdp_scenario, -1) * 100)
+      results$baseline_with_history$real_gdp_growth <- baseline_growth
+      results$scenario_with_history$real_gdp_growth <- scenario_growth
+    }
+
+    return(results)
+  }
+
   # Initialize with baseline simulation on app launch
   simulation_results <- reactiveVal({
     baseline_old_format <- convert_to_old_structure(baseline_v1_8, baseline_v1_8)
@@ -653,6 +769,28 @@ server <- function(input, output, session) {
     # Baseline has no shocks applied
     baseline_old_format$shock_spec <- NULL
     baseline_old_format
+  })
+
+  # Reactive to provide plotting data with FY2025 included
+  simulation_results_for_plots <- reactive({
+    results <- simulation_results()
+    if (is.null(results)) return(NULL)
+
+    # Add FY2025 historical data to the results
+    results_with_history <- add_fy2025_to_results(results)
+
+    # Return structure with both versions of the data
+    list(
+      # Original data for compatibility
+      baseline = results_with_history$baseline_with_history,
+      scenario = results_with_history$scenario_with_history,
+      deviations = results$deviations,
+      # Keep original data available if needed
+      baseline_original = results$baseline,
+      scenario_original = results$scenario,
+      # Preserve shock spec
+      shock_spec = results$shock_spec
+    )
   })
 
   # Update simulation when button is clicked
@@ -664,7 +802,7 @@ server <- function(input, output, session) {
       incProgress(0.2, detail = "Extracting inputs...")
 
       # Extract deltas from all tables
-      table_deltas <- collect_table_deltas(require_valid = TRUE)
+      table_deltas <- collect_table_deltas()
       if (is.null(table_deltas)) return(invisible(NULL))
       expectations_fast <- isTRUE(input$expectations_speed)
       cache_key <- make_cache_key(table_deltas, expectations_fast)
@@ -821,46 +959,27 @@ server <- function(input, output, session) {
     set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
-  # Preset 1: Rapid AI Adoption
-  # Source: BLSMM_1_8_20260326_links_rapidAI.xlsm
-  # Three simultaneous shocks: productivity boost, LFPR decline, outlay rise
+  # Preset observers. Values come from scenarios/inputs/ via
+  # preset_table_deltas above; do not hardcode numbers here.
+
+  # Source: scenarios/inputs/ai_s2_prod_lf.R
   observeEvent(input$preset_rapid_ai, {
     preset_apply_time(as.numeric(Sys.time()))
-    apply_multi_preset(list(
-      table_productivity = c(1.60, 1.50, 1.50, 1.60, 1.60,
-                             1.70, 1.70, 1.80, 1.80, 1.80),
-      table_lf_growth    = c(-0.40, -0.40, -0.40, -0.40, -0.40,
-                              0.00,  0.00,  0.00,  0.00,  0.00),
-      table_outlays      = c(0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40)
-    ))
+    apply_multi_preset(preset_table_deltas$rapid_ai)
     active_preset("rapid_ai")
   })
 
-  # Preset 2: Persistent Inflation
-  # Source: BLSMM_1_8_20260326_links_persistentinflation.xlsm
-  # Front-loaded inflation shock (3 nonzero years)
+  # Source: scenarios/inputs/alt_persistent_inflation.R
   observeEvent(input$preset_persistent_infl, {
     preset_apply_time(as.numeric(Sys.time()))
-    apply_single_preset(
-      "table_inflation_shock",
-      c(0.0, 0.1, 0.3, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-    )
+    apply_multi_preset(preset_table_deltas$persistent_infl)
     active_preset("persistent_infl")
   })
 
-  # Preset 3: Military Conflict
-  # Source: defense_outlays_data.xlsx, "Primary Outlays Delta" col
-  # Defense outlay path including +$350B FY2027 mandatory spending
+  # Source: scenarios/inputs/alt_military_conflict.R
   observeEvent(input$preset_military_conflict, {
     preset_apply_time(as.numeric(Sys.time()))
-    apply_single_preset(
-      "table_outlays",
-      c(0.05926643923051801, 1.4648663376827828,
-        0.6024768143143505,  0.7583951483560541,
-        0.7938454047864912,  0.8164223748813694,
-        0.785826175398481,   0.7236216101604063,
-        0.6726591880611538,  0.6147969334429797)
-    )
+    apply_multi_preset(preset_table_deltas$military_conflict)
     active_preset("military_conflict")
   })
 
@@ -916,19 +1035,6 @@ server <- function(input, output, session) {
   }
 
   # ============================================================================
-  # SSE CONVERGENCE DISPLAY
-  # ============================================================================
-
-  output$sse_display <- renderText({
-    req(simulation_results())
-
-    solver <- attr(simulation_results()$scenario, "solver_summary")
-    sse <- solver$final_sse
-    status <- if (isTRUE(solver$overall_converged)) "CONVERGED" else "NOT CONVERGED"
-    sprintf("SSE: %.6f | %s", sse, status)
-  })
-
-  # ============================================================================
   # KPI VALUE BOXES
   # ============================================================================
 
@@ -982,7 +1088,7 @@ server <- function(input, output, session) {
   # Display primary balance derivation
   output$primary_balance_derived <- renderText({
     # Get user deltas from tables
-    table_deltas <- collect_table_deltas(require_valid = FALSE)
+    table_deltas <- collect_table_deltas()
 
     if (!is.null(table_deltas) && !is.null(simulation_results())) {
       receipts_delta <- table_deltas$table_receipts
@@ -1602,7 +1708,7 @@ server <- function(input, output, session) {
   # table into two outputs — inside the Custom Scenario Builder drawer
   # AND on the Results tab's "Scenario Summary" nav panel.
   summary_all_deltas_df <- reactive({
-    table_deltas <- collect_table_deltas(require_valid = FALSE)
+    table_deltas <- collect_table_deltas()
 
     df <- data.frame(
       Shock = c(

@@ -9,6 +9,11 @@ create_fy_labels <- function(start_year = 2026, n_years = N_PERIODS) {
   paste0("FY", start_year:(start_year + n_years - 1))
 }
 
+# Create fiscal year labels for plots including historical FY2025
+create_fy_labels_with_history <- function(start_year = 2025, n_years = 11) {
+  paste0("FY", start_year:(start_year + n_years - 1))
+}
+
 # Create baseline data for input tables (3 rows: baseline, delta, level)
 create_input_table <- function(baseline_values, variable_name) {
   n_periods <- length(baseline_values)
@@ -51,10 +56,6 @@ parse_table_deltas <- function(hot_data, n_periods = N_PERIODS) {
   list(values = parsed, invalid_idx = invalid_idx)
 }
 
-extract_deltas <- function(hot_data, n_periods = N_PERIODS) {
-  parse_table_deltas(hot_data, n_periods)$values
-}
-
 # Map app tables to user_deltas structure (all 9 input types)
 map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
   # Create empty user_deltas data frame
@@ -74,6 +75,40 @@ map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
   return(user_deltas)
 }
 
+# Source a scenarios/inputs/*.R file and return the `scenario` list it
+# defines. Errors clearly if the file does not define `scenario`.
+load_scenario_file <- function(path) {
+  if (!file.exists(path)) {
+    stop(sprintf("Scenario file not found: %s", path))
+  }
+  env <- new.env()
+  source(path, local = env)
+  if (is.null(env$scenario)) {
+    stop(sprintf("File '%s' does not define `scenario`", path))
+  }
+  env$scenario
+}
+
+# Inverse of map_tables_to_user_deltas(): convert a scenario list's
+# `user_deltas` (user_delta_* keys) into the table_* shape the preset
+# apply functions consume. NULL fields are dropped so apply_multi_preset()
+# only writes to tables the scenario specifies.
+scenario_to_table_deltas <- function(scenario) {
+  ud <- scenario$user_deltas %||% list()
+  out <- list(
+    table_lf_growth        = ud$user_delta_lf,
+    table_productivity     = ud$user_delta_prod,
+    table_receipts         = ud$user_delta_rgfr,
+    table_outlays          = ud$user_delta_rgfop,
+    table_rfstar           = ud$user_delta_rfstar_direct,
+    table_output_gap       = ud$user_delta_ADshock,
+    table_inflation_shock  = ud$user_delta_inflshock,
+    table_monetary_rule    = ud$user_delta_MPshock,
+    table_inflation_target = ud$user_delta_pistar
+  )
+  Filter(Negate(is.null), out)
+}
+
 # ==============================================================================
 # LFPR CONVERSION UTILITIES
 # ==============================================================================
@@ -81,7 +116,7 @@ map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
 #' Convert LFPR target path to glfstar delta for BLSMM v1.8
 #'
 #' Given a target LFPR path and CBO population forecast, computes the glfstar
-#' delta (in percentage points) that must be assigned to user_delta_glfstar
+#' delta (in percentage points) that must be assigned to user_delta_lf
 #' to achieve that LFPR path in the model. The model internally uses potential
 #' labor force growth rates (glfstar), not LFPR directly.
 #'
@@ -99,7 +134,7 @@ map_tables_to_user_deltas <- function(table_deltas, n_periods = N_PERIODS) {
 #' @return A list with four elements:
 #'   \describe{
 #'     \item{delta}{Length-10 numeric. The glfstar delta (pp) to assign to
-#'       user_delta_glfstar[FY2026:FY2035] to achieve the target LFPR path.}
+#'       user_delta_lf[FY2026:FY2035] to achieve the target LFPR path.}
 #'     \item{glfstar}{Length-10 numeric. Absolute glfstar values (audit only).}
 #'     \item{lf_target}{Length-10 numeric. Implied LFstar levels in millions
 #'       (audit only).}
@@ -243,7 +278,7 @@ build_lfpr_path <- function(
 #'     \item{lf_implied_M}{Implied LFstar level (millions).}
 #'     \item{glfstar_abs}{Absolute glfstar growth rate (%).}
 #'     \item{delta_glfstar}{Delta vs baseline (pp). This column should be
-#'       assigned to user_delta_glfstar.}
+#'       assigned to user_delta_lf.}
 #'   }
 summarise_lfpr_scenario <- function(
   lfpr_target_vec,
@@ -309,17 +344,6 @@ build_shape_delta <- function(shape, magnitude, n = N_PERIODS) {
     "temporary3"  = c(rep(magnitude, min(3, n)), rep(0, max(0, n - 3))),
     rep(0, n)
   )
-}
-
-#' Short preview string for a shape+magnitude delta vector.
-#' Example: "0.20, 0.20, 0.20, ... 0.20" for a permanent +0.20.
-format_shape_preview <- function(delta_vec, digits = 2) {
-  if (length(delta_vec) <= 4) {
-    return(paste(sprintf(paste0("%.", digits, "f"), delta_vec), collapse = ", "))
-  }
-  first3 <- sprintf(paste0("%.", digits, "f"), head(delta_vec, 3))
-  last   <- sprintf(paste0("%.", digits, "f"), tail(delta_vec, 1))
-  paste0(paste(first3, collapse = ", "), ", ..., ", last)
 }
 
 # Shape options presented in every simple-mode select input. Ordered
@@ -430,7 +454,6 @@ year_by_year_input_strip <- function(table_key, n_years = N_PERIODS,
 #'   input$shape_productivity, input$magnitude_productivity,
 #'   input$delta_table_productivity_fy2026 ... _fy2035
 #' Server outputs expected:
-#'   output$preview_productivity (text rendering of the computed delta)
 #'   output$baseline_table_productivity_fy2026..fy2035
 #'   output$level_table_productivity_fy2026..fy2035
 #'

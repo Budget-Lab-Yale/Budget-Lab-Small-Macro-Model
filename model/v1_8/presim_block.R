@@ -26,16 +26,16 @@ compute_presim_deterministic_v1_8 <- function(exog, lag_values) {
   # ============================================================================
   # POTENTIAL REAL GDP GROWTH RATE (PDF row 57)
   # ============================================================================
-  # gstar = 100 * ((1 + glqstar/100) * (1 + glfstar/100) * (1 - UN/100) / (1 - UN(-1)/100) - 1)
+  # gstar = 100 * ((1 + glqstar/100) * (1 + glfstar/100) * (1 - UN_path/100) / (1 - UN(-1)/100) - 1)
   #
   # This decomposes potential growth into:
   #   - Productivity growth (glqstar)
   #   - Labor force growth (glfstar)
-  #   - NAIRU change effect (UN vs UN_lag)
+  #   - NAIRU change effect (UN_path vs UN_lag)
 
   gstar <- 100 * ((1 + exog$glqstar/100) *
                   (1 + exog$glfstar/100) *
-                  (1 - exog$UN/100) / (1 - lag_values$UN_lag/100) - 1)
+                  (1 - exog$UN_path/100) / (1 - lag_values$UN_lag/100) - 1)
 
   # ============================================================================
   # LABOR FORCE AND PRODUCTIVITY LEVELS (PDF rows 104-105)
@@ -54,7 +54,7 @@ compute_presim_deterministic_v1_8 <- function(exog, lag_values) {
   # CEstar = LFstar * (1 - UN/100)
   # Potential labor force adjusted for NAIRU
 
-  CEstar <- LFstar * (1 - exog$UN/100)
+  CEstar <- LFstar * (1 - exog$UN_path/100)
 
   # ============================================================================
   # POTENTIAL REAL GDP LEVEL (PDF row 107)
@@ -145,7 +145,7 @@ print_presim_summary <- function(presim_results, exog, year_label = NULL) {
   cat("GROWTH COMPONENTS:\n")
   cat(sprintf("  glqstar (productivity growth):     %.4f%%\n", exog$glqstar))
   cat(sprintf("  glfstar (labor force growth):      %.4f%%\n", exog$glfstar))
-  cat(sprintf("  UN (NAIRU):                        %.4f%%\n", exog$UN))
+  cat(sprintf("  UN (NAIRU):                        %.4f%%\n", exog$UN_path))
   cat(sprintf("  COMPUTED gstar (potential growth): %.4f%%\n", presim_results$gstar))
 
   cat("\nLEVEL VARIABLES:\n")

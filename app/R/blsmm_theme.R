@@ -70,49 +70,6 @@ bl_spacing <- list(
 )
 
 # ------------------------------------------------------------------------------
-# Plotly chart theme
-# ------------------------------------------------------------------------------
-# Returns a list suitable for splatting into plotly::layout(..., !!!bl_plotly_theme()).
-# ------------------------------------------------------------------------------
-bl_plotly_theme <- function() {
-  pal <- bl_colors
-
-  list(
-    font = list(
-      family = bl_fonts$body,
-      size   = 13,
-      color  = pal$body
-    ),
-    paper_bgcolor = pal$bg,
-    plot_bgcolor  = pal$bg,
-    colorway      = c(pal$blue, pal$orange, pal$cat2, pal$cat3, pal$cat5, pal$cat6, pal$cat7),
-    xaxis = list(
-      gridcolor    = pal$gridline,
-      zerolinecolor = pal$border,
-      linecolor    = pal$border,
-      tickfont     = list(color = pal$muted, size = 11)
-    ),
-    yaxis = list(
-      gridcolor    = pal$gridline,
-      zerolinecolor = pal$border,
-      linecolor    = pal$border,
-      tickfont     = list(color = pal$muted, size = 11)
-    ),
-    legend = list(
-      font = list(color = pal$body, size = 12),
-      bgcolor = "rgba(0,0,0,0)",
-      bordercolor = "rgba(0,0,0,0)"
-    ),
-    hoverlabel = list(
-      font = list(family = bl_fonts$body, color = "white", size = 12),
-      bgcolor = pal$navy,
-      bordercolor = pal$navy
-    ),
-    margin = list(l = 60, r = 30, t = 20, b = 50)
-  )
-}
-
-# ------------------------------------------------------------------------------
 # Emit :root CSS custom properties so inline CSS and component CSS can share
 # the same token values. Usage: place `bl_css_vars_block()` inside tags$head.
 # ------------------------------------------------------------------------------
@@ -273,39 +230,6 @@ bl_brand_overrides_block <- function() {
     .nav-tabs .nav-link.active {
       color: var(--bl-navy);
       border-bottom-color: var(--bl-navy);
-    }
-
-    /* ---------- Getting started collapsible alert ---------- */
-    .blsmm-getting-started {
-      padding: 10px 14px;
-    }
-    .blsmm-getting-started > summary {
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0;
-      color: var(--bl-navy);
-    }
-    .blsmm-getting-started > summary::-webkit-details-marker { display: none; }
-    .blsmm-getting-started > summary::before {
-      content: '\\25B8'; /* right-pointing triangle */
-      font-size: 0.9em;
-      color: var(--bl-muted);
-      transition: transform 0.15s ease;
-      display: inline-block;
-    }
-    .blsmm-getting-started[open] > summary::before {
-      transform: rotate(90deg);
-    }
-    .blsmm-getting-started .blsmm-summary-hint {
-      color: var(--bl-muted);
-      font-weight: 400;
-      font-size: 0.9em;
-    }
-    .blsmm-getting-started[open] {
-      padding-bottom: 14px;
     }
 
     /* ---------- Year-by-year native input strip ----------
@@ -556,12 +480,6 @@ bl_brand_overrides_block <- function() {
       margin-bottom: 8px;
     }
     .blsmm-sim-status-wrap:last-child { margin-bottom: 0; }
-    .blsmm-sse-pill {
-      font-family: var(--bl-font-mono);
-      font-size: 0.78em;
-      letter-spacing: 0;
-    }
-
     /* Run Simulation / Reset buttons:
        stack icon above text, wrap text cleanly, font size scales to
        sidebar width via container queries with safe min/max. */
@@ -908,21 +826,6 @@ bl_brand_overrides_block <- function() {
     .blsmm-preset-btn.preset-active:hover {
       background-color: var(--bl-navy) !important;
       border-color: var(--bl-navy) !important;
-      color: #ffffff !important;
-    }
-    /* Legacy rules kept for any remaining variant-flavored selectors. */
-    .btn-outline-warning.preset-active,
-    .btn-outline-warning.preset-active:focus,
-    .btn-outline-warning.preset-active:hover {
-      background-color: #b45309 !important;
-      border-color: #b45309 !important;
-      color: #ffffff !important;
-    }
-    .btn-outline-danger.preset-active,
-    .btn-outline-danger.preset-active:focus,
-    .btn-outline-danger.preset-active:hover {
-      background-color: #9b2226 !important;
-      border-color: #9b2226 !important;
       color: #ffffff !important;
     }
   "))
