@@ -11,7 +11,7 @@ four_panel <- function(results, third_var, third_title, third_ylab,
                        fourth_var, fourth_title, fourth_ylab) {
   p_budget <- bl_line(
     gather_var(results, transform = tf_budget_pct_gdp),
-    title = "Budget Balance as % of GDP", ylab = "Percent of GDP"
+    title = "Budget Deficit as % of GDP", ylab = "Percent of GDP"
   ) + geom_hline(yintercept = 0, linetype = "dotted", color = "gray50")
 
   p_debt <- bl_line(
@@ -39,14 +39,14 @@ results_f1 <- list(
 )
 # Panels: Budget, Debt, Real GDP, 10Y yield
 p_budget <- bl_line(gather_var(results_f1, transform = tf_budget_pct_gdp),
-                    title = "Budget Balance as % of GDP",
+                    title = "Budget Deficit as % of GDP",
                     ylab = "Percent of GDP") +
             geom_hline(yintercept = 0, linetype = "dotted", color = "gray50")
 p_debt   <- bl_line(gather_var(results_f1, var = "D_pct_GDP"),
                     title = "Debt as % of GDP", ylab = "Percent of GDP")
-p_gdp    <- bl_line(gather_var(results_f1, transform = tf_real_gdp_tril),
-                    title = "Real GDP", ylab = "Trillions of 2017 dollars",
-                    y_format = function(x) paste0("$", x, "T"))
+p_gdp    <- bl_line(gather_var(results_f1, transform = tf_real_gdp_growth),
+                    title = "Real GDP Growth", ylab = "Percent change",
+                    y_format = function(x) paste0(x, "%"))
 p_10y    <- bl_line(gather_var(results_f1, var = "R10"),
                     title = "10-Year Treasury Yield", ylab = "Percent")
 fig1 <- bl_grid(list(p_budget, p_debt, p_gdp, p_10y), ncol = 2)

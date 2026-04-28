@@ -264,8 +264,8 @@ OUTLAYS_PRIMARY(t) = outlays_pct_gdp(t) × GDP$(t) / 100
 ```
 
 Where:
-- ψ₁ < 0: Outlays rise when unemployment is high (automatic stabilizers)
-- ψ₂ < 0: Outlays fall when debt/GDP is high (fiscal consolidation)
+- ψ₁ < 0: Outlays ratio falls when labor force growth accelerates (negative feedback)
+- ψ₂ < 0: Outlays ratio falls when productivity growth accelerates (negative feedback)
 
 **7. Primary Balance**
 ```
@@ -412,8 +412,8 @@ kappa3 = 0.01        # r* sensitivity to debt/GDP
 
 **Fiscal Feedback (2 parameters)**
 ```r
-psi1 = -0.05         # Automatic stabilization (outlays respond to ugap)
-psi2 = -0.01         # Debt sustainability (outlays respond to D/GDP)
+psi1 = -0.134        # Labor force growth feedback (outlays ratio responds to LF growth)
+psi2 = -0.229        # Productivity growth feedback (outlays ratio responds to productivity growth)
 ```
 
 **Exogenous Variables (10 parameters/paths)**

@@ -14,14 +14,14 @@ results_ai <- list(
 out_dir <- "scenarios/figures/ai_article"
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
-# Figure 2: Budget Balance as % of GDP
+# Figure 2: Budget Deficit as % of GDP
 p2 <- bl_line(
   gather_var(results_ai, transform = tf_budget_pct_gdp),
-  title    = "Budget Balance as % of GDP",
-  subtitle = "More negative = larger deficit",
+  title    = "Budget Deficit as % of GDP",
+  subtitle = "More positive = larger deficit",
   ylab     = "Percent of GDP"
 ) + geom_hline(yintercept = 0, linetype = "dotted", color = "gray50")
-ggsave(file.path(out_dir, "fig2_budget_balance.png"), p2,
+ggsave(file.path(out_dir, "fig2_budget_deficit.png"), p2,
        width = 8, height = 5, dpi = 300)
 
 # Figure 3: Debt as % of GDP
@@ -34,15 +34,15 @@ p3 <- bl_line(
 ggsave(file.path(out_dir, "fig3_debt.png"), p3,
        width = 8, height = 5, dpi = 300)
 
-# Figure 4: Real GDP
+# Figure 4: Real GDP Growth
 p4 <- bl_line(
-  gather_var(results_ai, transform = tf_real_gdp_tril),
-  title    = "Real GDP",
+  gather_var(results_ai, transform = tf_real_gdp_growth),
+  title    = "Real GDP Growth",
   subtitle = "Productivity gains drive substantial GDP growth",
-  ylab     = "Trillions of 2017 dollars",
-  y_format = function(x) paste0("$", x, "T")
+  ylab     = "Percent change",
+  y_format = function(x) paste0(x, "%")
 )
-ggsave(file.path(out_dir, "fig4_real_gdp.png"), p4,
+ggsave(file.path(out_dir, "fig4_real_gdp_growth.png"), p4,
        width = 8, height = 5, dpi = 300)
 
 cat("AI article figures written to", out_dir, "\n")

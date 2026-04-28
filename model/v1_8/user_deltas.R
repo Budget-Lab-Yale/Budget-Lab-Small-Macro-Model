@@ -97,7 +97,18 @@ compute_user_inclusive_exog <- function(baseline_exog, user_deltas, params, hist
   # PRIMARY BUDGET RATIO (PDF row 29)
   # ============================================================================
   # rbudp* = revenue - outlays
-  exog$rbudp_star <- exog$rgfr_star - exog$rgfop_star
+  # Check if rbudp_star was overridden (doesn't match baseline formula)
+  # If overridden, preserve it; otherwise compute from rgfr_star - rgfop_star
+  baseline_formula_rbudp <- baseline_exog$rgfr_star - baseline_exog$rgfop_star
+  rbudp_overridden <- !isTRUE(all.equal(baseline_exog$rbudp_star, baseline_formula_rbudp, tolerance = 1e-10))
+
+  if (rbudp_overridden) {
+    # Preserve the override
+    exog$rbudp_star <- baseline_exog$rbudp_star
+  } else {
+    # Compute normally
+    exog$rbudp_star <- exog$rgfr_star - exog$rgfop_star
+  }
 
   # Budget gap from baseline (PDF row 30, used later in rbar10 calc)
   exog$rbudp_gap <- exog$rbudp_star - baseline_exog$rbudp_star

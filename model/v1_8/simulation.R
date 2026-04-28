@@ -72,6 +72,13 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     stop("baseline_resid must have at least n_periods rows")
   }
 
+  # Validate forcing specification
+  validation <- validate_forcing_spec(forcing_spec)
+  if (!validation$is_valid) {
+    stop(paste("Invalid forcing specification:",
+               paste(validation$errors, collapse = "; ")))
+  }
+
   # ============================================================================
   # COMPUTE USER-INCLUSIVE EXOGENOUS VARIABLES
   # ============================================================================

@@ -258,7 +258,7 @@ ui <- fluidPage(
         var labels = {
           run_sim: 'Run simulation',
           reset_inputs: 'Reset inputs to defaults',
-          ['preset_' + 'rapid_ai']: 'Apply rapid AI adoption preset',
+          ['preset_' + 'rapid_ai']: 'Apply AI adoption preset',
           ['preset_' + 'persistent_infl']: 'Apply persistent inflation preset',
           ['preset_' + 'military_conflict']: 'Apply military conflict preset',
           download_csv: 'Download results as CSV',
@@ -356,7 +356,7 @@ ui <- fluidPage(
 
           # Presets: all uniform (outline-primary). Description lives in a
           # popover triggered by the ? icon to the right of each button.
-          preset_row("preset_rapid_ai", "Rapid AI Adoption",
+          preset_row("preset_rapid_ai", "AI Adoption",
                      "Productivity boost + labor-force participation decline + outlay rise (Karger et al.)."),
           preset_row("preset_persistent_infl", "Persistent Inflation",
                      "Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030."),
@@ -505,7 +505,7 @@ ui <- fluidPage(
                 width = "400px",
                 tags$figure(`aria-labelledby` = "fig_plot_budget_balance_label",
                   tags$figcaption(id = "fig_plot_budget_balance_label", class = "sr-only",
-                    "Chart: Total budget balance as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                    "Chart: Total budget deficit as percent of GDP, baseline versus scenario, FY2026–FY2035."),
                   uiOutput("plot_budget_balance_sr"),
                   plotlyOutput("plot_budget_balance", height = "360px")
                 ),
@@ -571,7 +571,7 @@ ui <- fluidPage(
                 ),
                 tags$figure(`aria-labelledby` = "fig_plot_primary_balance_label",
                   tags$figcaption(id = "fig_plot_primary_balance_label", class = "sr-only",
-                    "Chart: Primary budget balance as percent of GDP, baseline versus scenario, FY2026–FY2035."),
+                    "Chart: Primary budget deficit as percent of GDP, baseline versus scenario, FY2026–FY2035."),
                   uiOutput("plot_primary_balance_sr"),
                   plotlyOutput("plot_primary_balance", height = "360px")
                 )
@@ -608,7 +608,7 @@ ui <- fluidPage(
                 width = "400px",
                 tags$figure(`aria-labelledby` = "fig_dev_plot_primary_balance_label",
                   tags$figcaption(id = "fig_dev_plot_primary_balance_label", class = "sr-only",
-                    "Chart: Primary budget balance deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                    "Chart: Primary budget deficit deviation from baseline (percentage points of GDP), FY2026–FY2035."),
                   uiOutput("dev_plot_primary_balance_sr"),
                   plotlyOutput("dev_plot_primary_balance", height = "360px")
                 ),
@@ -650,7 +650,7 @@ ui <- fluidPage(
                 ),
                 tags$figure(`aria-labelledby` = "fig_dev_plot_output_gap_label",
                   tags$figcaption(id = "fig_dev_plot_output_gap_label", class = "sr-only",
-                    "Chart: Budget balance deviation from baseline (percentage points of GDP), FY2026–FY2035."),
+                    "Chart: Budget deficit deviation from baseline (percentage points of GDP), FY2026–FY2035."),
                   uiOutput("dev_plot_output_gap_sr"),
                   plotlyOutput("dev_plot_output_gap", height = "360px")
                 )
@@ -718,7 +718,7 @@ ui <- fluidPage(
 
           div(class = "bg-info-light", style = "padding: 24px; margin-bottom: 24px; border-radius: 8px;",
               tags$ol(style = "line-height: 2;",
-                tags$li("Build a custom scenario in the Controls sidebar or start with a preset (Rapid AI Adoption, Persistent Inflation, Higher Defense Spending)."),
+                tags$li("Build a custom scenario in the Controls sidebar or start with a preset (AI Adoption, Persistent Inflation, Higher Defense Spending)."),
                 tags$li("Click ", strong("Run Simulation"), " and wait for the status indicator to read ", strong("Simulation Complete"), "."),
                 tags$li("Use the ", strong("Levels"), " / ", strong("Deviations from baseline"), " tabs on the Results page to compare baseline and scenario."),
                 tags$li("Download the raw numbers via ", strong("Export Results"), " (CSV or Excel) in the sidebar.")
@@ -733,8 +733,8 @@ ui <- fluidPage(
               p(strong("Chart conventions:"), style = "margin-bottom: 8px;"),
               tags$ul(style = "margin-bottom: 16px; line-height: 1.6;",
                 tags$li("Baseline lines are ", strong("dashed"), "; scenario lines are ", strong("solid"), ". Both use the same color because they represent the same variable."),
-                tags$li("Rates and inflation are in percentage points. Debt and budget balances are percent of GDP."),
-                tags$li("For budget-balance charts, more negative = larger deficit.")
+                tags$li("Rates and inflation are in percentage points. Debt and budget deficits are percent of GDP."),
+                tags$li("For budget-deficit charts, higher values = larger deficit.")
               ),
               p(strong("Key variables to watch:"), style = "margin-bottom: 8px;"),
               tags$ul(style = "margin-bottom: 0; line-height: 1.6;",
@@ -915,7 +915,7 @@ ui <- fluidPage(
               "The model automatically adjusts outlays when economic growth changes:"),
             verbatimTextOutput("outlays_indirect_display"),
             br(),
-            h6("Implied Primary Budget Balance Delta"),
+            h6("Implied Primary Budget Deficit Delta"),
             p(class = "text-muted-custom", style = "font-size: 0.85em;",
               "Primary balance = Receipts - Outlays (excluding interest payments)."),
             verbatimTextOutput("primary_balance_derived")

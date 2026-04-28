@@ -7,8 +7,10 @@
 
 library(testthat)
 
-# Source simulation engine
-setwd("C:/Users/jcg_g/OneDrive/Yale/Budget Lab/Macro Model/Small Macro Model")
+# Source simulation engine (use relative paths from project root)
+# Get the project root directory (2 levels up from tests/v1_8/)
+project_root <- normalizePath(file.path(dirname(sys.frame(1)$ofile), "..", ".."))
+setwd(project_root)
 source("model/v1_8/simulation.R")
 
 test_that("v1.8 baseline replicates reference values within tolerance", {

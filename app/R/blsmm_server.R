@@ -226,11 +226,11 @@ server <- function(input, output, session) {
 
   output$plot_budget_balance_sr <- renderUI({
     req(simulation_results()); d <- simulation_results()
-    b <- (d$baseline$BUD / d$baseline[["GDP$"]]) * 100
-    s <- (d$scenario$BUD  / d$scenario[["GDP$"]])  * 100
+    b <- (d$baseline$BUD / d$baseline[["GDP$"]]) * -100
+    s <- (d$scenario$BUD  / d$scenario[["GDP$"]])  * -100
     tags$p(class = "sr-only", `aria-live` = "polite",
       sr_level_desc(b, s, d$baseline$fy_label,
-                    "%.2f", "% of GDP", "Total budget balance"))
+                    "%.2f", "% of GDP", "Total budget deficit"))
   })
 
   output$plot_debt_sr <- renderUI({
@@ -286,11 +286,11 @@ server <- function(input, output, session) {
 
   output$plot_primary_balance_sr <- renderUI({
     req(simulation_results()); d <- simulation_results()
-    b <- d$baseline$rbudp_star * (d$baseline$GDPstar / d$baseline$GDP)
-    s <- d$scenario$rbudp_star  * (d$scenario$GDPstar  / d$scenario$GDP)
+    b <- d$baseline$rbudp_star * (d$baseline$GDPstar / d$baseline$GDP) * -1
+    s <- d$scenario$rbudp_star  * (d$scenario$GDPstar  / d$scenario$GDP) * -1
     tags$p(class = "sr-only", `aria-live` = "polite",
       sr_level_desc(b, s, d$baseline$fy_label,
-                    "%.2f", "% of GDP", "Primary budget balance"))
+                    "%.2f", "% of GDP", "Primary budget deficit"))
   })
 
   # -- Deviations tab SR outputs (8 charts) --
@@ -299,7 +299,7 @@ server <- function(input, output, session) {
     req(simulation_results()); d <- simulation_results()$deviations
     tags$p(class = "sr-only", `aria-live` = "polite",
       sr_dev_desc(d$d_rbudp_star, d$fy_label,
-                  "%.2f", " pp of GDP", "Primary balance deviation from baseline"))
+                  "%.2f", " pp of GDP", "Primary deficit deviation from baseline"))
   })
 
   output$dev_plot_debt_sr <- renderUI({
@@ -346,12 +346,12 @@ server <- function(input, output, session) {
 
   output$dev_plot_output_gap_sr <- renderUI({
     req(simulation_results()); full <- simulation_results()
-    b_pct <- (full$baseline$BUD / full$baseline[["GDP$"]]) * 100
-    s_pct <- (full$scenario$BUD  / full$scenario[["GDP$"]])  * 100
+    b_pct <- (full$baseline$BUD / full$baseline[["GDP$"]]) * -100
+    s_pct <- (full$scenario$BUD  / full$scenario[["GDP$"]])  * -100
     dev <- s_pct - b_pct
     tags$p(class = "sr-only", `aria-live` = "polite",
       sr_dev_desc(dev, full$baseline$fy_label,
-                  "%.2f", " pp of GDP", "Budget balance deviation from baseline"))
+                  "%.2f", " pp of GDP", "Budget deficit deviation from baseline"))
   })
 
   # ============================================================================
@@ -659,9 +659,17 @@ server <- function(input, output, session) {
   # Helper to add FY2025 historical data to results for plotting
   add_fy2025_to_results <- function(results) {
     # Load historical data to get both FY2024 and FY2025
-    historical <- read.csv(file.path("data", "blsmm_v1_8_historical.csv"))
+    historical <- read.csv(file.path("data", "blsmm_v1_8_historical.csv"), check.names = FALSE)
     fy2024 <- historical[historical$year == 2024, ]
     fy2025 <- historical[historical$year == 2025, ]
+
+    # Calculate actual GDP from potential GDP and output gap for both years
+    if (nrow(fy2024) > 0) {
+      fy2024$GDP <- fy2024$GDPstar * (1 + fy2024$xgap / 100)
+    }
+    if (nrow(fy2025) > 0) {
+      fy2025$GDP <- fy2025$GDPstar * (1 + fy2025$xgap / 100)
+    }
 
     # Get columns from baseline to ensure compatibility
     baseline_cols <- names(results$baseline)
@@ -683,7 +691,7 @@ server <- function(input, output, session) {
     }
     if ("R10" %in% baseline_cols) fy2025_data$R10 <- fy2025$R10
     if ("RF" %in% baseline_cols) fy2025_data$RF <- fy2025$RF
-    if ("D_pct_GDP" %in% baseline_cols) fy2025_data$D_pct_GDP <- fy2025$debt_proxy_user
+    if ("D_pct_GDP" %in% baseline_cols) fy2025_data$D_pct_GDP <- fy2025$D / fy2025[["GDP$"]] * 100
     if ("BUD" %in% baseline_cols) fy2025_data$BUD <- fy2025$BUD
     if ("NI" %in% baseline_cols) fy2025_data$NI <- fy2025$NI
     if ("BUDP" %in% baseline_cols) fy2025_data$BUDP <- fy2025$BUDP
@@ -691,9 +699,9 @@ server <- function(input, output, session) {
 
     # Add additional fields needed for fiscal plots
     if ("GDPstar" %in% baseline_cols) fy2025_data$GDPstar <- fy2025$GDPstar
-    if ("GDP$" %in% baseline_cols) fy2025_data[["GDP$"]] <- fy2025$GDP.
-    if ("GDP$star" %in% baseline_cols) fy2025_data[["GDP$star"]] <- fy2025$GDP.star
-    if ("GDP$star2" %in% baseline_cols) fy2025_data[["GDP$star2"]] <- fy2025$GDP.star2
+    if ("GDP$" %in% baseline_cols) fy2025_data[["GDP$"]] <- fy2025[["GDP$"]]
+    if ("GDP$star" %in% baseline_cols) fy2025_data[["GDP$star"]] <- fy2025[["GDP$star"]]
+    if ("GDP$star2" %in% baseline_cols) fy2025_data[["GDP$star2"]] <- fy2025[["GDP$star2"]]
 
     # ========================================================================
     # FISCAL METRICS AS % OF POTENTIAL GDP FOR FY2025
@@ -732,8 +740,9 @@ server <- function(input, output, session) {
       }
     }
     # Calculate FY2025 real GDP growth using FY2024 data
+    # Use actual GDP, not potential GDP (GDPstar)
     if ("real_gdp_growth" %in% baseline_cols && nrow(fy2024) > 0) {
-      fy2025_growth <- (fy2025$GDPstar - fy2024$GDPstar) / fy2024$GDPstar * 100
+      fy2025_growth <- (fy2025$GDP - fy2024$GDP) / fy2024$GDP * 100
       fy2025_data$real_gdp_growth <- fy2025_growth
     } else if ("real_gdp_growth" %in% baseline_cols) {
       fy2025_data$real_gdp_growth <- NA
@@ -1171,23 +1180,23 @@ server <- function(input, output, session) {
   # DEVIATION PLOTS (Tab 3)
   # ============================================================================
 
-  # Deviation Plot 1: Budget Balance
+  # Deviation Plot 1: Budget Deficit
   output$dev_plot_output_gap <- renderPlotly({
     req(simulation_results())
 
     full_data <- simulation_results()
     th <- plot_theme()
 
-    # Calculate budget balance as % of GDP for both scenarios
-    baseline_budget_pct <- (full_data$baseline$BUD / full_data$baseline[["GDP$"]]) * 100
-    scenario_budget_pct <- (full_data$scenario$BUD / full_data$scenario[["GDP$"]]) * 100
+    # Calculate budget deficit as % of GDP for both scenarios
+    baseline_budget_pct <- (full_data$baseline$BUD / full_data$baseline[["GDP$"]]) * -100
+    scenario_budget_pct <- (full_data$scenario$BUD / full_data$scenario[["GDP$"]]) * -100
     budget_deviation <- scenario_budget_pct - baseline_budget_pct
 
     plot_ly() %>%
       add_lines(
         x = full_data$baseline$fy_label,
         y = budget_deviation,
-        name = "Budget Balance Deviation",
+        name = "Budget Deficit Deviation",
         line = list(color = th$line_scenario, width = 3),
         hovertemplate = paste0("%{fullData.name}: %{y:.2f} pp<extra></extra>")
       ) %>%
@@ -1199,7 +1208,7 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Budget Balance Deviation from Baseline (pp of GDP)</b>",
+        title = "<b>Budget Deficit Deviation from Baseline (pp of GDP)</b>",
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",

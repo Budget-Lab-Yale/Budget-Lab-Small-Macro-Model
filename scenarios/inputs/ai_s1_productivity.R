@@ -3,7 +3,15 @@ scenario <- list(
   label = "S1: Prod",
   color = "#2166AC",
   user_deltas = list(
-    user_delta_prod = c(1.60, 1.50, 1.50, 1.60, 1.60,
-                        1.70, 1.70, 1.80, 1.80, 1.80)
+    user_delta_prod = c(0.9,
+                        0.78,
+                        0.81,
+                        0.88,
+                        0.93,
+                        1,
+                        1.04,
+                        1.07,
+                        1.09,
+                        1.11)
   )
 )

@@ -10,14 +10,14 @@
 #  3. Real GDP indexed (100 = FY2025) - combo chart
 #  4. 10-year Treasury yield (%) - 4 series
 #  5. Federal Funds rate (%) - 4 series
-#  6. Budget balance % of nominal GDP
+#  6. Budget deficit % of nominal GDP
 #  7. Debt % of GDP
 #  8. Average interest rate on federal debt (%) - combo chart
 #  9. Total Receipts, % of nominal GDP
 # 10. Total Outlays, % of nominal GDP
 # 11. Primary Outlays, % of nominal GDP
 # 12. Real GDP growth (bars) - combo chart
-# 13. Primary budget balance % of nominal GDP
+# 13. Primary budget deficit % of nominal GDP
 # ==============================================================================
 
 # Helper function to check if scenario equals baseline (no deltas applied)
@@ -301,7 +301,7 @@ output$plot_federal_funds <- renderPlotly({
     config(displayModeBar = FALSE, doubleClick = FALSE)
 })
 
-# Chart 6: Budget balance % of nominal GDP
+# Chart 6: Budget deficit % of nominal GDP
 output$plot_budget_balance <- renderPlotly({
   req(simulation_results_for_plots())
 
@@ -309,12 +309,13 @@ output$plot_budget_balance <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # Calculate total budget balance as % of GDP
+  # Calculate total budget deficit as % of GDP
   # BUD is already in $B, need to convert to % of nominal GDP
   # Total budget = Primary balance - Net Interest
   # But BUD should already be the total
-  baseline_budget_pct <- (data$baseline$BUD / data$baseline[["GDP$"]]) * 100
-  scenario_budget_pct <- (data$scenario$BUD / data$scenario[["GDP$"]]) * 100
+  # Multiply by -100 so positive values = deficit
+  baseline_budget_pct <- (data$baseline$BUD / data$baseline[["GDP$"]]) * -100
+  scenario_budget_pct <- (data$scenario$BUD / data$scenario[["GDP$"]]) * -100
 
   p <- plot_ly()
 
@@ -349,9 +350,9 @@ output$plot_budget_balance <- renderPlotly({
 
   p %>%
     layout(
-      title = "<b>Budget Balance % of GDP</b>",
+      title = "<b>Budget Deficit % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
-      yaxis = list(title = "Percent of GDP (negative = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
+      yaxis = list(title = "Percent of GDP (positive = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
       dragmode = FALSE,
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
@@ -666,9 +667,9 @@ output$plot_real_gdp_growth <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # All values should be valid now (FY2025 growth is calculated from FY2024)
-  # But check just in case
-  valid_idx <- !is.na(data$baseline$real_gdp_growth)
+  # Exclude FY2025 from growth chart (growth should start from FY2026)
+  # FY2025 is the base year for growth calculation
+  valid_idx <- !is.na(data$baseline$real_gdp_growth) & data$baseline$fy_label != "FY2025"
 
   p <- plot_ly()
 
@@ -722,7 +723,7 @@ output$plot_real_gdp_growth <- renderPlotly({
     config(displayModeBar = FALSE, doubleClick = FALSE)
 })
 
-# Chart 13: Primary budget balance % of nominal GDP
+# Chart 13: Primary budget deficit % of nominal GDP
 output$plot_primary_balance <- renderPlotly({
   req(simulation_results_for_plots())
 
@@ -730,10 +731,11 @@ output$plot_primary_balance <- renderPlotly({
   th <- plot_theme()
   baseline_only <- is_baseline_only(data)
 
-  # Calculate primary balance as % of actual GDP
+  # Calculate primary deficit as % of actual GDP
   # Note: Uses GDPstar/GDP ratio for consistency with Excel model
-  baseline_primary_pct <- data$baseline$rbudp_star * (data$baseline$GDPstar / data$baseline$GDP)
-  scenario_primary_pct <- data$scenario$rbudp_star * (data$scenario$GDPstar / data$scenario$GDP)
+  # Multiply by -1 so positive values = deficit
+  baseline_primary_pct <- data$baseline$rbudp_star * (data$baseline$GDPstar / data$baseline$GDP) * -1
+  scenario_primary_pct <- data$scenario$rbudp_star * (data$scenario$GDPstar / data$scenario$GDP) * -1
 
   p <- plot_ly()
 
@@ -768,9 +770,9 @@ output$plot_primary_balance <- renderPlotly({
 
   p %>%
     layout(
-      title = "<b>Primary Budget Balance % of GDP</b>",
+      title = "<b>Primary Budget Deficit % of GDP</b>",
       xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
-      yaxis = list(title = "Percent of GDP (negative = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
+      yaxis = list(title = "Percent of GDP (positive = deficit)", gridcolor = th$grid, zerolinecolor = th$zero),
       hovermode = "x unified",
       dragmode = FALSE,
       legend = list(orientation = "h", x = 0.5, y = -0.2, xanchor = "center", yanchor = "top", bgcolor = th$legend_bg),
