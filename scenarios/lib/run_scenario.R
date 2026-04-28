@@ -19,6 +19,7 @@ source("app/R/blsmm_helpers.R")
 #'   id (string), label (string), color (hex), and optionally:
 #'   user_deltas (named list, subset of create_user_deltas() fields)
 #'   exog_override (named list, subset of baseline_exog columns)
+#'   resid_override (named list, subset of baseline_resid columns)
 #'   forcing_spec (forcing_spec object; see model/v1_8/forcing.R)
 run_scenario <- function(scenario) {
   n <- 10
@@ -61,13 +62,26 @@ run_scenario <- function(scenario) {
     }
   }
 
+  # Build resid with optional overrides (for shocks via residual channel)
+  resid <- .baseline_resid
+  if (!is.null(scenario$resid_override)) {
+    for (k in names(scenario$resid_override)) {
+      if (!k %in% names(resid)) {
+        stop(sprintf("Unknown resid column '%s' in scenario '%s'",
+                     k, scenario$id))
+      }
+      stopifnot(length(scenario$resid_override[[k]]) == n)
+      resid[[k]] <- scenario$resid_override[[k]]
+    }
+  }
+
   # If all deltas are zero, pass NULL (baseline convention)
   all_zero <- all(sapply(ud, function(x) all(x == 0)))
 
   simulate_blsmm_v1_8(
     n_periods          = n,
     baseline_exog      = exog,
-    baseline_resid     = .baseline_resid,
+    baseline_resid     = resid,
     hist_data          = .hist_data,
     user_deltas        = if (all_zero) NULL else ud,
     forcing_spec       = scenario$forcing_spec,
