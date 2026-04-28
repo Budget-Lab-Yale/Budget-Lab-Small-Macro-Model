@@ -23,15 +23,15 @@ bl_linetypes <- c(
 )
 
 theme_bl <- function() {
-  theme_minimal(base_size = 11) +
+  theme_minimal(base_size = 14) +
     theme(
-      plot.title       = element_text(face = "bold", size = 13),
-      plot.subtitle    = element_text(size = 10, color = "gray30"),
-      axis.title       = element_text(size = 10),
-      axis.text        = element_text(size = 9),
+      plot.title       = element_text(face = "bold", size = 16),
+      plot.subtitle    = element_text(size = 13, color = "gray30"),
+      axis.title       = element_text(size = 14),
+      axis.text        = element_text(size = 12),
       legend.position  = "bottom",
       legend.title     = element_blank(),
-      legend.text      = element_text(size = 9),
+      legend.text      = element_text(size = 13),
       panel.grid.minor = element_blank(),
       panel.grid.major = element_line(color = "gray90")
     )

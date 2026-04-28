@@ -41,7 +41,7 @@ bl_line <- function(df, title, subtitle = NULL, ylab = "", y_format = NULL) {
 
   p <- ggplot(df, aes(x = Year, y = Value,
                       color = Scenario, linetype = Scenario)) +
-    geom_line(linewidth = 1.0) +
+    geom_line(linewidth = 1.2) +
     scale_color_manual(values = bl_palette) +
     scale_linetype_manual(values = bl_linetypes) +
     scale_x_continuous(breaks = seq(start_break, max_year, 2),
@@ -55,9 +55,10 @@ bl_line <- function(df, title, subtitle = NULL, ylab = "", y_format = NULL) {
   p
 }
 
-# Multi-panel grid using patchwork
+# Multi-panel grid using patchwork with legend below all panels
 bl_grid <- function(plots, ncol = 2) {
-  wrap_plots(plots, ncol = ncol, guides = "collect")
+  wrap_plots(plots, ncol = ncol, guides = "collect") &
+    theme(legend.position = "bottom")
 }
 
 # Variable transforms
