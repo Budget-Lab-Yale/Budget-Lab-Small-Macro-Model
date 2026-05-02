@@ -261,9 +261,11 @@ solve_period_v1_8 <- function(t, sim_results, hist_data, exog_period, resid_peri
   # RECOMPUTE RESIDUALS IF FORCING ACTIVE
   # ============================================================================
   if (!is.null(forcing_spec) && is_forcing_active(forcing_spec)) {
-    # Need to recompute structural values with solved guesses
-    # (This is a simplification; ideally should re-call structural equations)
-    # For now, store flag that forcing was active
+    # INCOMPLETE: recompute_all_residuals() is defined in forcing.R
+    # but is not called here. Implied residuals for the forced path
+    # are therefore NOT stored in the returned simulation output.
+    # The original baseline residuals remain in the eps* columns.
+    # See the EXPERIMENTAL header at the top of forcing.R for details.
     result$forcing_was_active <- TRUE
   } else {
     result$forcing_was_active <- FALSE

@@ -371,6 +371,7 @@ server <- function(input, output, session) {
   # ============================================================================
   # INPUT TABLES - RENDER HANDSONTABLES
   # ============================================================================
+  # `label` is currently unused by server logic and reserved for future UI text.
   table_specs <- list(
     # Growth input tables (baseline from exog)
     table_lf_growth = list(source = "exog", column = "glfstar", label = "Potential LF Growth"),
@@ -950,12 +951,6 @@ server <- function(input, output, session) {
 
     table_state[[table_name]] <- table_data
     refresh_delta_inputs()
-  }
-
-  apply_single_preset <- function(table_name, shock_values) {
-    reset_all_tables_to_baseline()
-    update_table_with_shocks(table_name, shock_values)
-    set_run_state("dirty", "Inputs Changed. Run Simulation to Update Results")
   }
 
   apply_multi_preset <- function(presets_list) {

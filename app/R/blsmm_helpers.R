@@ -15,7 +15,7 @@ create_fy_labels_with_history <- function(start_year = 2025, n_years = 11) {
 }
 
 # Create baseline data for input tables (3 rows: baseline, delta, level)
-create_input_table <- function(baseline_values, variable_name) {
+create_input_table <- function(baseline_values, .variable_name) {
   n_periods <- length(baseline_values)
   fy_labels <- create_fy_labels(n_years = n_periods)
 

@@ -48,7 +48,7 @@ generate_scenario_dashboard <- function(scenario_id,
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
   # --- Transforms ---
-  tf_pbudget_pct_gdp <- function(r) r$BUDP / r$`GDP$` * 100
+  tf_pbudget_pct_gdp <- function(r) r$BUDP / r$`GDP$` * -100
   tf_gdp_growth      <- function(r) c(NA, 100 * (r$GDP[-1] / r$GDP[-length(r$GDP)] - 1))
 
   zero_line <- geom_hline(yintercept = 0, linetype = "dotted", color = "gray50")
@@ -75,10 +75,10 @@ generate_scenario_dashboard <- function(scenario_id,
                            title = "Average Interest Rate on Federal Debt",
                            ylab = "Percent"),
     budget       = bl_line(gather_var(results, transform = tf_budget_pct_gdp),
-                           title = "Budget Balance as % of GDP",
+                           title = "Budget Deficit as % of GDP",
                            ylab = "Percent of GDP") + zero_line,
     primary_budget = bl_line(gather_var(results, transform = tf_pbudget_pct_gdp),
-                             title = "Primary Budget Balance as % of GDP",
+                             title = "Primary Budget Deficit as % of GDP",
                              ylab = "Percent of GDP") + zero_line,
     debt         = bl_line(gather_var(results, var = "D_pct_GDP"),
                            title = "Debt as % of GDP", ylab = "Percent of GDP")
@@ -91,11 +91,11 @@ generate_scenario_dashboard <- function(scenario_id,
            width = 6, height = 4, dpi = 150)
   }
 
-  # Combined dashboard grid (3 cols × 4 rows)
+  # Combined dashboard grid (3 cols x 4 rows)
   dashboard <- bl_grid(charts, ncol = 3) +
     patchwork::plot_annotation(
-      title    = sprintf("BLSMM Dashboard — %s", scenario_label),
-      subtitle = sprintf("Scenario id: %s · Baseline shown dashed", scenario_id)
+      title    = sprintf("BLSMM Dashboard - %s", scenario_label),
+      subtitle = sprintf("Scenario id: %s - Baseline shown dashed", scenario_id)
     )
   ggsave(file.path(out_dir, "dashboard.png"), dashboard,
          width = 16, height = 18, dpi = 150)

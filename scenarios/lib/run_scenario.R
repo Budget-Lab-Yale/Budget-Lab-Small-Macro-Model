@@ -84,6 +84,8 @@ run_scenario <- function(scenario) {
     baseline_resid     = resid,
     hist_data          = .hist_data,
     user_deltas        = if (all_zero) NULL else ud,
+    # forcing_spec is an experimental feature — see forcing.R header.
+    # All shipped scenario files leave this as NULL.
     forcing_spec       = scenario$forcing_spec,
     params             = NULL,
     expectations_speed = FALSE,

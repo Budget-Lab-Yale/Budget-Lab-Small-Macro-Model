@@ -15,7 +15,7 @@ The BLSMM Interactive Application is a web-based interface for running macroecon
 **Key Features:**
 - **9 input types** for comprehensive policy control
 - **Year-by-year tables** (FY2026-FY2035) for precise scenario design
-- **13 dashboard charts** showing real-time macroeconomic impacts
+- **12 dashboard charts** showing real-time macroeconomic impacts
 - **8 deviation charts** comparing scenarios to baseline
 - **Preset scenarios** for common policy analyses
 - **Solver diagnostics** showing convergence status
@@ -51,10 +51,10 @@ The app will open in your default web browser.
 - **Reset to Defaults**: Clear all inputs to baseline (gray button)
 
 **2. Simulation Settings**
-- **Horizon**: Select 2-10 years for simulation length
+- The simulation horizon is fixed at 10 years (FY2026-FY2035)
 
-**3. Preset Scenarios** (8 buttons)
-- Quick-load common policy scenarios
+**3. Preset Scenarios** (3 buttons)
+- Quick-load common policy scenarios: Rapid AI Adoption, Persistent Inflation, Higher Defense Spending
 - One-click setup for standard analyses
 
 **4. Input Tables** (9 collapsible panels)
@@ -69,9 +69,8 @@ The app will open in your default web browser.
 ### Main Panel (Tabbed Interface)
 
 **Tab 1: Dashboard**
-- 13 interactive charts showing baseline vs. scenario
+- 12 interactive charts showing baseline vs. scenario
 - Hover for exact values
-- Zoom and pan enabled
 - Real-time updates after each simulation
 
 **Tab 2: Deviation Charts**
@@ -166,7 +165,7 @@ Each input type has its own year-by-year table with 10 columns (FY2026-FY2035).
 - Global financial conditions
 - Long-run growth expectations
 
-**Note:** r* also responds endogenously to potential growth and debt/GDP via model parameters κ₁, κ₂, κ₃
+**Note:** r* also responds endogenously to potential growth and debt/GDP via model parameters `kappa_1`, `kappa_2`, `kappa_3`
 
 **Example:** +0.50 = neutral rate rises 50 basis points above baseline
 
@@ -229,32 +228,25 @@ Each input type has its own year-by-year table with 10 columns (FY2026-FY2035).
 
 ---
 
-## The 13 Dashboard Charts
+## The 12 Dashboard Charts
 
 All charts show both **baseline** (dashed line) and **scenario** (solid line) projections.
 
 ### 1. Unemployment Rate (%)
 
 - Shows unemployment rate over time
-- Compare to natural rate (UN ≈ 4.2%)
+- Compare to natural rate (UN approx 4.2%)
 - Higher = labor market slack
 - Lower = tight labor market
 
 ### 2. Inflation Rate (%)
 
-- Year-over-year CPI inflation
+- Year-over-year GDP deflator inflation
 - Compare to Fed target (2.0%)
 - Above target = overheating
 - Below target = slack/disinflation
 
-### 3. Real GDP (Indexed, FY2025=100)
-
-- Real GDP level indexed to 100 in FY2025
-- Shows cumulative growth trajectory
-- Steeper slope = faster growth
-- Gap between lines = level effect
-
-### 4. 10-Year Treasury Yield (%)
+### 3. 10-Year Treasury Yield (%)
 
 Four series displayed:
 - Expected 10-year yield (baseline)
@@ -264,7 +256,7 @@ Four series displayed:
 
 Shows long-term interest rate dynamics and term premium evolution.
 
-### 5. Federal Funds Rate (%)
+### 4. Federal Funds Rate (%)
 
 Four series displayed:
 - r* (neutral rate, baseline)
@@ -274,56 +266,56 @@ Four series displayed:
 
 Shows monetary policy stance and neutral rate evolution.
 
-### 6. Budget Balance (% of GDP)
+### 5. Budget Balance (% of GDP)
 
 - Federal budget balance as percentage of GDP
 - Negative = deficit
 - Positive = surplus
 - Shows overall fiscal position
 
-### 7. Federal Debt (% of GDP)
+### 6. Federal Debt (% of GDP)
 
-- Gross federal debt as percentage of GDP
+- Publicly held debt as percentage of GDP
 - Rising = fiscal sustainability concerns
 - Falling = improving fiscal position
 - Key metric for long-run fiscal health
 
-### 8. Average Interest Rate on Federal Debt (%)
+### 7. Average Interest Rate on Federal Debt (%)
 
 - Effective interest rate on outstanding debt
 - Weighted average of past and current rates
 - Affects net interest payments
 - Adjusts gradually as debt turns over
 
-### 9. Total Receipts (% of GDP)
+### 8. Total Receipts (% of GDP)
 
 - Federal government receipts as percentage of GDP
 - Includes all revenue sources
 - Shows tax policy and automatic stabilizer effects
 - Cyclically sensitive
 
-### 10. Total Outlays (% of GDP)
+### 9. Total Outlays (% of GDP)
 
 - Federal government outlays as percentage of GDP
 - Includes all spending and net interest
 - Shows spending policy and automatic stabilizers
 - Cyclically sensitive
 
-### 11. Primary Outlays (% of GDP)
+### 10. Primary Outlays (% of GDP)
 
 - Total outlays excluding net interest payments
 - Isolates discretionary and programmatic spending
 - Removes debt service component
 - Shows structural spending path
 
-### 12. Real GDP Growth (%)
+### 11. Real GDP Growth (%)
 
 - Year-over-year real GDP growth rate
-- Compare to potential growth (≈2.2%)
+- Compare to potential growth (approx 2.2%)
 - Above potential = output gap closing
 - Below potential = output gap widening
 
-### 13. Primary Balance (% of GDP)
+### 12. Primary Balance (% of GDP)
 
 - Budget balance excluding net interest
 - Receipts minus primary outlays
@@ -396,47 +388,22 @@ Each deviation chart tab also shows calculated multipliers:
 
 ## Preset Scenarios
 
-8 one-click scenarios for common policy analyses:
+3 one-click scenarios for common policy analyses:
 
-### 1. Fiscal Stimulus (2-Year)
-- Spending increase: +2% of GDP in FY2026-FY2027
-- Temporary demand boost
-- Tests short-run multipliers
+### 1. Rapid AI Adoption
+- Applies the AI productivity, labor force, and outlay assumptions used in the shipped rapid-adoption scenario set
+- Tests medium-term growth, labor supply, and fiscal effects from accelerated AI diffusion
+- Useful starting point for the AI article scenarios
 
-### 2. Permanent Tax Cut
-- Receipts decrease: -1% of GDP for all years
-- Tests long-run fiscal effects
-- Debt sustainability implications
+### 2. Persistent Inflation
+- Front-loaded inflation shock path: 0.0, 0.1, 0.3, 0.2, then 0.0
+- Tests inflation persistence and the endogenous Fed response
+- Useful starting point for the alternate inflation scenario
 
-### 3. Supply Shock
-- Inflation shock: +1.5pp in FY2026-FY2027
-- Oil/commodity price shock
-- Fed response dynamics
-
-### 4. Hawkish Fed
-- Monetary policy shock: +1.0pp for 3 years
-- Tighter-than-rule policy
-- Disinflation scenario
-
-### 5. Productivity Boom
-- Productivity growth: +0.5pp permanently
-- Supply-side expansion
-- Growth and debt effects
-
-### 6. r* Decline
-- Neutral rate shock: -1.0pp permanently
-- Secular stagnation scenario
-- Monetary policy constraints
-
-### 7. Fiscal Consolidation
-- Gradual primary balance improvement
-- Multi-year deficit reduction
-- Debt stabilization
-
-### 8. High Inflation Regime
-- Inflation target: +1.0pp permanently
-- Regime change scenario
-- Expectations dynamics
+### 3. Higher Defense Spending
+- Applies the BR2027-based defense outlay increase, including the FY2027 mandatory bump
+- Tests deficit, debt-service, and crowding-out effects from sustained defense spending
+- Useful starting point for the alternate military-conflict scenario
 
 ---
 
@@ -511,8 +478,8 @@ FY2032-FY2035: 0.00
 **Research Question:** What if infrastructure spending (+1% of GDP for 5 years) raises productivity growth by 0.2pp?
 
 **Setup:**
-1. Open "4. Outlays" panel → Enter +1.00 for FY2026-FY2030
-2. Open "2. Productivity Growth" panel → Enter +0.20 for FY2027-FY2035 (1-year lag)
+1. Open "4. Outlays" panel -> Enter +1.00 for FY2026-FY2030
+2. Open "2. Productivity Growth" panel -> Enter +0.20 for FY2027-FY2035 (1-year lag)
 3. Click "Run Simulation"
 
 **Expected Results:**
@@ -525,8 +492,8 @@ FY2032-FY2035: 0.00
 **Research Question:** Can gradual deficit reduction avoid recession if Fed keeps rates low?
 
 **Setup:**
-1. Open "3. Receipts" → Enter gradual increase: +0.50, +1.00, +1.50, +2.00, +2.00...
-2. Open "8. Monetary Policy Rule Shocks" → Enter -0.50 for FY2026-FY2030 (Fed stays accommodative)
+1. Open "3. Receipts" -> Enter gradual increase: +0.50, +1.00, +1.50, +2.00, +2.00...
+2. Open "8. Monetary Policy Rule Shocks" -> Enter -0.50 for FY2026-FY2030 (Fed stays accommodative)
 3. Click "Run Simulation"
 
 **Expected Results:**
@@ -540,29 +507,29 @@ FY2032-FY2035: 0.00
 **Research Question:** How painful is disinflation if Fed credibly commits to 2% target?
 
 **Setup:**
-1. Open "7. Inflation Shocks" → Enter +2.00 for FY2026 (supply shock)
-2. Open "8. Monetary Policy Rule Shocks" → Enter +1.00 for FY2026-FY2028 (aggressive Fed)
+1. Open "7. Inflation Shocks" -> Enter +2.00 for FY2026 (supply shock)
+2. Open "8. Monetary Policy Rule Shocks" -> Enter +1.00 for FY2026-FY2028 (aggressive Fed)
 3. Click "Run Simulation"
 
 **Expected Results:**
 - Inflation spike in FY2026, then rapid return to target
 - Output gap falls (sacrifice ratio)
 - Unemployment rises
-- If credible, expectations anchor → smaller output loss
+- If credible, expectations anchor -> smaller output loss
 
 ### Example 4: Population Aging Effects
 
 **Research Question:** What are macro impacts of slower labor force growth?
 
 **Setup:**
-1. Open "1. Labor Force Growth" → Enter -0.50 for all years (demographic headwind)
+1. Open "1. Labor Force Growth" -> Enter -0.50 for all years (demographic headwind)
 2. Click "Run Simulation"
 
 **Expected Results:**
 - Potential GDP growth falls by ~0.50pp
 - Real GDP growth slows
 - Debt/GDP rises (denominator effect)
-- r* may fall (model's κ₁ and κ₂ parameters)
+- r* may fall (model's `kappa_1` and `kappa_2` parameters)
 - Neutral policy rate declines
 
 ---
@@ -606,7 +573,7 @@ FY2032-FY2035: 0.00
 ## Technical Requirements
 
 ### R Version
-- R ≥ 4.0.0 recommended
+- R >= 4.0.0 recommended
 - Developed and tested on R 4.3+
 
 ### Required Packages
@@ -619,7 +586,6 @@ install.packages(c(
   "DT",             # Interactive tables
   "openxlsx",       # Excel export
   "shinyjs",        # JavaScript utilities
-  "rhandsontable",  # Editable tables
   "dplyr",          # Data manipulation
   "nleqslv"         # Equation solver
 ))
@@ -628,7 +594,7 @@ install.packages(c(
 ### Performance
 
 **Typical simulation:** 1-3 seconds
-**Horizon:** 2-10 years supported
+**Horizon:** Fixed 10-year simulation (FY2026-FY2035)
 **Memory usage:** < 50 MB
 **Browser compatibility:** Chrome, Firefox, Safari, Edge (modern versions)
 
@@ -731,7 +697,6 @@ plot(data$d_xgap, type = "l", main = "Output Gap Deviation")
 
 **Slow response**
 - Close unused browser tabs
-- Reduce simulation horizon (Settings panel)
 - Restart R session to clear memory
 - Collapse unused input panels
 
@@ -751,9 +716,9 @@ plot(data$d_xgap, type = "l", main = "Output Gap Deviation")
 ### Input Design
 
 1. **Use realistic magnitudes:** Extreme shocks may exceed model validity
-   - Fiscal: ±2-3% of GDP typical
-   - Interest rates: ±1-2 percentage points typical
-   - Growth: ±0.5-1.0 percentage points typical
+   - Fiscal: +/- 2-3% of GDP typical
+   - Interest rates: +/- 1-2 percentage points typical
+   - Growth: +/- 0.5-1.0 percentage points typical
 2. **Consider persistence:** Permanent vs. temporary shocks have very different effects
 3. **Think about timing:** Front-loaded vs. back-loaded fiscal paths matter
 4. **Verify levels:** Check "User Level" row to ensure combined values make sense
@@ -765,7 +730,7 @@ plot(data$d_xgap, type = "l", main = "Output Gap Deviation")
 3. **Watch for dynamics:** Effects persist beyond shock duration
 4. **Consider credibility:** Model assumes expectations are model-consistent
 5. **Assess realism:** Very large multipliers may indicate model limitations
-6. **Check all channels:** Fiscal → Output → Inflation → Fed → Interest rates → Debt
+6. **Check all channels:** Fiscal -> Output -> Inflation -> Fed -> Interest rates -> Debt
 
 ### Presenting Findings
 
@@ -842,13 +807,13 @@ A: Use negative Output Gap Shock and/or negative Productivity Growth. Or use Fed
 A: If growth response (numerator effect) exceeds deficit increase (denominator effect). Depends on multipliers and time horizon.
 
 **Q: Can I modify the Taylor rule parameters?**
-A: Yes, but requires editing `model/v1_8/parameters.R` file (μ₁, μ₂, μ₃ parameters)
+A: Yes, but requires editing `model/v1_8/parameters.R` file (`mu_1`, `mu_2`, `mu_3` parameters)
 
 **Q: What determines the fiscal multiplier?**
-A: Fed response, automatic stabilizers (ψ₁), debt feedback (ψ₂), openness, timing, and expectations
+A: Fed response, automatic stabilizers (`psi_1`), debt feedback (`psi_2`), openness, timing, and expectations
 
 **Q: How is r* determined in the model?**
-A: Endogenously responds to potential growth (κ₁, κ₂) and debt/GDP (κ₃), plus direct r* shocks
+A: Endogenously responds to potential growth (`kappa_1`, `kappa_2`) and debt/GDP (`kappa_3`), plus direct r* shocks
 
 ---
 

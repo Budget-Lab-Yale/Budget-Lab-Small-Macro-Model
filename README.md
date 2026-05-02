@@ -21,7 +21,7 @@ The Budget Lab's Small Macro Model (BLSMM) is a calibrated structural macroecono
 
 ### Installation
 
-**1. Install R** (version ≥ 4.0.0) - Download from: <https://cran.r-project.org/>
+**1. Install R** (version >= 4.0.0) - Download from: <https://cran.r-project.org/>
 
 **2. Install Required Packages**
 
@@ -34,8 +34,7 @@ install.packages(c(
   "plotly",         # Interactive charts
   "DT",             # Interactive tables
   "openxlsx",       # Excel export
-  "shinyjs",        # JavaScript utilities
-  "rhandsontable"   # Editable tables
+  "shinyjs"         # JavaScript utilities
 ))
 ```
 
@@ -63,41 +62,41 @@ The application will open instantly in your web browser thanks to baseline cachi
 
 ```
 Small Macro Model/
-├── app.R                          # Main Shiny app launcher
-├── cache_baseline.R               # Baseline pre-computation script
-├── README.md                      # This file
-├── app/                           # Shiny app components
-│   └── R/
-│       ├── blsmm_ui.R             # User interface definition
-│       ├── blsmm_server.R         # Server logic (with caching)
-│       ├── blsmm_plots_v1_8.R     # All 13 dashboard charts
-│       └── blsmm_helpers.R        # Helper functions
-├── model/
-│   └── v1_8/                      # Core model implementation
-│       ├── simulation.R           # Main simulation engine
-│       ├── solver.R               # Equation solver
-│       ├── equations.R            # Core equations
-│       ├── parameters.R           # Model parameters (39 total)
-│       ├── debt_proxy.R           # Debt dynamics
-│       ├── forcing.R              # Forcing variables
-│       ├── neutral_rate.R         # Endogenous r* calculations
-│       ├── presim_block.R         # Pre-simulation setup
-│       └── user_deltas.R          # User input handling
-├── data/                          # Model data files
-│   ├── blsmm_v1_8_baseline_solution.csv
-│   ├── blsmm_v1_8_forecast_exog.csv
-│   ├── blsmm_v1_8_forecast_resid.csv
-│   └── blsmm_v1_8_historical.csv
-├── tests/
-│   ├── test_baseline_validation.R
-│   ├── test_shock_scenarios.R
-│   └── v1_8/
-│       ├── test_baseline_replication_v1_8.R
-│       ├── test_model_functionality_v1_8.R
-│       └── test_lfpr_conversion.R
-└── docs/
-    ├── README_App.md              # Application user guide
-    └── README_Model.md            # Complete model documentation
+|-- app.R                          # Main Shiny app launcher
+|-- cache_baseline.R               # Baseline pre-computation script
+|-- README.md                      # This file
+|-- app/                           # Shiny app components
+|   `-- R/
+|       |-- blsmm_ui.R             # User interface definition
+|       |-- blsmm_server.R         # Server logic (with caching)
+|       |-- blsmm_plots_v1_8.R     # All 12 dashboard charts
+|       `-- blsmm_helpers.R        # Helper functions
+|-- model/
+|   `-- v1_8/                      # Core model implementation
+|       |-- simulation.R           # Main simulation engine
+|       |-- solver.R               # Equation solver
+|       |-- equations.R            # Core equations
+|       |-- parameters.R           # Model parameters (39 total)
+|       |-- debt_proxy.R           # Debt dynamics
+|       |-- forcing.R              # Forcing variables
+|       |-- neutral_rate.R         # Endogenous r* calculations
+|       |-- presim_block.R         # Pre-simulation setup
+|       `-- user_deltas.R          # User input handling
+|-- data/                          # Model data files
+|   |-- blsmm_v1_8_baseline_solution.csv
+|   |-- blsmm_v1_8_forecast_exog.csv
+|   |-- blsmm_v1_8_forecast_resid.csv
+|   `-- blsmm_v1_8_historical.csv
+|-- tests/
+|   |-- test_baseline_validation.R
+|   |-- test_shock_scenarios.R
+|   `-- v1_8/
+|       |-- test_baseline_replication_v1_8.R
+|       |-- test_model_functionality_v1_8.R
+|       `-- test_lfpr_conversion.R
+`-- docs/
+    |-- README_App.md              # Application user guide
+    `-- README_Model.md            # Complete model documentation
 ```
 
 ------------------------------------------------------------------------
@@ -110,9 +109,9 @@ Small Macro Model/
 
 **Fiscal Block:** - Government budget identity - Debt dynamics with fiscal feedback - Net interest payments - Primary balance tracking - Real GDP growth decomposition
 
-\*\*Neutral Rate Block (Endogenous r\*):\*\* - r\* responds to potential growth (κ₁, κ₂ parameters) - r\* responds to debt/GDP ratio (κ₃ parameter) - Gradual adjustment dynamics
+**Neutral Rate Block (Endogenous r\*):** - r\* responds to potential growth (`kappa_1`, `kappa_2` parameters) - r\* responds to debt/GDP ratio (`kappa_3` parameter) - Gradual adjustment dynamics
 
-**Fiscal Feedback Mechanisms:** - Outlays respond to unemployment gap (ψ₁ parameter) - Outlays respond to debt/GDP (ψ₂ parameter) - Automatic stabilizers and debt sustainability
+**Fiscal Feedback Mechanisms:** - Outlays respond to unemployment gap (`psi_1` parameter) - Outlays respond to debt/GDP (`psi_2` parameter) - Automatic stabilizers and debt sustainability
 
 ### Policy Analysis Capabilities
 
@@ -151,7 +150,7 @@ Small Macro Model/
 
 ### Dashboard Features
 
-**13 Real-Time Charts:** 1. Unemployment rate (%) 2. Inflation rate (%) 3. Real GDP indexed (FY2025=100) 4. 10-year Treasury yield (%) - 4 series 5. Federal Funds rate (%) - 4 series 6. Budget balance (% of nominal GDP) 7. Debt (% of GDP) 8. Average interest rate on federal debt (%) 9. Total Receipts (% of nominal GDP) 10. Total Outlays (% of nominal GDP) 11. Primary Outlays (% of nominal GDP) 12. Real GDP growth (%) 13. Primary balance (% of nominal GDP)
+**12 Real-Time Charts:** 1. Unemployment rate (%) 2. Inflation rate (%) 3. 10-year Treasury yield (%) - 4 series 4. Federal Funds rate (%) - 4 series 5. Budget balance (% of nominal GDP) 6. Debt (% of GDP) 7. Average interest rate on federal debt (%) 8. Total Receipts (% of nominal GDP) 9. Total Outlays (% of nominal GDP) 10. Primary Outlays (% of nominal GDP) 11. Real GDP growth (%) 12. Primary balance (% of nominal GDP)
 
 **8 Deviation Charts:** 1. Budget Balance deviation 2. Unemployment deviation 3. Real GDP growth deviation 4. Inflation deviation 5. Debt/GDP deviation 6. Federal Funds rate deviation 7. 10-Year Treasury yield deviation 8. Primary Balance deviation
 
@@ -163,7 +162,7 @@ Small Macro Model/
 
 ### 1. Fiscal Policy Analysis
 
-**Questions BLSMM Can Answer:** - What is the output impact of a tax cut or spending increase? - How does fiscal consolidation affect unemployment? - What are the debt sustainability implications of policy changes? - How do fiscal multipliers vary with Fed response and fiscal feedback? - How does automatic stabilization work through ψ₁ and ψ₂?
+**Questions BLSMM Can Answer:** - What is the output impact of a tax cut or spending increase? - How does fiscal consolidation affect unemployment? - What are the debt sustainability implications of policy changes? - How do fiscal multipliers vary with Fed response and fiscal feedback? - How does automatic stabilization work through `psi_1` and `psi_2`?
 
 **Example Scenarios:** - Analyze 1% of GDP tax cut with endogenous r\* response - Model gradual fiscal consolidation with debt feedback - Assess infrastructure spending with productivity spillovers
 
@@ -191,7 +190,7 @@ Perfect for: - Macro courses (undergraduate/graduate) - Policy analysis training
 
 ### System Requirements
 
-**Software:** - R ≥ 4.0.0 - RStudio (recommended, not required) - Modern web browser (Chrome, Firefox, Safari, Edge)
+**Software:** - R >= 4.0.0 - RStudio (recommended, not required) - Modern web browser (Chrome, Firefox, Safari, Edge)
 
 **Hardware:** - Any standard desktop or laptop - 4GB RAM recommended - No GPU required
 
@@ -201,7 +200,7 @@ Perfect for: - Macro courses (undergraduate/graduate) - Policy analysis training
 
 **Core Packages:** - `nleqslv` - Nonlinear equation solver - `dplyr` - Data manipulation
 
-**App Packages:** - `shiny` - Web application framework - `bslib` - Modern UI themes - `plotly` - Interactive visualization - `DT` - Data tables - `openxlsx` - Excel export - `shinyjs` - JavaScript utilities - `rhandsontable` - Editable tables
+**App Packages:** - `shiny` - Web application framework - `bslib` - Modern UI themes - `plotly` - Interactive visualization - `DT` - Data tables - `openxlsx` - Excel export - `shinyjs` - JavaScript utilities
 
 All packages available on CRAN.
 
@@ -229,20 +228,20 @@ All packages available on CRAN.
 
 -   **Budget Identity:** D(t) = D(t-1) - BUD(t)
 -   **Primary Balance:** BUDP = Receipts - Primary Outlays
--   **Net Interest:** NI = average_debt × effective_rate
+-   **Net Interest:** NI = average_debt * effective_rate
 -   **Debt Dynamics:** Closed-form solution with simultaneity
 -   **Fiscal Feedback:** Outlays = f(unemployment_gap, debt/GDP)
 
 ### Neutral Rate Block (r\*)
 
--   **Potential Growth Channel:** r\* = κ₁ × g\* + κ₂ × Δg\*
--   **Debt Channel:** r\* adjustment based on D/GDP via κ₃
+-   **Potential Growth Channel:** r\* = `kappa_1` * g\* + `kappa_2` * delta_g\*
+-   **Debt Channel:** r\* adjustment based on D/GDP via `kappa_3`
 -   **Gradual Adjustment:** Smooth transition to new equilibrium
 -   **Fed Funds Response:** Taylor rule uses endogenous r\*
 
 ### Parameters (39 total)
 
-Key parameters include: - **Macro dynamics:** η (persistence), σ₀ (interest sensitivity), θ₁,θ₂ (fiscal multipliers) - **Labor market:** α₁,α₂ (Okun coefficients), UN (natural rate) - **Inflation:** γ₁ (persistence), γ₂ (Phillips slope) - **Monetary policy:** μ₁,μ₂,μ₃ (Taylor rule coefficients) - **Neutral rate:** κ₁,κ₂ (growth response), κ₃ (debt response) - **Fiscal feedback:** ψ₁ (stabilization), ψ₂ (debt sustainability)
+Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (stabilization), `psi_2` (debt sustainability)
 
 See `model/v1_8/parameters.R` for complete list with documentation.
 

@@ -11,10 +11,20 @@ library(dplyr)  # for bind_rows
 gather_var <- function(results, var = NULL, transform = NULL) {
   years <- 2025:2035
   # Load historical data (use read.csv for compatibility)
+  stopifnot(file.exists("data/blsmm_v1_8_historical.csv"))
   hist_data <- read.csv("data/blsmm_v1_8_historical.csv",
                         stringsAsFactors = FALSE, check.names = FALSE)
+  # FY2025 real GDP anchor ($B, 2017 dollars).
+  # Used to compute FY2026 real GDP growth for plotting.
+  # Source: data/blsmm_v1_8_historical.csv
+  # Update by re-running cache_baseline.R after any
+  # historical data revision.
+  fy2025_gdp <- hist_data$GDP[hist_data[[1]] == 2025]
+  if (length(fy2025_gdp) == 0 || is.na(fy2025_gdp)) {
+    stop("FY2025 real GDP not found in blsmm_v1_8_historical.csv")
+  }
   hist <- tail(hist_data, 1)
-  hist$GDP <- 23733.13
+  hist$GDP <- fy2025_gdp
   hist$D_pct_GDP <- hist$D / hist[["GDP$"]] * 100
   rows <- lapply(names(results), function(nm) {
     r <- bind_rows(hist,results[[nm]])

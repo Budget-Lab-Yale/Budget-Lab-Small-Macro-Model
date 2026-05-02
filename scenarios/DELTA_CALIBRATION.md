@@ -10,7 +10,7 @@ The AI scenario analysis uses policy "deltas" (deviations from baseline) based o
 
 All scenarios are based on **Karger et al. (rapid AI adoption, 50th percentile)**:
 
-- **S1:** Productivity only (+1.5-1.8 pp TFP growth)
+- **S1:** Productivity only (+0.78-1.11 pp TFP growth)
 - **S2:** S1 + labor force participation decline (LFPR to 59.3% by FY2030)
 - **S3a:** S2 + UI outlays increase (displacement effects)
 - **S3b:** S2 + SS/Medicare outlays increase (early retirement)
@@ -23,8 +23,8 @@ All scenarios are based on **Karger et al. (rapid AI adoption, 50th percentile)*
 **Units:** Percentage points added to baseline TFP growth
 
 ```r
-user_delta_prod = c(1.60, 1.50, 1.50, 1.60, 1.60,
-                    1.70, 1.70, 1.80, 1.80, 1.80)
+user_delta_prod = c(0.90, 0.78, 0.81, 0.88, 0.93,
+                    1.00, 1.04, 1.07, 1.09, 1.11)
 ```
 
 These values directly implement Karger et al.'s productivity assumptions.
@@ -36,21 +36,21 @@ These values directly implement Karger et al.'s productivity assumptions.
 ### Labor Force Calibration
 
 **Target:** 59.3% LFPR by **FY2030** (matching Karger et al.)
-**Source:** Internal LFPR calibration file, "LF Growth Delta (pp)" column
-**Method:** Calibrated to achieve target LFPR at FY2030 and hold flat through FY2035
+**Source:** Corrected internal LFPR calibration file, "LF Growth Delta (pp)" column
+**Method:** Calibrated to achieve target LFPR at FY2030 and hold flat through FY2035, using the corrected CY to FY conversion now reflected in the scenario files
 
 ```r
 # Labor force growth deltas (percentage points)
-user_delta_lf = c(-0.970721149839408,
-                  -0.9754136575901038,
-                  -0.9805932852958139,
-                  -0.9796612370806357,
-                  -0.9897753880747566,
-                   0.09195901775637783,
-                   0.08816839320827746,
-                   0.0715411112743643,
-                   0.031805969525750266,
-                  -0.001241724459414617)
+user_delta_lf = c(-0.519291223,
+                  -0.517304306,
+                  -0.514715591,
+                  -0.505703745,
+                  -0.507477379,
+                  -0.427200888,
+                  -0.391830856,
+                  -0.372017336,
+                  -0.377888501,
+                  -0.379559281)
 ```
 
 **Verified LFPR path:**
@@ -67,15 +67,15 @@ user_delta_lf = c(-0.970721149839408,
 
 **Key insights:**
 - LFPR hits ~59.3% at FY2030, correctly matching Karger's specification
-- The small positive values in FY2031-2034 are needed to hold LFPR flat
-- While population grows ~0.4-0.5% per year, the labor force must grow at roughly that same rate to maintain a constant LFPR
+- These are all negative deltas, but they become less negative after FY2030 as the path transitions from decline to a flat LFPR target
+- The corrected calibration reaches the target on time; it replaces an earlier version that hit the target too late in the forecast window
 
 ### Implementation Details
 
 The calibration produces the following dynamics:
 - The negative values FY2026-2030 drive LFPR down from 62.5% to 59.2%
-- The small positive values FY2031-2034 maintain flat LFPR despite population growth
-- The labor force must grow at roughly the population growth rate to maintain constant LFPR
+- The smaller negative values FY2031-FY2035 maintain a flat LFPR path near 59.2%
+- This path is the shipped FY-converted implementation used in `ai_s2_prod_lf.R`, `ai_s3a_prod_lf_ui.R`, and `ai_s3b_prod_lf_ssmc.R`
 
 ---
 
@@ -84,20 +84,20 @@ The calibration produces the following dynamics:
 ### Outlay Impacts
 
 **Source:** Internal analysis of AI displacement effects
-**Units:** Percentage points of GDP
+**Units:** Percentage points of GDP (already converted in the scenario files)
 
 The model implements two types of outlay impacts from AI-driven labor displacement:
 
 ```r
 # S3a: Unemployment insurance impacts (percentage points of GDP)
-user_delta_rgfop = c(0.000288, 0.000558, 0.000806, 0.001033, 0.001245,
-                     0.001181, 0.001121, 0.001068, 0.001026, 0.000993) * 100
-# Values: 0.0288 pp, 0.0558 pp, ..., up to 0.1245 pp at peak
+user_delta_rgfop = c(0.015184772, 0.029548841, 0.042705794, 0.054612224, 0.065642422,
+                     0.073886962, 0.080655349, 0.086440070, 0.091878642, 0.096886197)
+# Values: 0.0152 pp, 0.0295 pp, ..., up to 0.0969 pp by FY2035
 
 # S3b: Social Security and Medicare impacts (percentage points of GDP)
-user_delta_rgfop = c(0.002200, 0.004255, 0.006149, 0.007887, 0.009501,
-                     0.009012, 0.008555, 0.008150, 0.007830, 0.007576) * 100
-# Values: 0.2200 pp, 0.4255 pp, ..., up to 0.9501 pp at peak
+user_delta_rgfop = c(0.115879477, 0.225495918, 0.325900512, 0.416761993, 0.500936683,
+                     0.563853204, 0.615504756, 0.659649669, 0.701153020, 0.739367151)
+# Values: 0.1159 pp, 0.2255 pp, ..., up to 0.7394 pp by FY2035
 ```
 
 **Impact on debt dynamics:**
@@ -110,10 +110,10 @@ user_delta_rgfop = c(0.002200, 0.004255, 0.006149, 0.007887, 0.009501,
 
 | Delta Type | Source | Values | Units | Impact |
 |-----------|---------|---------|-------|---------|
-| **Productivity** | Karger Table 25 | 1.5-1.8 pp | TFP growth | Higher GDP growth |
-| **Labor Force** | Internal LFPR calibration | -0.97 to +0.09 pp | LF growth | LFPR to 59.3% by FY2030 |
-| **UI Outlays** | Internal displacement analysis | 0.029-0.125 pp | % of GDP | S3a scenario |
-| **SS/Medicare Outlays** | Internal displacement analysis | 0.22-0.95 pp | % of GDP | S3b scenario |
+| **Productivity** | Karger Table 25 | 0.78-1.11 pp | TFP growth | Higher GDP growth |
+| **Labor Force** | Corrected LFPR calibration | -0.519 to -0.372 pp | LF growth | LFPR to 59.3% by FY2030 |
+| **UI Outlays** | Internal displacement analysis | 0.015-0.097 pp | % of GDP | S3a scenario |
+| **SS/Medicare Outlays** | Internal displacement analysis | 0.116-0.739 pp | % of GDP | S3b scenario |
 
 ---
 
@@ -154,6 +154,9 @@ user_delta_rgfop = c(paper_values) * 100
 
 # If values from paper are already percentage points:
 user_delta_rgfop = c(paper_values)  # No conversion needed
+
+# The current shipped AI scenario files already store rgfop deltas
+# in percentage points of GDP, so no additional conversion is applied.
 ```
 
 ---
@@ -178,5 +181,5 @@ source("scenarios/make_all_figures.R")
 
 ---
 
-**Last updated:** 2026-04-20
+**Last updated:** 2026-05-02
 **Status:** All deltas calibrated and verified

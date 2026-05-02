@@ -72,13 +72,84 @@ if (min(delta(inflation, baseline, "xgap")) >= -0.3) fail("inflation residual sh
 pass("inflation rises and output gap falls")
 
 cat("\nTest 5: Term-premium shock through tp_0 override\n")
-term <- run_with_deltas(
-  "term_premium_shock",
-  exog_override = list(tp_0 = baseline$tp_0 + c(0, 0.5, 0.5, 0.5, rep(0, 6)))
+source("model/v1_8/simulation.R")
+N_PERIODS <- 10
+baseline_exog  <- read.csv("data/blsmm_v1_8_forecast_exog.csv", check.names = FALSE)
+baseline_resid <- read.csv("data/blsmm_v1_8_forecast_resid.csv", check.names = FALSE)
+hist_data      <- read.csv("data/blsmm_v1_8_historical.csv", check.names = FALSE)
+
+baseline_result <- simulate_blsmm_v1_8(
+  n_periods          = N_PERIODS,
+  baseline_exog      = baseline_exog,
+  baseline_resid     = baseline_resid,
+  hist_data          = hist_data,
+  user_deltas        = NULL,
+  forcing_spec       = NULL,
+  params             = NULL,
+  expectations_speed = FALSE,
+  verbose            = FALSE
 )
-if (max(delta(term, baseline, "R10")) <= 0.3) fail("term-premium shock did not raise 10-year yield")
-if (min(delta(term, baseline, "xgap")) >= -0.1) fail("term-premium shock did not reduce output gap")
-pass("10-year yield rises and output gap falls")
+
+# Apply +0.5pp tp_0 shock via exog_override, preserving tp_0_base
+# so the gap is correctly computed (same mechanism as run_scenario.R)
+exog_tp              <- baseline_exog
+tp0_original         <- baseline_exog$tp_0
+exog_tp$tp_0         <- baseline_exog$tp_0 + 0.5
+exog_tp$tp_0_base    <- tp0_original
+
+tp_result <- simulate_blsmm_v1_8(
+  n_periods          = N_PERIODS,
+  baseline_exog      = exog_tp,
+  baseline_resid     = baseline_resid,
+  hist_data          = hist_data,
+  user_deltas        = NULL,
+  forcing_spec       = NULL,
+  params             = NULL,
+  expectations_speed = FALSE,
+  verbose            = FALSE
+)
+
+r10_diffs  <- tp_result$R10       - baseline_result$R10
+xgap_diffs <- tp_result$xgap      - baseline_result$xgap
+debt_diffs <- tp_result$D_pct_GDP - baseline_result$D_pct_GDP
+
+# INTENTIONAL MODEL BEHAVIOR (per alternate-scenarios article footnote):
+# "In BLSMM, potential GDP growth is unaffected by the term premium
+#  increase and the Federal Reserve offsets the effects of the higher
+#  term premium on the output gap."
+# A +0.5pp tp_0 shock raises rbar10 by +0.5pp as well, so the
+# real-rate gap (R10 - PIE - rbar10) is unchanged and xgap stays
+# at numerical zero. This is by design, not a bug.
+
+# R10 should rise by approximately the shock size in all periods
+if (!all(r10_diffs > 0.3)) {
+  fail("term-premium shock did not raise R10")
+}
+if (!(r10_diffs[1] > 0.4 && r10_diffs[1] < 0.6)) {
+  fail(sprintf("FY2026 R10 lift should be ~0.5pp, got %.4f", r10_diffs[1]))
+}
+
+# xgap should be essentially unchanged (within floating-point noise)
+if (max(abs(xgap_diffs)) > 1e-4) {
+  fail(sprintf(
+    "term-premium shock unexpectedly moved xgap: max|diff|=%.2e",
+    max(abs(xgap_diffs))
+  ))
+}
+
+# Debt/GDP should be persistently higher than baseline and compounding
+if (!all(debt_diffs > 0)) {
+  fail("term-premium shock should worsen debt trajectory in all years")
+}
+if (!(debt_diffs[10] > debt_diffs[1])) {
+  fail("debt/GDP gap should compound over time")
+}
+
+cat(sprintf("  PASS: R10 rises +%.3fpp (FY2026), xgap unchanged",
+            r10_diffs[1]))
+cat(sprintf(" (max|diff|=%.1e),", max(abs(xgap_diffs))))
+cat(sprintf(" Debt/GDP +%.3fpp (FY2026) to +%.3fpp (FY2035)\n",
+            debt_diffs[1], debt_diffs[10]))
 
 cat("\nTest 6: Combined fiscal and inflation shocks\n")
 combined <- run_with_deltas(

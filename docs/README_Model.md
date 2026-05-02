@@ -65,21 +65,21 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 - Net interest payments
 
 **3. Neutral Rate Block**
-- r* responds to potential growth changes (κ₁, κ₂)
-- r* responds to debt/GDP ratio (κ₃)
+- r* responds to potential growth changes (`kappa_1`, `kappa_2`)
+- r* responds to debt/GDP ratio (`kappa_3`)
 - Smooth adjustment to new equilibrium
 
 ### Computational Flow
 
 ```
 1. Pre-simulation block runs first
-   ↓ Computes potential GDP, primary balance, fiscal feedback
+   -> Computes potential GDP, primary balance, fiscal feedback
 
 2. Main solver loop for each period
-   ↓ Solves 9 simultaneous equations
+   -> Solves 9 simultaneous equations
 
 3. Post-simulation calculations
-   ↓ Computes derived variables, ratios, growth rates
+   -> Computes derived variables, ratios, growth rates
 ```
 
 ---
@@ -89,25 +89,25 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 ### 1. Output Gap (Aggregate Demand)
 
 ```
-xgap(t) = η·xgap(t-1) + η₂·xgap(t-2) + ... + η₈·xgap(t-8)
-          - σ₀·(real_r10(t) - r10bar(t))
-          - θ₁·Δrbudp_star(t) - θ₂·Δrbudp_star(t-1) + ε_xgap(t)
+xgap(t) = eta*xgap(t-1) + eta_2*xgap(t-2) + ... + eta_8*xgap(t-8)
+          - sigma_0*(real_r10(t) - r10bar(t))
+          - theta_1*Delta_rbudp_star(t) - theta_2*Delta_rbudp_star(t-1) + eps_xgap(t)
 ```
 
 **Interpretation:**
-- Output gap persists (distributed lags η₁ through η₈)
-- Higher real long-term rates reduce demand (σ₀ sensitivity)
-- Fiscal tightening (Δrbudp_star > 0) is contractionary (θ₁, θ₂ multipliers)
+- Output gap persists (distributed lags eta_1 through eta_8)
+- Higher real long-term rates reduce demand (sigma_0 sensitivity)
+- Fiscal tightening (Delta_rbudp_star > 0) is contractionary (theta_1, theta_2 multipliers)
 
 **Key Parameters:**
-- η₁-η₈: Distributed lag coefficients (sum to persistence)
-- σ₀ = 2.0: Interest rate sensitivity
-- θ₁ = 1.0, θ₂ = 1.0: Fiscal multipliers
+- eta_1-eta_8: Distributed lag coefficients (sum to persistence)
+- sigma_0 = 2.0: Interest rate sensitivity
+- theta_1 = 1.0, theta_2 = 1.0: Fiscal multipliers
 
 ### 2. Unemployment (Okun's Law)
 
 ```
-U(t) = UN(t) - α₁·xgap(t) - α₂·xgap(t-1) + ε_u(t)
+U(t) = UN(t) - alpha_1*xgap(t) - alpha_2*xgap(t-1) + eps_u(t)
 ```
 
 **Interpretation:**
@@ -116,13 +116,13 @@ U(t) = UN(t) - α₁·xgap(t) - α₂·xgap(t-1) + ε_u(t)
 - Distributed lag structure (current + 1 lag)
 
 **Key Parameters:**
-- α₁ = 0.45: Current output gap effect
-- α₂ = 0.15: Lagged output gap effect
+- alpha_1 = 0.45: Current output gap effect
+- alpha_2 = 0.15: Lagged output gap effect
 
 ### 3. Inflation (Phillips Curve)
 
 ```
-PI(t) = γ₁·PI(t-1) + (1-γ₁)·PIE(t-1) + γ₂·ugap(t) + ε_pi(t)
+PI(t) = gamma_1*PI(t-1) + (1-gamma_1)*PIE(t-1) + gamma_2*ugap(t) + eps_pi(t)
 
 where: ugap(t) = U(t) - UN(t)
 ```
@@ -133,70 +133,70 @@ where: ugap(t) = U(t) - UN(t)
 - Tight labor markets (ugap < 0) raise inflation
 
 **Key Parameters:**
-- γ₁ = 0.5: Inflation persistence
-- γ₂ = 0.4: Phillips curve slope
+- gamma_1 = 0.5: Inflation persistence
+- gamma_2 = 0.4: Phillips curve slope
 
 ### 4. Inflation Expectations
 
 ```
-PIE(t) = λ₁·PIE(t-1) + λ₂·PI(t) + λ₃·PISTAR(t) + ε_pie(t)
+PIE(t) = lambda_1*PIE(t-1) + lambda_2*PI(t) + lambda_3*PISTAR(t) + eps_pie(t)
 ```
 
 **Interpretation:**
-- Adaptive component: λ₁·PIE(t-1) (past expectations)
-- Learning from data: λ₂·PI(t) (current inflation)
-- Anchoring: λ₃·PISTAR(t) (central bank target)
+- Adaptive component: lambda_1*PIE(t-1) (past expectations)
+- Learning from data: lambda_2*PI(t) (current inflation)
+- Anchoring: lambda_3*PISTAR(t) (central bank target)
 
 **Key Parameters:**
-- λ₁ = 0.7: Expectations persistence
-- λ₂ = 0.2: Weight on current inflation
-- λ₃ = 0.1: Weight on target
+- lambda_1 = 0.7: Expectations persistence
+- lambda_2 = 0.2: Weight on current inflation
+- lambda_3 = 0.1: Weight on target
 
 ### 5. Federal Funds Rate (Taylor Rule)
 
 ```
-RF(t) = rfstar(t) + PIE(t) + μ₁·(PI(t) - PISTAR(t))
-        + μ₂·(PIE(t) - PISTAR(t)) + μ₃·ugap(t) + ε_rf(t)
+RF(t) = rfstar(t) + PIE(t) + mu_1*(PI(t) - PISTAR(t))
+        + mu_2*(PIE(t) - PISTAR(t)) + mu_3*ugap(t) + eps_rf(t)
 ```
 
 **Interpretation:**
 - Neutral real rate rfstar(t) is **endogenous** (from neutral rate block)
-- Fed responds to inflation deviations (μ₁, μ₂)
-- Fed responds to unemployment gap (μ₃)
+- Fed responds to inflation deviations (mu_1, mu_2)
+- Fed responds to unemployment gap (mu_3)
 - Fisher equation: nominal = real + expected inflation
 
 **Key Parameters:**
-- μ₁ = 1.0: Response to current inflation deviation
-- μ₂ = 0.0: Response to expected inflation deviation
-- μ₃ = 1.0: Response to unemployment gap
+- mu_1 = 1.0: Response to current inflation deviation
+- mu_2 = 0.0: Response to expected inflation deviation
+- mu_3 = 1.0: Response to unemployment gap
 
 ### 6. Expected Federal Funds (10-Year)
 
 ```
-MPE(t) = φ₁·RF(t) + (1-φ₁)·[rfstar(t) + PIE(t) + φ₂·(PIE(t) - PISTAR(t))] + ε_mpe(t)
+MPE(t) = phi_1*RF(t) + (1-phi_1)*[rfstar(t) + PIE(t) + phi_2*(PIE(t) - PISTAR(t))] + eps_mpe(t)
 ```
 
 **Interpretation:**
 - Weighted average of current policy rate and long-run anchor
 - Long-run anchor includes endogenous r* and expected inflation
-- φ₂ captures additional inflation expectations adjustment
+- phi_2 captures additional inflation expectations adjustment
 
 **Key Parameters:**
-- φ₁ = 0.25: Weight on current fed funds
-- φ₂ = 0.25: Inflation expectations adjustment
+- phi_1 = 0.25: Weight on current fed funds
+- phi_2 = 0.25: Inflation expectations adjustment
 
 ### 7. Term Premium
 
 ```
-TP(t) = tp₀ + ε_tp(t)
+TP(t) = tp_0 + eps_tp(t)
 ```
 
 **Interpretation:**
-- Constant baseline term premium tp₀
-- Shocks ε_tp(t) capture risk premium changes
+- Constant baseline term premium tp_0
+- Shocks eps_tp(t) capture risk premium changes
 
 **Key Parameters:**
-- tp₀ = 0.8: Baseline term premium (pp)
+- tp_0 = 0.8: Baseline term premium (pp)
 
 ### 8. 10-Year Treasury Yield
 
@@ -211,7 +211,7 @@ R10(t) = MPE(t) + TP(t)
 ### 9. Effective Interest Rate on Debt
 
 ```
-RG(t) = δ₁·RG(t-1) + (1-δ₁)·[δ₂·RF(t) + (1-δ₂)·R10(t)] + ε_rg(t)
+RG(t) = delta_1*RG(t-1) + (1-delta_1)*[delta_2*RF(t) + (1-delta_2)*R10(t)] + eps_rg(t)
 ```
 
 **Interpretation:**
@@ -220,8 +220,8 @@ RG(t) = δ₁·RG(t-1) + (1-δ₁)·[δ₂·RF(t) + (1-δ₂)·R10(t)] + ε_rg(t
 - Gradual adjustment to current market conditions
 
 **Key Parameters:**
-- δ₁ = 0.833: Effective rate smoothing
-- δ₂ = 0.4: Weight on short rate
+- delta_1 = 0.833: Effective rate smoothing
+- delta_2 = 0.4: Weight on short rate
 
 ---
 
@@ -233,61 +233,61 @@ The fiscal block runs in the **pre-simulation phase** to compute potential GDP, 
 
 **1. Labor Force Path**
 ```
-LF(t) = LF(t-1) × (1 + glf(t)/100)
+LF(t) = LF(t-1) * (1 + glf(t)/100)
 ```
 
 **2. Productivity Path**
 ```
-PROD(t) = PROD(t-1) × (1 + gprod(t)/100)
+PROD(t) = PROD(t-1) * (1 + gprod(t)/100)
 ```
 
 **3. Potential GDP**
 ```
-GDP*(t) = LF(t) × PROD(t)
+GDP*(t) = LF(t) * PROD(t)
 ```
 
 **4. Potential GDP Growth**
 ```
-g*(t) = (GDP*(t) - GDP*(t-1)) / GDP*(t-1) × 100
+g*(t) = (GDP*(t) - GDP*(t-1)) / GDP*(t-1) * 100
 ```
 
 **5. Receipts**
 ```
-RECEIPTS(t) = receipts_pct_gdp(t) × GDP$(t) / 100
+RECEIPTS(t) = receipts_pct_gdp(t) * GDP$(t) / 100
 ```
 
 **6. Primary Outlays (with fiscal feedback)**
 ```
-OUTLAYS_PRIMARY(t) = outlays_pct_gdp(t) × GDP$(t) / 100
-                     + ψ₁ × ugap(t) × GDP*(t)
-                     + ψ₂ × D_pct_GDP(t) × GDP*(t)
+OUTLAYS_PRIMARY(t) = outlays_pct_gdp(t) * GDP$(t) / 100
+                     + psi_1 * ugap(t) * GDP*(t)
+                     + psi_2 * D_pct_GDP(t) * GDP*(t)
 ```
 
 Where:
-- ψ₁ < 0: Outlays ratio falls when labor force growth accelerates (negative feedback)
-- ψ₂ < 0: Outlays ratio falls when productivity growth accelerates (negative feedback)
+- psi_1 < 0: Outlays ratio falls when labor force growth accelerates (negative feedback)
+- psi_2 < 0: Outlays ratio falls when productivity growth accelerates (negative feedback)
 
 **7. Primary Balance**
 ```
 BUDP(t) = RECEIPTS(t) - OUTLAYS_PRIMARY(t)
-rbudp_star(t) = BUDP(t) / GDP*(t) × 100
+rbudp_star(t) = BUDP(t) / GDP*(t) * 100
 ```
 
 **8. Debt Dynamics (Closed-Form Solution)**
 
 Given the average-debt specification for net interest:
 ```
-NI(t) = (D(t) + D(t-1))/2 × RG(t)/100
+NI(t) = (D(t) + D(t-1))/2 * RG(t)/100
 ```
 
 The system is solved algebraically:
 
 ```
-D(t) = [(1 + 0.5·r(t)) × D(t-1) - BUDP(t)] / (1 - 0.5·r(t))
+D(t) = [(1 + 0.5*r(t)) * D(t-1) - BUDP(t)] / (1 - 0.5*r(t))
 
-NI(t) = r(t) × [D(t-1) - 0.5·BUDP(t)] / (1 - 0.5·r(t))
+NI(t) = r(t) * [D(t-1) - 0.5*BUDP(t)] / (1 - 0.5*r(t))
 
-BUD(t) = [BUDP(t) - r(t)·D(t-1)] / (1 - 0.5·r(t))
+BUD(t) = [BUDP(t) - r(t)*D(t-1)] / (1 - 0.5*r(t))
 
 where r(t) = RG(t)/100
 ```
@@ -296,7 +296,7 @@ This eliminates simultaneity while preserving the economic structure.
 
 **9. Debt/GDP Ratio**
 ```
-D_pct_GDP(t) = D(t) / GDP$(t) × 100
+D_pct_GDP(t) = D(t) / GDP$(t) * 100
 ```
 
 ---
@@ -308,46 +308,46 @@ The neutral real interest rate (r*) is **endogenous** and responds to economic f
 ### r* Equation
 
 ```
-rfstar(t) = κ₁ × g*(t) + κ₂ × Δg*(t) + κ₃ × f(D_pct_GDP(t)) + rfstar_shock(t)
+rfstar(t) = kappa_1 * g*(t) + kappa_2 * Delta_g*(t) + kappa_3 * f(D_pct_GDP(t)) + rfstar_shock(t)
 ```
 
 Where:
-- **Potential Growth Channel:** κ₁ captures long-run relationship between r* and growth
-- **Growth Change Channel:** κ₂ captures transitional dynamics
-- **Debt Channel:** κ₃ captures fiscal sustainability effects on r*
+- **Potential Growth Channel:** kappa_1 captures long-run relationship between r* and growth
+- **Growth Change Channel:** kappa_2 captures transitional dynamics
+- **Debt Channel:** kappa_3 captures fiscal sustainability effects on r*
 - **Direct Shocks:** rfstar_shock(t) allows user to override
 
 ### Functional Forms
 
 **Potential Growth Response:**
 ```
-κ₁ × g*(t)  where κ₁ > 0
+kappa_1 * g*(t)  where kappa_1 > 0
 ```
-Higher potential growth → higher r*
+Higher potential growth -> higher r*
 
 **Growth Change Response:**
 ```
-κ₂ × Δg*(t)  where κ₂ > 0
+kappa_2 * Delta_g*(t)  where kappa_2 > 0
 ```
-Accelerating growth → temporarily higher r*
+Accelerating growth -> temporarily higher r*
 
 **Debt Response:**
 ```
-κ₃ × f(D_pct_GDP(t))  where κ₃ > 0
+kappa_3 * f(D_pct_GDP(t))  where kappa_3 > 0
 ```
-Higher debt/GDP → higher r* (risk premium channel)
+Higher debt/GDP -> higher r* (risk premium channel)
 
 ### Key Parameters
 
-- κ₁ = 1.0: Long-run r* sensitivity to potential growth
-- κ₂ = 0.5: Transitional r* sensitivity to growth changes
-- κ₃ = 0.01: r* sensitivity to debt/GDP
+- kappa_1 = 1.0: Long-run r* sensitivity to potential growth
+- kappa_2 = 0.5: Transitional r* sensitivity to growth changes
+- kappa_3 = 0.01: r* sensitivity to debt/GDP
 
 ### Economic Interpretation
 
-1. **Growth slowdown** → r* falls → more accommodative monetary policy
-2. **High debt** → r* rises → tighter financial conditions (sustainability constraint)
-3. **Productivity boom** → r* rises → Fed can raise rates without slowing economy
+1. **Growth slowdown** -> r* falls -> more accommodative monetary policy
+2. **High debt** -> r* rises -> tighter financial conditions (sustainability constraint)
+3. **Productivity boom** -> r* rises -> Fed can raise rates without slowing economy
 
 ---
 
@@ -447,7 +447,7 @@ model/v1_8/
 ├── equations.R        # 9 core equations
 ├── parameters.R       # All 39 parameters with documentation
 ├── debt_proxy.R       # Fiscal block and debt dynamics
-├── forcing.R          # Forcing variables (GDP*, r*, etc.)
+├── forcing.R          # Experimental endogenous-variable forcing module
 ├── neutral_rate.R     # Endogenous r* calculations
 ├── presim_block.R     # Pre-simulation setup
 └── user_deltas.R      # User input processing
@@ -481,9 +481,7 @@ model/v1_8/
 - Fiscal feedback calculations
 
 **forcing.R**
-- Computes forcing variables (GDP*, r*, etc.)
-- Called before solver each period
-- Provides context for equation system
+- Experimental module for overriding endogenous variables (xgap, u, pi, rf, etc.) with user-specified paths. See file header for current status and known limitations.
 
 **neutral_rate.R**
 - Endogenous r* calculations

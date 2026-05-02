@@ -1,23 +1,22 @@
 # ==============================================================================
-# BLSMM Dashboard Plots - All 13 Charts
+# BLSMM Dashboard Plots - All 12 Charts
 # ==============================================================================
-# This file contains rendering code for all 13 dashboard charts.
+# This file contains rendering code for all 12 dashboard charts.
 # Charts provide comprehensive visualization of macroeconomic model results.
 #
 # Chart List:
 #  1. Unemployment rate (%)
 #  2. Inflation (%)
-#  3. Real GDP indexed (100 = FY2025) - combo chart
-#  4. 10-year Treasury yield (%) - 4 series
-#  5. Federal Funds rate (%) - 4 series
-#  6. Budget deficit % of nominal GDP
-#  7. Debt % of GDP
-#  8. Average interest rate on federal debt (%) - combo chart
-#  9. Total Receipts, % of nominal GDP
-# 10. Total Outlays, % of nominal GDP
-# 11. Primary Outlays, % of nominal GDP
-# 12. Real GDP growth (bars) - combo chart
-# 13. Primary budget deficit % of nominal GDP
+#  3. 10-year Treasury yield (%) - 4 series
+#  4. Federal Funds rate (%) - 4 series
+#  5. Budget deficit % of nominal GDP
+#  6. Debt % of GDP
+#  7. Average interest rate on federal debt (%) - combo chart
+#  8. Total Receipts, % of nominal GDP
+#  9. Total Outlays, % of nominal GDP
+# 10. Primary Outlays, % of nominal GDP
+# 11. Real GDP growth (bars) - combo chart
+# 12. Primary budget deficit % of nominal GDP
 # ==============================================================================
 
 # Helper function to check if scenario equals baseline (no deltas applied)

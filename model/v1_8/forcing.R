@@ -1,3 +1,35 @@
+# =============================================================
+# FORCING MODULE — EXPERIMENTAL / DORMANT
+# =============================================================
+# This module implements a "forcing" API that allows callers
+# to override specific endogenous variables (xgap, u, pi, pie,
+# rf, mpe10, tp, rg) with user-specified paths.
+#
+# CURRENT STATUS: partially operational but not production-ready.
+#
+# Known incomplete behavior:
+#   recompute_all_residuals() is defined here but is NOT called
+#   by the solver after convergence. This means forced runs do
+#   not store the implied residuals that would produce the forced
+#   path — the returned simulation's residual columns still
+#   reflect the original baseline residuals, not the back-computed
+#   implied residuals.
+#
+# Usage in shipped code:
+#   No shipped code passes a non-NULL forcing_spec. The app,
+#   all scenario input files, all tests, and cache_baseline.R
+#   all pass forcing_spec = NULL.
+#
+# To complete this feature would require:
+#   1. solver.R to call recompute_all_residuals() after
+#      nleqslv() converges, using the converged solution values
+#   2. A decision on the output schema (overwrite original
+#      eps* columns or add eps*_final columns)
+#   3. Tests verifying the implied-residual accounting
+#
+# Do not rely on this module for production runs until the
+# above is resolved.
+# =============================================================
 # ==============================================================================
 # BLSMM Forcing (Override) System
 # ==============================================================================

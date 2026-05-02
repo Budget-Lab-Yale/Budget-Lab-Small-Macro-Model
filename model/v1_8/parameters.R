@@ -1,20 +1,20 @@
 # ==============================================================================
 # BLSMM Parameter Definitions
 # ==============================================================================
-# Defines all 39 calibrated parameters for the structural macroeconomic model.
+# Defines all 40 calibrated parameters for the structural macroeconomic model.
 # Parameters are calibrated to U.S. data and empirical literature.
 # ==============================================================================
 
 #' Create Parameter Set
 #'
-#' Returns all 39 parameters from BLSMM (36 primary + 3 computed)
+#' Returns all 40 parameters from BLSMM (37 primary + 3 computed)
 #' Key features:
 #'   - Output gap: 8-period distributed lags (17 parameters total: eta + 8 sigma + 8 theta)
 #'   - Behavioral parameters: Okun (alpha), Phillips (gamma), expectations (lambda)
 #'   - Neutral rate parameters: kappa_1, kappa_2, kappa_3
 #'   - Fiscal feedback parameters: psi_1, psi_2
 #'
-#' @return Named list of 39 parameters (36 primary calibrated + 3 computed)
+#' @return Named list of 40 parameters (37 primary calibrated + 3 computed)
 create_parameters_v1_8 <- function() {
   params <- list(
     # ========================================================================
@@ -78,10 +78,16 @@ create_parameters_v1_8 <- function() {
     phi_2 = 0.25,        # Coefficient on (PIE - PISTAR) in anchor
 
     # ========================================================================
-    # EFFECTIVE INTEREST RATE EQUATION (2 parameters)
+    # EFFECTIVE INTEREST RATE EQUATION (3 parameters)
     # ========================================================================
     delta_1 = 5/6,       # Coefficient on RG(-1)
     delta_2 = 0.4,       # Weight on RF vs R10
+    RG_base = 3.25,      # Calibrated long-run baseline effective
+                         # interest rate (%), used as anchor in the
+                         # CHI / debt-proxy calculation.
+                         # Source: model calibration. Not time-varying.
+                         # Update if the long-run debt rate assumption
+                         # changes in a future recalibration.
 
     # ========================================================================
     # NEUTRAL RATE / RBAR10 PARAMETERS (3 NEW parameters)
@@ -123,7 +129,7 @@ print_parameters_v1_8 <- function(params = NULL) {
   cat("  BLSMM v1.8 Parameter Summary\n")
   cat("================================================================================\n\n")
 
-  cat("OUTPUT GAP EQUATION (16 parameters):\n")
+  cat("OUTPUT GAP EQUATION (17 parameters):\n")
   cat(sprintf("  eta        = %.2f (lagged output gap)\n", params$eta))
   cat("\n  Real rate distributed lag (sigma):\n")
   cat(sprintf("    sigma_0  = %.2f (current)\n", params$sigma_0))
@@ -169,9 +175,10 @@ print_parameters_v1_8 <- function(params = NULL) {
   cat(sprintf("  phi_1      = %.2f\n", params$phi_1))
   cat(sprintf("  phi_2      = %.2f\n", params$phi_2))
 
-  cat("\nEFFECTIVE INTEREST RATE EQUATION (2 parameters):\n")
+  cat("\nEFFECTIVE INTEREST RATE EQUATION (3 parameters):\n")
   cat(sprintf("  delta_1    = %.4f (5/6)\n", params$delta_1))
   cat(sprintf("  delta_2    = %.2f\n", params$delta_2))
+  cat(sprintf("  RG_base    = %.2f [CHI / debt-proxy anchor]\n", params$RG_base))
 
   cat("\nNEUTRAL RATE / RBAR10 PARAMETERS (3 NEW parameters):\n")
   cat(sprintf("  kappa_1    = %.4f (2/3) [LF growth effect]\n", params$kappa_1))
@@ -183,7 +190,7 @@ print_parameters_v1_8 <- function(params = NULL) {
   cat(sprintf("  psi_2      = %.3f [Prod to outlays]\n", params$psi_2))
 
   cat("\n================================================================================\n")
-  cat(sprintf("Total parameters: 39 (36 primary calibrated + 3 computed)\n"))
-  cat(sprintf("  Primary: 36 | Computed: 3 (theta_sum, sigma_sum, theta_sigma_ratio)\n"))
+  cat(sprintf("Total parameters: 40 (37 primary calibrated + 3 computed)\n"))
+  cat(sprintf("  Primary: 37 | Computed: 3 (theta_sum, sigma_sum, theta_sigma_ratio)\n"))
   cat("================================================================================\n\n")
 }

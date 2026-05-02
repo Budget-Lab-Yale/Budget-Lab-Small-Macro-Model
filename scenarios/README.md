@@ -29,7 +29,7 @@ Based on Karger et al. (2024) "The Macroeconomic Effects of AI"
 
 ### Alternate Scenarios
 6. **Inflation** - Front-loaded inflation shock that keeps inflation near 2.5% through FY2029
-7. **Investor Confidence** - +100bp term premium shock
+7. **Investor Confidence** - Sovereign-trust shock via `epstp`, `epsrg`, and `epspie` residual overrides
 8. **Military Conflict** - Defense spending surge based on the Administration's FY2027 Budget Request
 
 ## Key Results (FY2035)
@@ -96,7 +96,7 @@ scenarios/
 - Social Security and Medicare outlays: about 0.71 pp of GDP on average
 
 ### Special Implementations
-- Term premium shock via `exog_override` (not `user_deltas`)
+- Investor confidence uses `resid_override` (`epstp`, `epsrg`, `epspie`) rather than `user_deltas`
 - Baseline uses NULL for user_deltas (not zeros)
 - Inflation scenario uses the documented workbook shock path
 
@@ -104,7 +104,7 @@ scenarios/
 
 1. **Military scenario** - Uses the official defense outlay path documented in `inputs/alt_military_conflict.R`.
 
-2. **Investor confidence** - Implements a persistent +100bp term premium shock that raises both interest rates and debt throughout the forecast horizon.
+2. **Investor confidence** - Implements a sovereign-confidence shock through `epstp`, `epsrg`, and `epspie`, raising long rates, effective debt-service costs, and inflation expectations throughout the forecast horizon.
 
 3. **Package version notices** - R may report package build-version notices. These do not affect scenario outputs.
 
