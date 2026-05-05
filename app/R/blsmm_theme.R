@@ -54,9 +54,10 @@ bl_colors <- list(
 # serif headings (YaleNew), but in this app both use the same sans stack
 # for a tighter, more data-dashboard feel.
 bl_fonts <- list(
-  body     = '"Mallory", system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif',
-  heading  = '"Mallory", system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif',
-  mono     = 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace'
+  body             = '"Mallory", system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif',
+  heading          = '"Mallory", system-ui, -apple-system, "Segoe UI", "Source Sans 3", Arial, sans-serif',
+  heading_compact  = '"Mallory Compact", "Mallory", system-ui, -apple-system, "Segoe UI Condensed", "Arial Narrow", "Source Sans 3", Arial, sans-serif',
+  mono             = 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace'
 )
 
 # Spacing and shape

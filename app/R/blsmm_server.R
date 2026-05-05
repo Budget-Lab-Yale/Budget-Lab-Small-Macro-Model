@@ -130,6 +130,7 @@ server <- function(input, output, session) {
       plot_bg        = pal$bg,
       font           = pal$body,
       font_family    = bl_fonts$body,
+      font_family_title_compact = bl_fonts$heading_compact,
       grid           = pal$gridline,
       grid_secondary = pal$bg_subtle,
       zero           = pal$border,
@@ -1203,7 +1204,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Budget Deficit Deviation from Baseline (pp of GDP)</b>",
+        title = list(text = "<b>Budget Deficit Deviation from Baseline (pp of GDP)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1238,7 +1240,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Unemployment Rate Deviation from Baseline (pp)</b>",
+        title = list(text = "<b>Unemployment Rate Deviation from Baseline (pp)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1276,7 +1279,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Real GDP Growth Deviation from Baseline (pp)</b>",
+        title = list(text = "<b>Real GDP Growth Deviation from Baseline (pp)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1311,7 +1315,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Inflation Rate Deviation from Baseline (pp)</b>",
+        title = list(text = "<b>Inflation Rate Deviation from Baseline (pp)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1346,7 +1351,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Debt/GDP Deviation from Baseline (pp of GDP)</b>",
+        title = list(text = "<b>Debt/GDP Deviation from Baseline (pp of GDP)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1381,7 +1387,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Federal Funds Rate Deviation from Baseline (pp)</b>",
+        title = list(text = "<b>Federal Funds Rate Deviation from Baseline (pp)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1416,7 +1423,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>10-Year Treasury Yield Deviation from Baseline (pp)</b>",
+        title = list(text = "<b>10-Year Treasury Yield Deviation from Baseline (pp)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1451,7 +1459,8 @@ server <- function(input, output, session) {
         showlegend = FALSE
       ) %>%
       layout(
-        title = "<b>Primary Balance Deviation from Baseline (pp of GDP)</b>",
+        title = list(text = "<b>Primary Balance Deviation from Baseline (pp of GDP)</b>",
+                     font = list(family = th$font_family_title_compact)),
         xaxis = list(title = "", gridcolor = th$grid, zerolinecolor = th$zero),
         yaxis = list(title = "Percentage Points of GDP", gridcolor = th$grid, zerolinecolor = th$zero),
         hovermode = "x unified",
@@ -1618,7 +1627,7 @@ server <- function(input, output, session) {
 
     # Rename for display
     names(key_vars) <- c("Fiscal Year", "Output Gap (pp)", "Unemployment (pp)", "Inflation (pp)",
-                         "Fed Funds (pp)", "10yr Rate (pp)", "Debt/GDP (pp of GDP)", "Net Interest ($B 2017$)")
+                         "Fed Funds (pp)", "10yr Rate (pp)", "Debt/GDP (pp of GDP)", "Net Interest ($B)")
 
     datatable(
       key_vars,
@@ -1627,7 +1636,11 @@ server <- function(input, output, session) {
         scrollX = TRUE,
         dom = 't',
         compact = TRUE,
-        ordering = FALSE
+        ordering = FALSE,
+        columnDefs = list(
+          list(className = "dt-center", targets = 1:7),
+          list(className = "dt-left", targets = 0)
+        )
       ),
       rownames = FALSE,
       selection = "none",  # no persistent row-click highlight
@@ -1755,7 +1768,11 @@ server <- function(input, output, session) {
                 pageLength = 15,
                 scrollX = TRUE,
                 compact = TRUE,
-                ordering = FALSE
+                ordering = FALSE,
+                columnDefs = list(
+                  list(className = "dt-center", targets = 1:N_PERIODS),
+                  list(className = "dt-left", targets = 0)
+                )
               ),
               rownames = FALSE,
               selection = "none",
