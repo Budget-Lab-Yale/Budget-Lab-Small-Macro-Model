@@ -1,6 +1,8 @@
-# The Budget Lab's Small Macro Model (BLSMM)
+# The Budget Lab Small Macro Model (BLSMM)
 
-**The Budget Lab at Yale \| Macroeconomic Policy Analysis Tool** **Last updated: 2026-04-20**
+**The Budget Lab at Yale \| Macroeconomic Policy Analysis Tool**
+
+**Version 1.0 \| May 5, 2026**
 
 A structural macroeconomic model for fiscal policy analysis, medium-term forecasting, and scenario simulation.
 
@@ -8,7 +10,7 @@ A structural macroeconomic model for fiscal policy analysis, medium-term forecas
 
 ## Overview
 
-The Budget Lab's Small Macro Model (BLSMM) is a calibrated structural macroeconomic model designed for analyzing U.S. fiscal policy and economic forecasts. This repository contains:
+The Budget Lab Small Macro Model (BLSMM) is a calibrated structural macroeconomic model designed for analyzing U.S. fiscal policy and economic forecasts. This repository contains:
 
 1.  **Core Model** (`model/v1_8/`) - Modular R implementation with endogenous r\* and fiscal feedback
 2.  **Interactive App** (`app.R`) - Shiny web application for policy simulations
@@ -276,7 +278,7 @@ See `model/v1_8/parameters.R` for complete list with documentation.
 If you use BLSMM in your research or analysis, please cite:
 
 ```         
-The Budget Lab at Yale (2026). The Budget Lab's Small Macro Model (BLSMM).
+The Budget Lab at Yale (2026). The Budget Lab Small Macro Model (BLSMM).
 Retrieved from https://budgetlab.yale.edu
 ```
 
@@ -284,7 +286,7 @@ Retrieved from https://budgetlab.yale.edu
 
 ## License
 
-This model is provided for educational and research purposes. Please contact the Budget Lab at Yale for commercial use inquiries.
+This model is provided for educational and research purposes. Please [contact](https://budgetlab.yale.edu/contact-us) the Budget Lab at Yale for commercial use inquiries.
 
 ------------------------------------------------------------------------
 
