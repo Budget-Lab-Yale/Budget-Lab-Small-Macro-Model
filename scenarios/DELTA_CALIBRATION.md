@@ -34,6 +34,8 @@ CBO NFB output/hour growth, 2031-2035 avg  1.649%
 Concept wedge                              -0.319 pp
 ```
 
+The wedge is taken directly from CBO's February 2026 *Budget and Economic Outlook* as the gap between its two published productivity projections (GDP per employed worker vs nonfarm-business output per hour), averaged over fiscal years 2031-2035. The same convention is used in the SPF calibration.
+
 The AI scenarios target a flat BLSMM productivity level of about `2.18%` per year:
 
 ```text
@@ -129,13 +131,13 @@ user_delta_rgfop = c(0.115879477, 0.225495918, 0.325900512, 0.416761993, 0.50093
 
 ## Severity Variants (Slow / Rapid)
 
-`ai_slow.R` and `ai_rapid.R` mirror `ai_s2_prod_lf.R` (productivity + LF deltas) but swap in Karger's Slow and Rapid adoption productivity targets. The same -0.319 pp NFB-to-GDP/employed wedge is applied.
+`ai_slow.R` and `ai_rapid.R` mirror `ai_s2_prod_lf.R` (productivity + LF deltas) but swap in Karger's Slow and Rapid adoption productivity targets. All scenarios are anchored to the **Karger Economists response**, and the same -0.319 pp NFB-to-GDP/employed wedge is applied.
 
-| Variant | Karger NFB target | BLSMM `glqstar` target | `user_delta_prod` range |
-|---------|-------------------|------------------------|-------------------------|
+| Variant | Karger NFB target (Economists) | BLSMM `glqstar` target | `user_delta_prod` range |
+|---------|--------------------------------|------------------------|-------------------------|
 | Slow    | 2.0% (flat 2030 & 2050 anchors) | 1.681% | -0.041 to 0.292 pp |
 | Moderate (S2) | 2.5% (2025-30 median) | 2.181% | 0.461 to 0.791 pp |
-| Rapid   | 3.5% (2030 anchor, held flat) | 3.181% | 1.459 to 1.792 pp |
+| Rapid   | 3.2% (2030 anchor, held flat) | 2.881% | 1.159 to 1.492 pp |
 
 Notes:
 - The Slow target is below CBO baseline `glqstar` in 2027 and 2028 (which peak at 1.72% and 1.69%); deltas are slightly negative there. From 2029 on the gap widens in Slow's favor as CBO's baseline drifts down.
