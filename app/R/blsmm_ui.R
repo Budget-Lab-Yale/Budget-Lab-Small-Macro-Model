@@ -868,7 +868,7 @@ ui <- fluidPage(
           icon = icon("seedling"),
           p(class = "text-muted-custom", style = "font-size: 0.9em;",
             strong("What this does:"), " Adjust long-run growth via labor force and productivity. ",
-            "Changes here automatically affect r* and government spending."),
+            "Changes here automatically affect r* and government spending.", "Productivity is defined as real GDP per employed person."),
 
           simple_input_card(
             table_key = "productivity",
