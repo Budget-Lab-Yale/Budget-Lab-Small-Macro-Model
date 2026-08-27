@@ -246,3 +246,11 @@ All packages available on CRAN.
 Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (stabilization), `psi_2` (debt sustainability)
 
 See `model/v1_8/parameters.R` for complete list with documentation.
+
+------------------------------------------------------------------------
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
+
+The MIT License covers the code, documentation, and data files in this repository. It does not extend to the third-party R packages the model depends on: those are installed from CRAN at setup time rather than redistributed here, and each retains its own license. See `renv.lock` for the pinned dependency set. `renv/activate.R` is the renv bootstrap script from Posit, distributed under its own MIT license.
