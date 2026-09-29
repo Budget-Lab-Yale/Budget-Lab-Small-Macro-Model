@@ -113,7 +113,7 @@ Small Macro Model/
 
 **Neutral Rate Block (Endogenous r\*):** - r\* responds to potential growth (`kappa_1`, `kappa_2` parameters) - r\* responds to debt/GDP ratio (`kappa_3` parameter) - Gradual adjustment dynamics
 
-**Fiscal Feedback Mechanisms:** - Primary outlays as a share of potential GDP respond to cumulative deviations in potential labor-force growth (`psi_1`) and potential productivity growth (`psi_2`), following CBO rules of thumb - Receipts and primary outlays scale with nominal potential GDP, so the model has no automatic stabilizers: taxes and transfers do not respond to the output gap or unemployment
+**Fiscal Feedback Mechanisms:** - Primary outlays as a share of potential GDP respond to cumulative deviations in potential labor-force growth (`psi_1`) and potential productivity growth (`psi_2`), using calibrated potential-growth feedback coefficients - Receipts and primary outlays scale with nominal potential GDP, so the model has no automatic stabilizers: taxes and transfers do not respond to the output gap or unemployment
 
 ### Policy Analysis Capabilities
 

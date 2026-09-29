@@ -27,7 +27,7 @@ Complete technical documentation for the model implementation.
 BLSMM is a medium-scale structural macroeconomic model designed for fiscal policy analysis and medium-term forecasting. The model combines traditional macro relationships with modern features including:
 
 - **Endogenous neutral rate (r*)** - Responds to potential growth and debt/GDP
-- **Fiscal feedback** - Primary outlays respond to potential labor-force and productivity growth (CBO rules of thumb)
+- **Fiscal feedback** - Primary outlays respond to potential labor-force and productivity growth through calibrated feedback coefficients
 - **Rich dynamics** - Distributed lags and forward-looking expectations
 - **Modular design** - Clean separation of components for maintainability
 
