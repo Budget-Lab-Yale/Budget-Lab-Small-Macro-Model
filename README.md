@@ -113,7 +113,7 @@ Small Macro Model/
 
 **Neutral Rate Block (Endogenous r\*):** - r\* responds to potential growth (`kappa_1`, `kappa_2` parameters) - r\* responds to debt/GDP ratio (`kappa_3` parameter) - Gradual adjustment dynamics
 
-**Fiscal Feedback Mechanisms:** - Outlays respond to unemployment gap (`psi_1` parameter) - Outlays respond to debt/GDP (`psi_2` parameter) - Automatic stabilizers and debt sustainability
+**Fiscal Feedback Mechanisms:** - Primary outlays as a share of potential GDP respond to cumulative deviations in potential labor-force growth (`psi_1`) and potential productivity growth (`psi_2`), following CBO rules of thumb - Receipts and primary outlays scale with nominal potential GDP, so the model has no automatic stabilizers: taxes and transfers do not respond to the output gap or unemployment
 
 ### Policy Analysis Capabilities
 
@@ -144,7 +144,7 @@ Small Macro Model/
 -   **Annual frequency** (FY2026-FY2035 baseline)
 -   **Empirically-grounded** multipliers and transmission mechanisms
 -   **Endogenous r**\* adjusts to growth and debt conditions
--   **Fiscal feedback** provides automatic stabilization
+-   **Fiscal feedback** links primary outlays to potential labor-force and productivity growth
 
 ------------------------------------------------------------------------
 
@@ -164,7 +164,7 @@ Small Macro Model/
 
 ### 1. Fiscal Policy Analysis
 
-**Questions BLSMM Can Answer:** - What is the output impact of a tax cut or spending increase? - How does fiscal consolidation affect unemployment? - What are the debt sustainability implications of policy changes? - How do fiscal multipliers vary with Fed response and fiscal feedback? - How does automatic stabilization work through `psi_1` and `psi_2`?
+**Questions BLSMM Can Answer:** - What is the output impact of a tax cut or spending increase? - How does fiscal consolidation affect unemployment? - What are the debt sustainability implications of policy changes? - How do fiscal multipliers vary with Fed response and fiscal feedback? - How do outlays respond to changes in potential growth through `psi_1` and `psi_2`?
 
 **Example Scenarios:** - Analyze 1% of GDP tax cut with endogenous r\* response - Model gradual fiscal consolidation with debt feedback - Assess infrastructure spending with productivity spillovers
 
@@ -178,11 +178,11 @@ Small Macro Model/
 
 ### 4. Scenario Analysis
 
-**Questions BLSMM Can Answer:** - What if we face another supply shock? - How bad could a fiscal crisis get with r\* rising due to high debt? - What's the growth impact of structural reforms on r\*? - How do automatic stabilizers perform in recessions?
+**Questions BLSMM Can Answer:** - What if we face another supply shock? - How bad could a fiscal crisis get with r\* rising due to high debt? - What's the growth impact of structural reforms on r\*?
 
 ### 5. Educational Applications
 
-**Topics BLSMM Illustrates:** - IS-LM dynamics with endogenous natural rate - Phillips curve trade-offs - Fiscal policy with r\* and debt feedback - Automatic stabilizers and discretionary policy - Monetary-fiscal coordination
+**Topics BLSMM Illustrates:** - IS-LM dynamics with endogenous natural rate - Phillips curve trade-offs - Fiscal policy with r\* and debt feedback - Discretionary fiscal policy - Monetary-fiscal coordination
 
 Perfect for: - Macro courses (undergraduate/graduate) - Policy analysis training - Economic literacy programs - Interactive demonstrations
 
@@ -232,7 +232,7 @@ All packages available on CRAN.
 -   **Primary Balance:** BUDP = Receipts - Primary Outlays
 -   **Net Interest:** NI = average_debt * effective_rate
 -   **Debt Dynamics:** Closed-form solution with simultaneity
--   **Fiscal Feedback:** Outlays = f(unemployment_gap, debt/GDP)
+-   **Fiscal Feedback:** Primary outlays ratio = baseline + cumulative psi response to potential labor-force and productivity growth deviations
 
 ### Neutral Rate Block (r\*)
 
@@ -243,7 +243,7 @@ All packages available on CRAN.
 
 ### Parameters (39 total)
 
-Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (stabilization), `psi_2` (debt sustainability)
+Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (outlay response to potential labor-force growth), `psi_2` (outlay response to potential productivity growth)
 
 See `model/v1_8/parameters.R` for complete list with documentation.
 

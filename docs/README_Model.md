@@ -27,7 +27,7 @@ Complete technical documentation for the model implementation.
 BLSMM is a medium-scale structural macroeconomic model designed for fiscal policy analysis and medium-term forecasting. The model combines traditional macro relationships with modern features including:
 
 - **Endogenous neutral rate (r*)** - Responds to potential growth and debt/GDP
-- **Fiscal feedback** - Automatic stabilizers and debt sustainability mechanisms
+- **Fiscal feedback** - Primary outlays respond to potential labor-force and productivity growth (CBO rules of thumb)
 - **Rich dynamics** - Distributed lags and forward-looking expectations
 - **Modular design** - Clean separation of components for maintainability
 
@@ -253,24 +253,32 @@ g*(t) = (GDP*(t) - GDP*(t-1)) / GDP*(t-1) * 100
 
 **5. Receipts**
 ```
-RECEIPTS(t) = receipts_pct_gdp(t) * GDP$(t) / 100
+RECEIPTS(t) = rgfr_star(t) * GDP$star(t) / 100
+rgfr_star(t) = rgfr_star_base(t) + user_delta_rgfr(t)
 ```
+
+`GDP$star` is nominal potential GDP (real potential GDP times the GDP price level).
 
 **6. Primary Outlays (with fiscal feedback)**
 ```
-OUTLAYS_PRIMARY(t) = outlays_pct_gdp(t) * GDP$(t) / 100
-                     + psi_1 * ugap(t) * GDP*(t)
-                     + psi_2 * D_pct_GDP(t) * GDP*(t)
+OUTLAYS_PRIMARY(t) = rgfop_star(t) * GDP$star(t) / 100
+rgfop_star(t) = rgfop_star_base(t) + LF_fb(t) + PROD_fb(t) + user_delta_rgfop(t)
+LF_fb(t)   = LF_fb(t-1)   + psi_1 * (glfstar(t) - glfstar_base(t))
+PROD_fb(t) = PROD_fb(t-1) + psi_2 * (glqstar(t) - glqstar_base(t))
 ```
 
+`LF_fb` and `PROD_fb` start from zero in the last history year, so the first forecast year's deviation is included.
+
 Where:
-- psi_1 < 0: Outlays ratio falls when labor force growth accelerates (negative feedback)
-- psi_2 < 0: Outlays ratio falls when productivity growth accelerates (negative feedback)
+- psi_1 < 0: Outlays ratio falls when potential labor force growth accelerates
+- psi_2 < 0: Outlays ratio falls when potential productivity growth accelerates
+
+Both receipts and primary outlays scale with nominal potential GDP. Neither responds to the output gap or unemployment, so the model has no automatic stabilizers.
 
 **7. Primary Balance**
 ```
-BUDP(t) = RECEIPTS(t) - OUTLAYS_PRIMARY(t)
-rbudp_star(t) = BUDP(t) / GDP*(t) * 100
+rbudp_star(t) = rgfr_star(t) - rgfop_star(t)
+BUDP(t) = rbudp_star(t) * GDP$star(t) / 100
 ```
 
 **8. Debt Dynamics (Closed-Form Solution)**
@@ -405,9 +413,9 @@ delta2 = 0.4         # Weight on short rate
 
 **Neutral Rate (3 parameters)**
 ```r
-kappa1 = 1.0         # r* sensitivity to potential growth
-kappa2 = 0.5         # r* sensitivity to growth changes
-kappa3 = 0.01        # r* sensitivity to debt/GDP
+kappa_1 = 2/3        # r* response to potential labor-force growth deviation
+kappa_2 = 2/3        # r* response to potential productivity growth deviation
+kappa_3 = 0.02       # r* response to the debt-proxy gap
 ```
 
 **Fiscal Feedback (2 parameters)**
@@ -422,8 +430,9 @@ UN(t)                # Natural unemployment rate
 PISTAR(t)            # Inflation target
 glf(t)               # Labor force growth
 gprod(t)             # Productivity growth
-receipts_pct_gdp(t)  # Receipts as % GDP
-outlays_pct_gdp(t)   # Outlays as % GDP (before feedback)
+rgfr_star(t)         # Receipts as % of nominal potential GDP
+rgfop_star(t)        # Primary outlays as % of nominal potential GDP (before psi feedback)
+RG_base(t)           # Baseline effective interest rate on debt (debt-proxy anchor)
 rfstar_shock(t)      # Direct r* shocks
 epsxgap(t)           # Output gap shocks
 epspi(t)             # Inflation shocks
