@@ -23,9 +23,11 @@ Based on Karger et al. (2024) "The Macroeconomic Effects of AI"
 
 1. **Baseline** - No shocks, CBO Feb 2026 baseline
 2. **S1: Productivity** - AI boosts productivity +1.5-1.8 pp/year
-3. **S2: Prod+LF** - S1 + labor force decline (LFPR near 59.3% by FY2030)
+3. **S2: Prod+LF** - S1 + labor force decline (LFPR about 60.6% in FY2030, 59.2% by FY2035)
 4. **S3a: Prod+LF+UI** - S2 + unemployment insurance outlays
 5. **S3b: Prod+LF+SSMC** - S2 + Social Security/Medicare outlays
+
+The AI post's appendix repeats S1-S3b for the Slow and Rapid adoption variants: `ai_slow_*.R` and `ai_rapid_*.R` (8 files). See `DELTA_CALIBRATION.md`.
 
 ### Alternate Scenarios
 6. **Inflation** - Front-loaded inflation shock that keeps inflation near 2.5% through FY2029
@@ -85,8 +87,9 @@ scenarios/
 ## Technical Details
 
 ### Labor Force Calibration
-- LFPR declines from about 62.5% (FY2025) to about 59.2% by FY2030
-- Stays flat near 59.2% through FY2035
+- LFPR declines from about 62.5% (FY2025) to about 60.6% in FY2030 and 59.2% by FY2035
+- Consistent with Karger et al. (2026) Moderate Economists medians (60.7% in 2030, 57.0% in 2050)
+- The appendix variants (`ai_slow_*`, `ai_rapid_*`) use their own LFPR paths; see `DELTA_CALIBRATION.md`
 - Computed via `convert_lfpr_to_growth()` from `app/R/blsmm_helpers.R`
 
 ### Outlays Calibration

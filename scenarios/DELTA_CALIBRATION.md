@@ -11,11 +11,11 @@ The AI scenario analysis uses policy "deltas" (deviations from baseline) based o
 All scenarios use the same **Karger et al. moderate AI adoption productivity path** and then layer on additional labor-market and fiscal channels:
 
 - **S1:** Productivity only, calibrated from Karger labor productivity to BLSMM potential productivity
-- **S2:** S1 + labor force participation decline (LFPR to 59.3% by FY2030)
+- **S2:** S1 + labor force participation decline (LFPR about 60.6% in FY2030, 59.2% by FY2035)
 - **S3a:** S2 + UI outlays increase (displacement effects)
 - **S3b:** S2 + SS/Medicare outlays increase (early retirement)
 
-S1-S3b are cumulative channel scenarios layered on the moderate adoption productivity path. Two severity variants — `ai_slow.R` and `ai_rapid.R` — sit alongside them and use the same labor force deltas as S2 but with Karger Slow and Rapid productivity targets respectively (see "Severity Variants" below).
+S1-S3b are cumulative channel scenarios layered on the moderate adoption productivity path. The AI post's appendix repeats all four for the Slow and Rapid adoption variants (`ai_slow_*.R`, `ai_rapid_*.R`; see "Severity Variants" below).
 
 ---
 
@@ -55,13 +55,10 @@ This vector appears in each AI scenario file as the productivity component of th
 
 ---
 
-## 2. Labor Force Deltas (Calendar Year vs Fiscal Year)
+## 2. Labor Force Deltas
 
-### Labor Force Calibration
-
-**Target:** 59.3% LFPR by **FY2030** (matching Karger et al.)
-**Source:** Internal LFPR calibration file, "LF Growth Delta (pp)" column
-**Method:** Calibrated to achieve target LFPR at FY2030 and hold flat through FY2035, using a CY-to-FY conversion for the scenario files
+**Target:** Karger et al. (2026) Moderate Economists median LFPR, 60.7% in 2030 and 57.0% in 2050 (Table 25 and Table 26)
+**Method:** Karger's January-dated targets converted from calendar to fiscal years. LFPR continues to decline after FY2030, consistent with interpolation toward the 2050 median
 
 ```r
 # Labor force growth deltas (percentage points)
@@ -77,28 +74,13 @@ user_delta_lf = c(-0.519291223,
                   -0.379559281)
 ```
 
-**LFPR path:**
-- FY2026: 61.81%
-- FY2027: 61.15%
-- FY2028: 60.49%
-- FY2029: 59.83%
-- FY2030: **59.17%** (~59.3% target achieved)
-- FY2031: 59.17%
-- FY2032: 59.17%
-- FY2033: 59.17%
-- FY2034: 59.17%
-- FY2035: **59.17%** (held flat)
+**Implied LFPR path** (FY2025 labor force 171.557 million, CBO civilian noninstitutional population):
 
-**Calibration notes:**
-- LFPR hits ~59.3% at FY2030, correctly matching Karger's specification
-- These are all negative deltas, but they become less negative after FY2030 as the path transitions from decline to a flat LFPR target
+| FY | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 |
+|----|------|------|------|------|------|------|------|------|------|------|
+| LFPR (%) | 62.09 | 61.71 | 61.33 | 60.95 | 60.57 | 60.26 | 59.97 | 59.71 | 59.46 | 59.24 |
 
-### Implementation Details
-
-The calibration produces the following dynamics:
-- The negative values FY2026-2030 drive LFPR down from 62.5% to 59.2%
-- The smaller negative values FY2031-FY2035 maintain a flat LFPR path near 59.2%
-- This path is the FY-converted implementation used in `ai_s2_prod_lf.R`, `ai_s3a_prod_lf_ui.R`, and `ai_s3b_prod_lf_ssmc.R`
+This path is used in `ai_s2_prod_lf.R`, `ai_s3a_prod_lf_ui.R`, and `ai_s3b_prod_lf_ssmc.R`.
 
 ---
 
@@ -131,17 +113,28 @@ user_delta_rgfop = c(0.115879477, 0.225495918, 0.325900512, 0.416761993, 0.50093
 
 ## Severity Variants (Slow / Rapid)
 
-`ai_slow.R` and `ai_rapid.R` mirror `ai_s2_prod_lf.R` (productivity + LF deltas) but swap in Karger's Slow and Rapid adoption productivity targets. All scenarios are anchored to the **Karger Economists response**, and the same -0.319 pp NFB-to-GDP/employed wedge is applied.
+The AI post's appendix (Figures A1-A6) repeats S1-S3b for Karger's Slow and Rapid adoption scenarios, all anchored to the **Karger Economists response**. Each variant has four input files, `ai_{slow,rapid}_{s1_productivity,s2_prod_lf,s3a_prod_lf_ui,s3b_prod_lf_ssmc}.R`, and reproduces the published appendix series at tag `v1.8.1`.
+
+**Productivity.** The same -0.319 pp NFB-to-GDP/employed wedge is applied:
 
 | Variant | Karger NFB target (Economists) | BLSMM `glqstar` target | `user_delta_prod` range |
 |---------|--------------------------------|------------------------|-------------------------|
 | Slow    | 2.0% (flat 2030 & 2050 anchors) | 1.681% | -0.041 to 0.292 pp |
-| Moderate (S2) | 2.5% (2025-30 median) | 2.181% | 0.461 to 0.791 pp |
+| Moderate (S1-S3b) | 2.5% (2025-30 median) | 2.181% | 0.461 to 0.791 pp |
 | Rapid   | 3.2% (2030 anchor, held flat) | 2.881% | 1.159 to 1.492 pp |
 
-Notes:
-- The Slow target is below CBO baseline `glqstar` in 2027 and 2028 (which peak at 1.72% and 1.69%); deltas are slightly negative there. From 2029 on the gap widens in Slow's favor as CBO's baseline drifts down.
-- LF deltas in both variants are inherited from `ai_s2_prod_lf.R`. Karger's Slow LFPR target (~62%) and Rapid LFPR target (~59.8%) differ from the moderate calibration; refresh via `convert_lfpr_to_growth()` if scenario-consistent LF paths are needed.
+The Slow target is below CBO baseline `glqstar` in 2027 and 2028, so its deltas are slightly negative there.
+
+**Labor force.** The variants use a different construction from the moderate path. LFPR ramps linearly from 62.48% in FY2025 to the Karger Economists 2030 median by FY2030, with step (target - 62.6%) / 5 and CBO baseline labor-force growth rounded to three decimals, as in the internal LFPR calibration workbook. LFPR then continues to decline toward the 2050 median.
+
+| Variant | 2030 target | 2050 median | Implied LFPR FY2030 | Implied LFPR FY2035 |
+|---------|-------------|-------------|---------------------|---------------------|
+| Slow    | 61.5% | 59.2% | 61.37% | 60.62% |
+| Rapid   | 59.3% | 55.0% | 59.17% | 56.82% |
+
+Implied LFPR uses the same method as the S2 table (FY2025 labor force 171.557 million), so it differs from the workbook's ramp endpoints (61.38% and 59.18% in FY2030) by about 0.01 point. The FY2026-FY2030 deltas follow the workbook formula exactly. The FY2031-FY2035 deltas were recovered from the published appendix data because the file that constructed them was not retained; the exact interpolation rule is not documented.
+
+**Outlays.** S3a and S3b apply the moderate cost factors to each variant's lost participants: $5.56 thousand (UI) and $42.43 thousand (Social Security plus Medicare) per lost participant, as a percentage of CBO potential GDP.
 
 ---
 
@@ -150,7 +143,7 @@ Notes:
 | Delta Type | Source | Values | Units | Impact |
 |-----------|---------|---------|-------|---------|
 | **Productivity** | Karger moderate labor productivity, adjusted by -0.319 pp concept wedge | 0.461-0.791 pp | `glqstar` growth | Higher GDP growth |
-| **Labor Force** | Internal LFPR calibration | -0.519 to -0.372 pp | LF growth | LFPR to 59.3% by FY2030 |
+| **Labor Force** | Karger moderate LFPR, CY-to-FY converted | -0.519 to -0.372 pp | LF growth | LFPR about 60.6% in FY2030 |
 | **UI Outlays** | Internal displacement analysis | 0.015-0.097 pp | % of GDP | S3a scenario |
 | **SS/Medicare Outlays** | Internal displacement analysis | 0.116-0.739 pp | % of GDP | S3b scenario |
 
@@ -211,7 +204,7 @@ After changing the scenario input files, rebuild results and rerun diagnostics:
 
 ```r
 source("scenarios/make_all_figures.R")
-# Check output: LFPR should be near 59.3% in FY2030
+# Check output: S2 LFPR should be near 60.6% in FY2030
 # Check debt/GDP ranking: S1 < S2 < S3a < S3b < Baseline
 ```
 
@@ -226,5 +219,5 @@ source("scenarios/make_all_figures.R")
 
 ---
 
-**Last updated:** 2026-05-15
+**Last updated:** 2026-09-29
 **Status:** Calibration documented; rebuild scenario outputs after changing input files
