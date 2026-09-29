@@ -1,26 +1,12 @@
-# LF deltas from the corrected internal LFPR calibration file,
-# "LF Growth Delta (pp)" column.
+# LF deltas: Karger et al. (2026) Moderate Economists LFPR medians (60.7% in
+# 2030, 57.0% in 2050; Tables 25-26), converted from calendar to fiscal years.
 #
-# Source: Karger et al. Table 25, properly converted from CY to FY.
-# These values replace an earlier calibration that reached the target
-# LFPR too late in the forecast window.
-#
-# Expected LFPR path produced by these deltas (using BLSMM anchor):
-#   FY2026: 61.81%   FY2031: 59.17%
-#   FY2027: 61.15%   FY2032: 59.17%
-#   FY2028: 60.49%   FY2033: 59.17%
-#   FY2029: 59.83%   FY2034: 59.17%
-#   FY2030: 59.17%   FY2035: 59.17%
-#
-# LFPR hits ~59.3% at FY2030 (matching Karger's stated target),
-# then holds flat through FY2035.
-#
-# The small POSITIVE values in FY2031-2034 are correct: to hold
-# LFPR flat at 59.2% while population grows ~0.4-0.5% per year,
-# the labor force must grow at roughly that same rate. In years
-# where this required growth exceeds CBO baseline growth, the delta
-# is positive. That reflects the labor force keeping pace with
-# population growth, not workers re-entering relative to the target.
+# Implied LFPR path (FY2025 labor force 171.557 million):
+#   FY2026: 62.09%   FY2031: 60.26%
+#   FY2027: 61.71%   FY2032: 59.97%
+#   FY2028: 61.33%   FY2033: 59.71%
+#   FY2029: 60.95%   FY2034: 59.46%
+#   FY2030: 60.57%   FY2035: 59.24%
 
 scenario <- list(
   id    = "ai_s2_prod_lf",
