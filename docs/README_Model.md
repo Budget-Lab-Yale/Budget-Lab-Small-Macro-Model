@@ -27,14 +27,14 @@ Complete technical documentation for the model implementation.
 BLSMM is a medium-scale structural macroeconomic model designed for fiscal policy analysis and medium-term forecasting. The model combines traditional macro relationships with modern features including:
 
 - **Endogenous neutral rate (r*)** - Responds to potential growth and debt/GDP
-- **Fiscal feedback** - Automatic stabilizers and debt sustainability mechanisms
+- **Fiscal feedback** - Primary outlays respond to potential labor-force and productivity growth through calibrated feedback coefficients
 - **Rich dynamics** - Distributed lags and forward-looking expectations
 - **Modular design** - Clean separation of components for maintainability
 
 ### Key Features
 
 - **9 simultaneous equations** solved jointly each period
-- **39 calibrated parameters** from empirical research
+- **40 parameters** (37 calibrated, 3 computed)
 - **Annual frequency** simulations (FY2026-FY2035 baseline)
 - **Modular file structure** for easy extension and modification
 - **Fast convergence** - Typically 1-2 solver iterations
@@ -56,13 +56,9 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 - 10-year Treasury yield
 - Effective interest rate on debt
 
-**2. Fiscal Block (Pre-simulation)**
-- Labor force and productivity paths
-- Potential GDP evolution
-- Receipts and outlays (with fiscal feedback)
-- Primary balance calculation
-- Debt dynamics with closed-form solution
-- Net interest payments
+**2. Fiscal Block**
+- Before the solver: receipts and outlay ratios, including psi feedback, and potential GDP paths
+- After each period's solve: primary balance, net interest (closed form), and debt
 
 **3. Neutral Rate Block**
 - r* responds to potential growth changes (`kappa_1`, `kappa_2`)
@@ -73,13 +69,13 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 
 ```
 1. Pre-simulation block runs first
-   -> Computes potential GDP, primary balance, fiscal feedback
+   -> Computes user-inclusive exogenous paths (including psi feedback) and potential GDP
 
 2. Main solver loop for each period
    -> Solves 9 simultaneous equations
 
-3. Post-simulation calculations
-   -> Computes derived variables, ratios, growth rates
+3. Post-solve calculations for each period
+   -> Computes the primary balance, net interest, debt, and derived ratios
 ```
 
 ---
@@ -227,7 +223,7 @@ RG(t) = delta_1*RG(t-1) + (1-delta_1)*[delta_2*RF(t) + (1-delta_2)*R10(t)] + eps
 
 ## Fiscal Block
 
-The fiscal block runs in the **pre-simulation phase** to compute potential GDP, primary balance, and fiscal feedback effects before the main solver loop.
+Fiscal ratios and psi feedback are computed before the main solver loop. The primary balance, net interest, and debt are computed from the solved values after each period (`solver.R`).
 
 ### Components
 
@@ -253,24 +249,32 @@ g*(t) = (GDP*(t) - GDP*(t-1)) / GDP*(t-1) * 100
 
 **5. Receipts**
 ```
-RECEIPTS(t) = receipts_pct_gdp(t) * GDP$(t) / 100
+RECEIPTS(t) = rgfr_star(t) * GDP$star(t) / 100
+rgfr_star(t) = rgfr_star_base(t) + user_delta_rgfr(t)
 ```
+
+`GDP$star` is nominal potential GDP (real potential GDP times the GDP price level).
 
 **6. Primary Outlays (with fiscal feedback)**
 ```
-OUTLAYS_PRIMARY(t) = outlays_pct_gdp(t) * GDP$(t) / 100
-                     + psi_1 * ugap(t) * GDP*(t)
-                     + psi_2 * D_pct_GDP(t) * GDP*(t)
+OUTLAYS_PRIMARY(t) = rgfop_star(t) * GDP$star(t) / 100
+rgfop_star(t) = rgfop_star_base(t) + LF_fb(t) + PROD_fb(t) + user_delta_rgfop(t)
+LF_fb(t)   = LF_fb(t-1)   + psi_1 * (glfstar(t) - glfstar_base(t))
+PROD_fb(t) = PROD_fb(t-1) + psi_2 * (glqstar(t) - glqstar_base(t))
 ```
 
+`LF_fb` and `PROD_fb` start from zero in the last history year, so the first forecast year's deviation is included.
+
 Where:
-- psi_1 < 0: Outlays ratio falls when labor force growth accelerates (negative feedback)
-- psi_2 < 0: Outlays ratio falls when productivity growth accelerates (negative feedback)
+- psi_1 < 0: Outlays ratio falls when potential labor force growth accelerates
+- psi_2 < 0: Outlays ratio falls when potential productivity growth accelerates
+
+Both receipts and primary outlays scale with nominal potential GDP. Neither responds to the output gap or unemployment, so the model has no automatic stabilizers.
 
 **7. Primary Balance**
 ```
-BUDP(t) = RECEIPTS(t) - OUTLAYS_PRIMARY(t)
-rbudp_star(t) = BUDP(t) / GDP*(t) * 100
+rbudp_star(t) = rgfr_star(t) - rgfop_star(t)
+BUDP(t) = rbudp_star(t) * GDP$star(t) / 100
 ```
 
 **8. Debt Dynamics (Closed-Form Solution)**
@@ -308,40 +312,23 @@ The neutral real interest rate (r*) is **endogenous** and responds to economic f
 ### r* Equation
 
 ```
-rfstar(t) = kappa_1 * g*(t) + kappa_2 * Delta_g*(t) + kappa_3 * f(D_pct_GDP(t)) + rfstar_shock(t)
+rfstar(t) = rfstar_base(t)
+          + (t / 10) * [kappa_1 * (glfstar(t) - glfstar_base(t))
+                        + kappa_2 * (glqstar(t) - glqstar_base(t))]
+          + kappa_3 * (debt_proxy_user(t) - debt_proxy_base(t))
+          + user_delta_rfstar_direct(t)
 ```
 
 Where:
-- **Potential Growth Channel:** kappa_1 captures long-run relationship between r* and growth
-- **Growth Change Channel:** kappa_2 captures transitional dynamics
-- **Debt Channel:** kappa_3 captures fiscal sustainability effects on r*
-- **Direct Shocks:** rfstar_shock(t) allows user to override
-
-### Functional Forms
-
-**Potential Growth Response:**
-```
-kappa_1 * g*(t)  where kappa_1 > 0
-```
-Higher potential growth -> higher r*
-
-**Growth Change Response:**
-```
-kappa_2 * Delta_g*(t)  where kappa_2 > 0
-```
-Accelerating growth -> temporarily higher r*
-
-**Debt Response:**
-```
-kappa_3 * f(D_pct_GDP(t))  where kappa_3 > 0
-```
-Higher debt/GDP -> higher r* (risk premium channel)
+- **Growth channel:** same-year deviations of potential labor-force and productivity growth from baseline, phased in linearly with the simulation year (`t / 10`, 10% in the first forecast year, 100% in the tenth). The Excel workbook applies the full effect immediately; see `neutral_rate.R`.
+- **Debt channel:** the gap between user and baseline debt proxies, a simplified debt/GDP recursion anchored on the baseline effective rate (`RG_base`).
+- **Direct shocks:** `user_delta_rfstar_direct(t)` adds a user-specified change.
 
 ### Key Parameters
 
-- kappa_1 = 1.0: Long-run r* sensitivity to potential growth
-- kappa_2 = 0.5: Transitional r* sensitivity to growth changes
-- kappa_3 = 0.01: r* sensitivity to debt/GDP
+- kappa_1 = 2/3: r* response to potential labor-force growth deviation
+- kappa_2 = 2/3: r* response to potential productivity growth deviation
+- kappa_3 = 0.02: r* response to the debt-proxy gap
 
 ### Economic Interpretation
 
@@ -353,7 +340,7 @@ Higher debt/GDP -> higher r* (risk premium channel)
 
 ## Parameters
 
-### Complete Parameter List (39 total)
+### Complete Parameter List
 
 **Output Gap (9 parameters)**
 ```r
@@ -405,9 +392,9 @@ delta2 = 0.4         # Weight on short rate
 
 **Neutral Rate (3 parameters)**
 ```r
-kappa1 = 1.0         # r* sensitivity to potential growth
-kappa2 = 0.5         # r* sensitivity to growth changes
-kappa3 = 0.01        # r* sensitivity to debt/GDP
+kappa_1 = 2/3        # r* response to potential labor-force growth deviation
+kappa_2 = 2/3        # r* response to potential productivity growth deviation
+kappa_3 = 0.02       # r* response to the debt-proxy gap
 ```
 
 **Fiscal Feedback (2 parameters)**
@@ -422,8 +409,9 @@ UN(t)                # Natural unemployment rate
 PISTAR(t)            # Inflation target
 glf(t)               # Labor force growth
 gprod(t)             # Productivity growth
-receipts_pct_gdp(t)  # Receipts as % GDP
-outlays_pct_gdp(t)   # Outlays as % GDP (before feedback)
+rgfr_star(t)         # Receipts as % of nominal potential GDP
+rgfop_star(t)        # Primary outlays as % of nominal potential GDP (before psi feedback)
+RG_base(t)           # Baseline effective interest rate on debt (debt-proxy anchor)
 rfstar_shock(t)      # Direct r* shocks
 epsxgap(t)           # Output gap shocks
 epspi(t)             # Inflation shocks
