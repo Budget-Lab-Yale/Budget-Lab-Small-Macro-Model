@@ -12,7 +12,7 @@ source("scenarios/make_all_figures.R")
 ```
 
 This command:
-1. Runs all 8 scenarios
+1. Runs every scenario in `inputs/` (results for the 8 scenarios listed below are tracked; `ai_rapid` and `ai_slow` outputs are generated but not tracked)
 2. Saves results to `results/` (RDS and CSV)
 3. Generates 7 figures (300 DPI) under `figures/`
 
@@ -51,7 +51,7 @@ Rscript --vanilla -e 'source("scenarios/make_all_figures.R")'
 | [How the Budget Lab Small Macro Model Helps Explore Possible Fiscal Futures](https://budgetlab.yale.edu/node/1491) (May 6, 2026) | `v1.8.0` | Baseline, S2, persistent inflation, investor confidence, military conflict |
 | [How potential AI futures would play out in the current tax system](https://budgetlab.yale.edu/research/how-potential-ai-futures-would-play-out-current-tax-system), Figure A4 | `v1.8.0` | Produced by [AI-Fiscal](https://github.com/Budget-Lab-Yale/AI-Fiscal) `code/15_blsmm_debt_gdp.R` against this model |
 
-At `v1.8.0`, the regenerated `results/*.csv` files are byte-identical to the tracked ones, and they match the published data workbooks. The published charts are built from those data workbooks, so locally rendered PNGs can differ in fonts and layout.
+At `v1.8.0`, the regenerated `results/*.csv` files are byte-identical to the tracked ones, and they match every main-text series in both published data workbooks. The published charts are built from those data workbooks, so locally rendered PNGs can differ in fonts and layout.
 
 The AI post's appendix (rapid and slow adoption, Figures A1–A6) cannot be reproduced from any tagged version: its eight S1–S4 runs were never committed, and `inputs/ai_rapid.R` was re-anchored after they were produced.
 

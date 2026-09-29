@@ -1,4 +1,4 @@
-# Karger (2024) Slow Adoption variant. Productivity = 2.0% NFB output/hour
+# Karger et al. (2026) Slow Adoption variant. Productivity = 2.0% NFB output/hour
 # (Karger Slow Total median, flat across 2030 and 2050) less the CBO output/hour
 # vs GDP/employed wedge of 0.319 pp. Yields flat lq* ~1.681%.
 # LF deltas reused from ai_s2_prod_lf.R; Karger Slow LFPR target (~62%) differs

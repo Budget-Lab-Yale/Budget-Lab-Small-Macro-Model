@@ -34,7 +34,7 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 ### Key Features
 
 - **9 simultaneous equations** solved jointly each period
-- **39 calibrated parameters** from empirical research
+- **40 parameters** (37 calibrated, 3 computed)
 - **Annual frequency** simulations (FY2026-FY2035 baseline)
 - **Modular file structure** for easy extension and modification
 - **Fast convergence** - Typically 1-2 solver iterations
@@ -56,13 +56,9 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 - 10-year Treasury yield
 - Effective interest rate on debt
 
-**2. Fiscal Block (Pre-simulation)**
-- Labor force and productivity paths
-- Potential GDP evolution
-- Receipts and outlays (with fiscal feedback)
-- Primary balance calculation
-- Debt dynamics with closed-form solution
-- Net interest payments
+**2. Fiscal Block**
+- Before the solver: receipts and outlay ratios, including psi feedback, and potential GDP paths
+- After each period's solve: primary balance, net interest (closed form), and debt
 
 **3. Neutral Rate Block**
 - r* responds to potential growth changes (`kappa_1`, `kappa_2`)
@@ -73,13 +69,13 @@ BLSMM is a medium-scale structural macroeconomic model designed for fiscal polic
 
 ```
 1. Pre-simulation block runs first
-   -> Computes potential GDP, primary balance, fiscal feedback
+   -> Computes user-inclusive exogenous paths (including psi feedback) and potential GDP
 
 2. Main solver loop for each period
    -> Solves 9 simultaneous equations
 
-3. Post-simulation calculations
-   -> Computes derived variables, ratios, growth rates
+3. Post-solve calculations for each period
+   -> Computes the primary balance, net interest, debt, and derived ratios
 ```
 
 ---
@@ -227,7 +223,7 @@ RG(t) = delta_1*RG(t-1) + (1-delta_1)*[delta_2*RF(t) + (1-delta_2)*R10(t)] + eps
 
 ## Fiscal Block
 
-The fiscal block runs in the **pre-simulation phase** to compute potential GDP, primary balance, and fiscal feedback effects before the main solver loop.
+Fiscal ratios and psi feedback are computed before the main solver loop. The primary balance, net interest, and debt are computed from the solved values after each period (`solver.R`).
 
 ### Components
 
@@ -316,40 +312,23 @@ The neutral real interest rate (r*) is **endogenous** and responds to economic f
 ### r* Equation
 
 ```
-rfstar(t) = kappa_1 * g*(t) + kappa_2 * Delta_g*(t) + kappa_3 * f(D_pct_GDP(t)) + rfstar_shock(t)
+rfstar(t) = rfstar_base(t)
+          + (t / 10) * [kappa_1 * (glfstar(t) - glfstar_base(t))
+                        + kappa_2 * (glqstar(t) - glqstar_base(t))]
+          + kappa_3 * (debt_proxy_user(t) - debt_proxy_base(t))
+          + user_delta_rfstar_direct(t)
 ```
 
 Where:
-- **Potential Growth Channel:** kappa_1 captures long-run relationship between r* and growth
-- **Growth Change Channel:** kappa_2 captures transitional dynamics
-- **Debt Channel:** kappa_3 captures fiscal sustainability effects on r*
-- **Direct Shocks:** rfstar_shock(t) allows user to override
-
-### Functional Forms
-
-**Potential Growth Response:**
-```
-kappa_1 * g*(t)  where kappa_1 > 0
-```
-Higher potential growth -> higher r*
-
-**Growth Change Response:**
-```
-kappa_2 * Delta_g*(t)  where kappa_2 > 0
-```
-Accelerating growth -> temporarily higher r*
-
-**Debt Response:**
-```
-kappa_3 * f(D_pct_GDP(t))  where kappa_3 > 0
-```
-Higher debt/GDP -> higher r* (risk premium channel)
+- **Growth channel:** same-year deviations of potential labor-force and productivity growth from baseline, phased in linearly with the simulation year (`t / 10`, 10% in the first forecast year, 100% in the tenth). The Excel workbook applies the full effect immediately; see `neutral_rate.R`.
+- **Debt channel:** the gap between user and baseline debt proxies, a simplified debt/GDP recursion anchored on the baseline effective rate (`RG_base`).
+- **Direct shocks:** `user_delta_rfstar_direct(t)` adds a user-specified change.
 
 ### Key Parameters
 
-- kappa_1 = 1.0: Long-run r* sensitivity to potential growth
-- kappa_2 = 0.5: Transitional r* sensitivity to growth changes
-- kappa_3 = 0.01: r* sensitivity to debt/GDP
+- kappa_1 = 2/3: r* response to potential labor-force growth deviation
+- kappa_2 = 2/3: r* response to potential productivity growth deviation
+- kappa_3 = 0.02: r* response to the debt-proxy gap
 
 ### Economic Interpretation
 
@@ -361,7 +340,7 @@ Higher debt/GDP -> higher r* (risk premium channel)
 
 ## Parameters
 
-### Complete Parameter List (39 total)
+### Complete Parameter List
 
 **Output Gap (9 parameters)**
 ```r

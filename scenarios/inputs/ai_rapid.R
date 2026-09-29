@@ -1,4 +1,4 @@
-# Karger (2024) Rapid Adoption variant, anchored to the Economists response.
+# Karger et al. (2026) Rapid Adoption variant, anchored to the Economists response.
 # Productivity target: 3.2% NFB output/hour (Karger Rapid Economists 2030 anchor,
 # held flat) less the 0.319 pp CBO concept wedge, yielding flat lq* ~2.881%.
 # LF deltas reused from ai_s2_prod_lf.R; Karger Rapid LFPR target (~59.8%) is

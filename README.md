@@ -78,7 +78,7 @@ Small Macro Model/
 |       |-- simulation.R           # Main simulation engine
 |       |-- solver.R               # Equation solver
 |       |-- equations.R            # Core equations
-|       |-- parameters.R           # Model parameters (39 total)
+|       |-- parameters.R           # Model parameters (40: 37 calibrated, 3 computed)
 |       |-- debt_proxy.R           # Debt dynamics
 |       |-- forcing.R              # Forcing variables
 |       |-- neutral_rate.R         # Endogenous r* calculations
@@ -139,7 +139,7 @@ Small Macro Model/
 
 ### Calibration
 
--   **39 parameters** calibrated to U.S. data and empirical literature
+-   **40 parameters** (37 calibrated, 3 computed)
 -   **Baseline validation**: High accuracy vs. official forecasts
 -   **Annual frequency** (FY2026-FY2035 baseline)
 -   **Empirically-grounded** multipliers and transmission mechanisms
@@ -236,12 +236,11 @@ All packages available on CRAN.
 
 ### Neutral Rate Block (r\*)
 
--   **Potential Growth Channel:** r\* = `kappa_1` * g\* + `kappa_2` * delta_g\*
+-   **Potential Growth Channel:** r\* responds to deviations of potential labor-force growth (`kappa_1`) and productivity growth (`kappa_2`) from baseline, phased in over ten years
 -   **Debt Channel:** r\* adjustment based on D/GDP via `kappa_3`
--   **Gradual Adjustment:** Smooth transition to new equilibrium
 -   **Fed Funds Response:** Taylor rule uses endogenous r\*
 
-### Parameters (39 total)
+### Parameters
 
 Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (outlay response to potential labor-force growth), `psi_2` (outlay response to potential productivity growth)
 
