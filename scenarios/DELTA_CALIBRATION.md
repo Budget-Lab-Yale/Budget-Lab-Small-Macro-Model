@@ -129,10 +129,10 @@ The Slow target is below CBO baseline `glqstar` in 2027 and 2028, so its deltas 
 
 | Variant | 2030 target | 2050 median | Implied LFPR FY2030 | Implied LFPR FY2035 |
 |---------|-------------|-------------|---------------------|---------------------|
-| Slow    | 61.5% | 59.2% | 61.38% | 60.63% |
-| Rapid   | 59.3% | 55.0% | 59.18% | 56.83% |
+| Slow    | 61.5% | 59.2% | 61.37% | 60.62% |
+| Rapid   | 59.3% | 55.0% | 59.17% | 56.82% |
 
-The FY2026-FY2030 deltas follow that formula exactly. The FY2031-FY2035 deltas were recovered from the published appendix data because the file that constructed them was not retained; the exact interpolation rule is not documented.
+Implied LFPR uses the same method as the S2 table (FY2025 labor force 171.557 million), so it differs from the workbook's ramp endpoints (61.38% and 59.18% in FY2030) by about 0.01 point. The FY2026-FY2030 deltas follow the workbook formula exactly. The FY2031-FY2035 deltas were recovered from the published appendix data because the file that constructed them was not retained; the exact interpolation rule is not documented.
 
 **Outlays.** S3a and S3b apply the moderate cost factors to each variant's lost participants: $5.56 thousand (UI) and $42.43 thousand (Social Security plus Medicare) per lost participant, as a percentage of CBO potential GDP.
 
