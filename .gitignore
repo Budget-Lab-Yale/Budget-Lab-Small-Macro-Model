@@ -150,3 +150,9 @@ renv/staging/
 # scenarios/lib/generate_scenario_dashboard.R; iteration aids, not artifacts)
 # ==============================================================================
 scenarios/figures/dashboards/
+
+# ==============================================================================
+# JS model (js/): R reference runs are regenerated, never committed
+# ==============================================================================
+js/test/fixtures/
+js/node_modules/

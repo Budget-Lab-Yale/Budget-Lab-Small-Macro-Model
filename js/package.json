@@ -1,0 +1,13 @@
+{
+  "name": "blsmm-model",
+  "private": true,
+  "type": "module",
+  "description": "JavaScript port of the BLSMM v1.8 simulation, held to the R reference by js/test/.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}
