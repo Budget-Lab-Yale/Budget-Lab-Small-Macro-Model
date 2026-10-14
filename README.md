@@ -249,51 +249,8 @@ See `model/v1_8/parameters.R` for complete list with documentation.
 
 ------------------------------------------------------------------------
 
-## Getting Help
-
-### Documentation
-
-1.  **Model equations & functions**: See `docs/README_Model.md`
-2.  **App usage**: See `docs/README_App.md`
-3.  **Quick launch**: See the Quick Start section above.
-
-### Common Issues
-
-**Problem: Package installation fails** - Solution: Update R to latest version - Check: `install.packages()` with `dependencies = TRUE`
-
-**Problem: Solver doesn't converge** - Cause: Extreme shock values - Solution: Use more moderate shocks (\< 5 pp) - Check: Debug tab for convergence diagnostics
-
-**Problem: App won't launch** - Check: All packages installed - Check: Working directory is project root - Try: Restart R session
-
-### Support
-
-**Website:** <https://budgetlab.yale.edu>
-
-**Email:** [budget.lab@yale.edu](mailto:budget.lab@yale.edu)
-
-------------------------------------------------------------------------
-
-## Citation
-
-If you use BLSMM in your research or analysis, please cite:
-
-```         
-The Budget Lab at Yale (2026). The Budget Lab Small Macro Model (BLSMM).
-Retrieved from https://budgetlab.yale.edu
-```
-
-------------------------------------------------------------------------
-
 ## License
 
-This model is provided for educational and research purposes. Please [contact](https://budgetlab.yale.edu/contact-us) the Budget Lab at Yale for commercial use inquiries.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
 
-------------------------------------------------------------------------
-
-**Ready to get started?**
-
-1.  Install required packages (see Installation section)
-2.  Launch the app: `source("app.R")`
-3.  Try the preset scenarios
-4.  Read `docs/README_App.md` for detailed usage guide
-5.  Read `docs/README_Model.md` for technical documentation
+The MIT License covers the code, documentation, and data files in this repository. It does not extend to the third-party R packages the model depends on: those are installed from CRAN at setup time rather than redistributed here, and each retains its own license. See `renv.lock` for the pinned dependency set. `renv/activate.R` is the renv bootstrap script from Posit, distributed under its own MIT license.

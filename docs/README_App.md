@@ -54,7 +54,7 @@ The app will open in your default web browser.
 - The simulation horizon is fixed at 10 years (FY2026-FY2035)
 
 **3. Preset Scenarios** (3 buttons)
-- Quick-load common policy scenarios: Rapid AI Adoption, Persistent Inflation, Higher Defense Spending
+- Quick-load common policy scenarios: AI Adoption, Persistent Inflation, Higher Defense Spending
 - One-click setup for standard analyses
 
 **4. Input Tables** (9 collapsible panels)
@@ -390,9 +390,10 @@ Each deviation chart tab also shows calculated multipliers:
 
 3 one-click scenarios for common policy analyses:
 
-### 1. Rapid AI Adoption
-- Applies the AI productivity, labor force, and outlay assumptions used in the shipped rapid-adoption scenario set
-- Tests medium-term growth, labor supply, and fiscal effects from accelerated AI diffusion
+### 1. AI Adoption
+- Loads scenario S2 (Productivity + Labor Force) from the AI article, via `scenarios/inputs/ai_s2_prod_lf.R`: the Karger et al. moderate-adoption productivity boost plus the labor-force participation decline
+- No outlay change; the outlay-increase variants are S3/S4 (`ai_s3a_prod_lf_ui.R`, `ai_s3b_prod_lf_ssmc.R`)
+- Tests medium-term growth, labor supply, and fiscal effects from AI diffusion
 - Useful starting point for the AI article scenarios
 
 ### 2. Persistent Inflation

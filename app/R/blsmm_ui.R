@@ -357,7 +357,7 @@ ui <- fluidPage(
           # Presets: all uniform (outline-primary). Description lives in a
           # popover triggered by the ? icon to the right of each button.
           preset_row("preset_rapid_ai", "AI Adoption",
-                     "Productivity boost + labor-force participation decline + outlay rise (Karger et al.)."),
+                     "Productivity boost + labor-force participation decline (Karger et al.)."),
           preset_row("preset_persistent_infl", "Persistent Inflation",
                      "Inflation shock peaking at +0.3 pp in FY2028, returning to baseline by FY2030."),
           preset_row("preset_military_conflict", "Higher Defense Spending",
