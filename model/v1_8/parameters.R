@@ -82,7 +82,7 @@ create_parameters_v1_8 <- function() {
     # ========================================================================
     delta_1 = 5/6,       # Coefficient on RG(-1)
     delta_2 = 0.4,       # Weight on RF vs R10
-    RG_base = 3.25,      # Fallback baseline effective interest rate (%)
+    RG_base = 3.25,      # Constant baseline effective rate (%); the solver reads the RG_base input column
                          # for the CHI / debt-proxy anchor. Used only when
                          # the baseline exogenous input lacks the
                          # year-specific RG_base column

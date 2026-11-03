@@ -84,20 +84,15 @@ test_that("The debt proxy uses the year-specific RG_base path", {
   expect_gt(max(abs(gap_path - gap_constant)), 1e-6)
 })
 
-test_that("A missing RG_base column falls back to params$RG_base", {
+test_that("A missing RG_base column stops with an error", {
   ud <- create_user_deltas(n)
   ud$user_delta_prod <- rep(0.5, n)
-  fallback <- run(ud, exog_without_rg)
-  constant <- run(ud, exog_constant_rg)
-
-  expect_true(all(fallback$solver_converged))
-  expect_equal(fallback$debt_proxy_user, constant$debt_proxy_user, tolerance = 1e-10)
-  expect_equal(fallback$D_pct_GDP, constant$D_pct_GDP, tolerance = 1e-10)
+  expect_error(run(ud, exog_without_rg), "RG_base")
 })
 
 test_that("The RG_base anchor leaves the no-delta baseline economics unchanged", {
   with_path <- run()
-  without <- run(exog = exog_without_rg)
+  without <- run(exog = exog_constant_rg)
 
   expect_equal(with_path$debt_proxy_user, with_path$debt_proxy_base, tolerance = 1e-12)
   for (v in c("xgap", "U", "PI", "RF", "R10", "RG", "D", "D_pct_GDP")) {
