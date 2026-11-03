@@ -12,7 +12,7 @@ source("scenarios/make_all_figures.R")
 ```
 
 This command:
-1. Runs every scenario in `inputs/` (results for the 8 scenarios listed below are tracked; `ai_rapid` and `ai_slow` outputs are generated but not tracked)
+1. Runs every scenario in `inputs/` (results for all of them are tracked)
 2. Saves results to `results/` (RDS and CSV)
 3. Generates 7 figures (300 DPI) under `figures/`
 
@@ -55,7 +55,7 @@ Rscript --vanilla -e 'source("scenarios/make_all_figures.R")'
 
 At `v1.8.0`, the regenerated `results/*.csv` files are byte-identical to the tracked ones, and they match every main-text series in both published data workbooks. The published charts are built from those data workbooks, so locally rendered PNGs can differ in fonts and layout.
 
-The AI post's appendix (rapid and slow adoption, Figures A1–A6) cannot be reproduced from any tagged version: its eight S1–S4 runs were never committed, and `inputs/ai_rapid.R` was re-anchored after they were produced.
+The AI post's appendix (rapid and slow adoption, Figures A1–A6) is reproduced by the eight `ai_slow_*` and `ai_rapid_*` inputs. They were added after `v1.8.0` but run on the same model code, so check out commit `54635ca`, the last commit before the ψ and RG corrections, and rerun the command above. Those results match every series in the appendix data workbook (sheets FA1–FA6) to within 2e-8.
 
 ## Directory Structure
 
