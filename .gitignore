@@ -149,4 +149,7 @@ renv/staging/
 # Per-scenario dashboards (regenerated on demand by
 # scenarios/lib/generate_scenario_dashboard.R; iteration aids, not artifacts)
 # ==============================================================================
+scenarios/figures/dashboards/
+
+# Generated plot outputs: all figures are regenerated locally and not tracked
 scenarios/figures/
