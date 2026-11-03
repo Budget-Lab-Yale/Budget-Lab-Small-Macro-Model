@@ -150,3 +150,6 @@ renv/staging/
 # scenarios/lib/generate_scenario_dashboard.R; iteration aids, not artifacts)
 # ==============================================================================
 scenarios/figures/dashboards/
+
+# Generated plot outputs: ignore NEW figures; existing tracked ones stay tracked
+scenarios/figures/
