@@ -96,3 +96,28 @@ test_that("calibration inputs stop on unread config rules and bad source values"
   expect_equal(numeric_row_by_year(sheet, 2, 1, 2036), 1.5)
   expect_error(numeric_row_by_year(sheet, 2, 1, 2036:2037), "2037")
 })
+
+test_that("forcing spec forces the variables the config mask lists", {
+  source("model/v1_8/forcing.R", local = TRUE)
+  ci <- build_ltbo_calibration_inputs(end_year = 2040)
+  fs <- build_ltbo_forcing_spec(ci$forced_targets, create_forcing_spec)
+  for (flag in c("force_xgap", "force_u", "force_pi", "force_rf", "force_mpe", "force_tp")) {
+    expect_true(all(fs[[flag]] == 1), label = flag)
+  }
+  expect_true(all(fs$force_pie == 0))
+  expect_true(all(fs$force_rg == 0))
+
+  targets <- ci$forced_targets
+  targets$RG <- 3
+  fs_rg <- build_ltbo_forcing_spec(targets, create_forcing_spec, forced = c("RF", "RG"))
+  expect_true(all(fs_rg$force_rg == 1))
+  expect_equal(fs_rg$forced_rg, rep(3, nrow(targets)))
+  expect_true(all(fs_rg$force_xgap == 0))
+
+  expect_error(build_ltbo_forcing_spec(ci$forced_targets, create_forcing_spec, forced = "RG"),
+               "no column")
+  expect_error(build_ltbo_forcing_spec(ci$forced_targets, create_forcing_spec, forced = "R10"),
+               "cannot force")
+  expect_error(build_ltbo_forcing_spec(ci$forced_targets, create_forcing_spec,
+                                       forced = character()), "missing or empty")
+})

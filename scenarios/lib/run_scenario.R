@@ -22,9 +22,21 @@ source("app/R/blsmm_helpers.R")
 #'   resid_override (named list, subset of baseline_resid columns)
 #'   forcing_spec (forcing_spec object; see model/v1_8/forcing.R)
 #'   baseline_exog, baseline_resid, hist_data (optional data frames for a
-#'     noncanonical baseline, including extended horizons)
+#'     noncanonical baseline, including extended horizons; a scenario that
+#'     passes baseline_exog must pass all three, because residuals and
+#'     history belong to the same vintage as the baseline)
 #'   n_periods (optional; defaults to the number of baseline_exog rows)
 run_scenario <- function(scenario) {
+  if (!is.null(scenario$baseline_exog)) {
+    missing <- c("baseline_resid", "hist_data")[
+      c(is.null(scenario$baseline_resid), is.null(scenario$hist_data))]
+    if (length(missing)) {
+      stop(sprintf(
+        "Scenario '%s' overrides baseline_exog but not %s",
+        scenario$id, paste(missing, collapse = " or ")
+      ))
+    }
+  }
   exog <- if (is.null(scenario$baseline_exog)) .baseline_exog else scenario$baseline_exog
   resid <- if (is.null(scenario$baseline_resid)) .baseline_resid else scenario$baseline_resid
   hist <- if (is.null(scenario$hist_data)) .hist_data else scenario$hist_data

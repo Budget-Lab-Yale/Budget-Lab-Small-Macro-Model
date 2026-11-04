@@ -15,7 +15,8 @@ structural-value columns (`*_struct`), eight implied-residual columns
 rate. The default output keeps the published columns, which the app's cached
 baseline, the scenario results, and the JavaScript port's parity test use.
 The κ contribution uses `min(year_index/10, 1)`, with `growth_contrib` equal to
-`gradual_growth`.
+`gradual_growth`. The timing of this growth pass-through is under review and may
+change in a later version.
 
 `model/v1_8/calibration.R` exposes `calibrate_residuals_v1_8()`. It solves a forced
 path, backs out residuals, removes any user residual shocks from those inputs,
@@ -23,10 +24,13 @@ and solves again without forcing. Its round-trip diagnostics cover all nine
 endogenous variables. This round trip tests the residual accounting; frozen
 Excel fixtures provide a separate comparison.
 
-`simulate_blsmm_v1_8()` defaults to the row count of `baseline_exog`.
-`run_scenario()` accepts optional `baseline_exog`, `baseline_resid`, `hist_data`,
-and `n_periods`, and rejects a requested horizon longer than either input frame.
-The app runs the canonical FY2026–2035 baseline.
+`simulate_blsmm_v1_8()` defaults to the row count of `baseline_exog` and takes
+its initial conditions from the `hist_data` row for the year before the first
+baseline year. It stops if that row is missing or the baseline years are not
+consecutive. `run_scenario()` accepts optional `baseline_exog`, `baseline_resid`,
+`hist_data`, and `n_periods`. A scenario that passes `baseline_exog` must also
+pass `baseline_resid` and `hist_data`, and a requested horizon longer than either
+input frame stops. The app runs the canonical FY2026–2035 baseline.
 
 ## Public CBO sources
 
@@ -43,7 +47,8 @@ The adapter verifies each workbook before reading its saved values.
 canonical FY2026–2035 paths with the LTBO extension. It carries the configured
 inflation target and term premium, holds the baseline's terminal neutral-rate
 anchors, and decays the output gap toward zero under the configured rule.
-The forcing mask covers `xgap`, `U`, `PI`, `RF`, `MPE10`, and `TP`; `PIE` and `RG`
+The config's `forcing_mask.forced` lists `xgap`, `U`, `PI`, `RF`, `MPE10`, and
+`TP`; `build_ltbo_forcing_spec()` forces those, and the rest, here `PIE` and `RG`,
 remain structural.
 
 The calendar-year FFR follows the detailed CBO forecast through 2036. From 2037,
@@ -52,23 +57,24 @@ The builder applies this rule before converting to fiscal years with
 `FY(t) = 0.75*CY(t) + 0.25*CY(t-1)`. Other economic rates and levels use the same
 conversion. Budget series remain fiscal-year values. The fiscal-ratio adapter
 uses the same-year calendar output gap to approximate the conversion from
-actual to potential GDP. `RG` uses net interest divided by average current/prior
-debt, a different denominator from CBO's published debt rate.
+actual to potential GDP. `RG_base`, the baseline effective rate on debt that the structural `RG`
+equation uses, is net interest divided by average current and prior debt, a
+different denominator from CBO's published debt rate.
 
 No Macro-Projections output is a calibration input. Rebuilt from the public
 workbooks, the calendar-year FFR is within 0.001 percentage point of
 Macro-Projections v3/2026031112 in every year 2026–2056. Macro-Projections reads
 CBO's annual calendar-year data file rather than the published workbook, which
 reports three decimals.
-C&S scenario scripts and workbooks live outside this repository in the BLSMM
-project's `scenarios/CS/` folder.
 
 ## Frozen fixtures and tests
 
 `golden/` contains the frozen original v1.8, SPF, and public LTBO comparisons.
 The historical `R/extract_excel_goldens.R` recipe documents their construction.
-Its Excel inputs live outside this repository. Do not run it or regenerate the
-goldens as part of this workflow.
+Its Excel inputs, the original v1.8 workbook and two SPF calibration workbooks,
+are not distributed with this repository; their rows in `source_manifest.csv`
+record the SHA-256 hashes of the files the goldens were extracted from. Do not
+run the recipe or regenerate the goldens as part of this workflow.
 
 From the repository root, run every test file:
 

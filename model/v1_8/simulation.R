@@ -17,7 +17,7 @@
 #' @param n_periods Number of forecast periods (default baseline_exog row count)
 #' @param baseline_exog Baseline exogenous data frame
 #' @param baseline_resid Baseline residuals data frame
-#' @param hist_data Historical data (2018-2025)
+#' @param hist_data Historical data ending at least at the year before the first baseline year
 #' @param user_deltas User delta specification (NULL for baseline)
 #' @param forcing_spec Forcing specification (NULL for no forcing)
 #' @param params Parameters (NULL for defaults)
@@ -76,6 +76,18 @@ simulate_blsmm_v1_8 <- function(n_periods = nrow(baseline_exog),
   }
   if (nrow(baseline_resid) < n_periods) {
     stop("baseline_resid must have at least n_periods rows")
+  }
+
+  # The lags for the first period come from history, so hist_data must hold
+  # the year before the first baseline year.
+  baseline_years <- baseline_exog$year[1:n_periods]
+  if (n_periods > 1 && any(diff(baseline_years) != 1)) {
+    stop("baseline_exog years must be consecutive")
+  }
+  anchor_year <- baseline_years[1] - 1
+  if (!any(hist_data$year == anchor_year)) {
+    stop(sprintf("hist_data has no row for %d, the year before the first baseline year (%d)",
+                 anchor_year, baseline_years[1]))
   }
 
   # Validate forcing specification
@@ -196,12 +208,12 @@ simulate_blsmm_v1_8 <- function(n_periods = nrow(baseline_exog),
   # ============================================================================
   # INITIALIZE FROM HISTORICAL DATA
   # ============================================================================
-  if (verbose) cat("Initializing from 2025 historical data...\n")
+  if (verbose) cat(sprintf("Initializing from %d historical data...\n", anchor_year))
 
-  lag_values <- initialize_all_lags_from_history(hist_data, year_lag = 2025)
+  lag_values <- initialize_all_lags_from_history(hist_data, year_lag = anchor_year)
 
   # Initialize debt proxy lags
-  debt_proxy_lags <- initialize_debt_proxy_lags_from_history(hist_data, year_lag = 2025)
+  debt_proxy_lags <- initialize_debt_proxy_lags_from_history(hist_data, year_lag = anchor_year)
   debt_proxy_user_lag <- debt_proxy_lags$debt_proxy_user_lag
   debt_proxy_base_lag <- debt_proxy_lags$debt_proxy_base_lag
 

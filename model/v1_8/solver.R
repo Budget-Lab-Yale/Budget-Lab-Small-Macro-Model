@@ -40,10 +40,9 @@ build_lag_vector_8 <- function(t, current_value, sim_results, hist_data, var_nam
       # Pull from simulation results
       lag_vec[i + 1] <- sim_results[[var_name]][lag_period]
     } else {
-      # Pull from historical data
-      # Historical data years: 2018-2025 (rows 1-8)
-      # When t=1 (2026), need lags from 2025, 2024, ..., 2019
-      hist_year <- 2025 + lag_period  # e.g., t=1, i=1 → 2025; i=7 → 2019
+      # Pull from historical data. The anchor is the year before the first
+      # simulated year: with a first year of 2026, t=1 needs 2025, ..., 2019.
+      hist_year <- sim_results$year[1] - 1 + lag_period
       hist_row <- hist_data[hist_data$year == hist_year, ]
 
       if (nrow(hist_row) == 0) {
@@ -338,9 +337,9 @@ solve_fiscal_block_v1_8 <- function(solved, exog_period, presim_period, lag_valu
 #' Extract all lag values needed for first forecast period
 #'
 #' @param hist_data Historical data frame
-#' @param year_lag Year to extract lags from (default 2025)
+#' @param year_lag Year to extract lags from (the year before the first simulated year)
 #' @return List with all required lag values
-initialize_all_lags_from_history <- function(hist_data, year_lag = 2025) {
+initialize_all_lags_from_history <- function(hist_data, year_lag) {
 
   lag_row <- hist_data[hist_data$year == year_lag, ]
 

@@ -6,9 +6,10 @@
 #                           Gate C conventions (calibration/config/cbo_ltbo_2026.yaml).
 #
 # Returns the pieces consumed by calibrate_residuals_v1_8(): an extended
-# baseline_exog, a zero-extended baseline_resid, the unchanged historical
-# anchor, and the forced target paths (xgap, U, PI, RF, MPE10, TP) over the
-# whole horizon. PIE and RG are left structural.
+# baseline_exog, a zero-extended baseline_resid, and target paths for xgap, U,
+# PI, RF, MPE10, and TP over the whole horizon. build_ltbo_forcing_spec()
+# forces the variables the config's forcing_mask.forced lists. The canonical
+# history is used unchanged.
 #
 # Convention (matching model/v1_8/calibration.R): sourced with getwd() at the
 # project root.
@@ -112,9 +113,10 @@ build_ltbo_calibration_inputs <- function(end_year = 2056,
   forced_targets <- rbind(overlap_targets, ext_targets)
 
   # Close the output gap after the detailed CBO window. CBO's extended baseline
-  # carries a small persistent gap that is economically implausible in the long
-  # run; decay it exponentially toward 0, reaching xgap_decay_residual of the
-  # end-of-window (split_year) gap after xgap_decay_years years.
+  # keeps a small negative gap while its unemployment gap is near zero, and
+  # BLSMM's Okun relation needs both near zero; decay the gap exponentially
+  # toward 0, reaching xgap_decay_residual of the end-of-window (split_year)
+  # gap after xgap_decay_years years.
   if (is.null(xgap_decay_years) || is.null(xgap_decay_residual)) {
     stop("output_gap.decay_years and output_gap.decay_residual are required in ",
          "calibration/config/cbo_ltbo_2026.yaml (set decay_years: 0 to switch the decay off)")
@@ -182,15 +184,30 @@ build_ltbo_calibration_inputs <- function(end_year = 2056,
   )
 }
 
-#' Assemble the SPF-style forcing spec (force xgap,U,PI,RF,MPE10,TP) from targets.
-build_ltbo_forcing_spec <- function(forced_targets, create_forcing_spec) {
+#' Assemble the forcing spec from targets. The forced variables come from the
+#' config's forcing_mask.forced; every other variable stays structural.
+build_ltbo_forcing_spec <- function(forced_targets, create_forcing_spec,
+                                    forced = load_ltbo_config()$forcing_mask$forced) {
+  map <- c(xgap = "xgap", U = "u", PI = "pi", PIE = "pie",
+           RF = "rf", MPE10 = "mpe", TP = "tp", RG = "rg")
+  if (!length(forced)) {
+    stop("forcing_mask.forced in calibration/config/cbo_ltbo_2026.yaml is missing or empty")
+  }
+  unknown <- setdiff(forced, names(map))
+  if (length(unknown)) {
+    stop("forcing_mask.forced names variables the model cannot force: ",
+         paste(unknown, collapse = ", "), ". Forceable: ", paste(names(map), collapse = ", "))
+  }
+  no_target <- setdiff(forced, names(forced_targets))
+  if (length(no_target)) {
+    stop("forced_targets has no column for forced variables: ", paste(no_target, collapse = ", "))
+  }
   n <- nrow(forced_targets)
   fs <- create_forcing_spec(n)
-  map <- c(xgap = "xgap", U = "u", PI = "pi", RF = "rf", MPE10 = "mpe", TP = "tp")
-  for (v in names(map)) {
+  for (v in forced) {
     s <- map[[v]]
     fs[[paste0("force_", s)]]  <- rep(1L, n)
     fs[[paste0("forced_", s)]] <- forced_targets[[v]]
   }
-  fs   # PIE and RG left structural
+  fs
 }

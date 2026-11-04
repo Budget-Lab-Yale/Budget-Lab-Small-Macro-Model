@@ -1,42 +1,39 @@
 # =============================================================================
 # Gate C conventions for the CBO February-2026 LTBO-centered BLSMM baseline
 # Public CBO inputs and calibration conventions. Excel fixtures are frozen.
+#
+# Keys are read by calibration/R/build_calibration_inputs.R. Comments record
+# conventions the code implements directly; editing a comment changes nothing.
 # =============================================================================
 
-vintage:
-  detailed_forecast: "20260211"        # 51135 economic projections
-  ltbo_economic: "20260225"            # 57054 long-term economic projections
-  ltbo_budget: "20260211"              # 51119 extended-baseline budget workbook
-  note: >
-    The budget workbook was reposted February 26 to correct Supplemental
-    Table 1 cell M20. Overlap FY2026-2035 reuses the canonical baseline.
-
-horizon:
-  overlap_years: [2026, 2035]          # reuse ORIGINAL baseline FY paths here
-  extension_years: [2036, 2056]        # LTBO-derived, FY-converted
+# Vintages (pinned by SHA-256 in calibration/source_manifest.csv):
+#   51135 economic projections, February 11, 2026 (20260211)
+#   57054 long-term economic projections, February 25, 2026 (20260225)
+#   51119 extended-baseline budget workbook, February 11, 2026 (20260211),
+#     reposted February 26 to correct Supplemental Table 1 cell M20.
+#
+# Horizon: FY2026-2035 reuses the canonical baseline's FY paths; FY2036 to the
+# requested end year (at most 2056) is LTBO-derived and FY-converted.
 
 # -----------------------------------------------------------------------------
 # Gate C #5 -- frequency.  CBO LTBO economic series are CALENDAR YEAR
 # ("all years referred to are calendar years", 57054 Contents A6). Budget series
-# are already fiscal year. Convert the CY rate/level series with
-# the standard 3/4-1/4 rule: FY(t) = 0.75*CY(t) + 0.25*CY(t-1).
+# are already fiscal year. The builder converts U, R10, RF, real GDP, real
+# potential GDP, and PI with FY(t) = 0.75*CY(t) + 0.25*CY(t-1)
+# (calibration/R/frequency.R). Nominal GDP, RG_base, and the published debt
+# rate are fiscal year. xgap is 100*(rgdp_fy/pot_fy - 1) from the FY-converted
+# real GDP and real potential GDP.
 # -----------------------------------------------------------------------------
-frequency:
-  rule: "FY(t) = 0.75*CY(t) + 0.25*CY(t-1)"
-  convert_cy_to_fy: [U, R10, RF, real_gdp, real_potential_gdp, PI]
-  already_fiscal_year: [nominal_gdp_fiscal, RG, published_debt_rate]
-  xgap_from: "FY-converted real GDP and real potential GDP, then 100*(rgdp_fy/pot_fy - 1)"
 
 # -----------------------------------------------------------------------------
 # Gate C #2/#3 -- rates and the R10 split.  Reuse the baseline term-premium
-# judgment rather than inventing a new decomposition of published R10.
+# judgment rather than inventing a new decomposition of published R10:
+# TP = tp_0 and MPE10 = R10 - tp_0. The baseline tp_0 path covers 2026-2035.
 # -----------------------------------------------------------------------------
 rates:
   pistar: 2.0                          # #1: CBO long-run target (NOT SPF's 2.11)
   tp_0:                                # baseline term-premium judgment, carried forward
-    path: {2026: 0.7, 2027: 0.85, 2028: 1.0}
-    terminal: 1.0                      # hold 1.0 for all years >= 2028
-  r10_split: "TP = tp_0 ; MPE10 = R10 - tp_0"   # #3: no new split
+    terminal: 1.0                      # tp_0 for every extension year
   rfstar_terminal: 1.35                # #2: hold baseline terminal (under full forcing
                                        #   this only moves backed-out residuals, not the path)
   rbar10: "baseline"                   # hold baseline neutral 10-yr anchor
@@ -59,30 +56,23 @@ rates:
 
 # -----------------------------------------------------------------------------
 # Gate C forcing mask -- SPF-style partial forcing (validated Gate B benchmark).
+# Every variable not listed stays structural. Here that is PIE and RG; RG has
+# CBO's average rate on debt as a reported cross-check (a different concept).
 # -----------------------------------------------------------------------------
 forcing_mask:
   forced: [xgap, U, PI, RF, MPE10, TP]
-  structural: [PIE, RG]                # #4: PIE structural; RG structural with
-                                       #   avg_rate_debt as a reported cross-check (different concept)
 
 # -----------------------------------------------------------------------------
 # Gate C #6 -- residuals are backed out from targets through LTBO coverage (2056).
 # -----------------------------------------------------------------------------
 output_gap:
-  # CBO's extended baseline carries a small persistent output gap (~-0.5) that is
-  # economically implausible long-run -- and inconsistent with its OWN unemployment
-  # path (ugap is already ~0 in the LTBO tail, an Okun violation). Decay xgap toward
-  # 0 after the detailed CBO window; restores Okun consistency.
-  decay_after_year: 2035
+  # CBO's extended baseline keeps a small negative output gap (about -0.5)
+  # while its unemployment gap is near zero. BLSMM's Okun relation needs both
+  # near zero, so the gap decays toward 0 after the detailed CBO window
+  # (2035, the last canonical baseline year):
+  # xgap(t) = xgap(2035) * decay_residual^((t-2035)/decay_years) for t > 2035.
   decay_years: 5
   decay_residual: 0.05      # ~5% of the end-of-window gap remains after decay_years
-  rule: "xgap(t) = xgap(2035) * 0.05^((t-2035)/5) for t > 2035"
 
-terminal_residuals:
-  policy: "terminal-anchor"
-  note: "Backed out from targets through 2056; extrapolation only matters past coverage."
-
-initial_conditions:
-  anchor_year: 2025
-  source: "pin 2025 from the detailed Feb-11 forecast / LTBO; document (SPF precedent revised the 2025 xgap anchor)"
-
+# Initial conditions: the simulation starts from the canonical history's
+# FY2025 row, the year before the first baseline year.
