@@ -238,8 +238,14 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     # ==========================================================================
     # DEBT PROXY CALCULATIONS
     # ==========================================================================
-    # Used as anchor in CHI calculations for debt dynamics.
-    RG_base <- params$RG_base
+    # Used as anchor in CHI calculations for debt dynamics. The workbook reads
+    # the year-specific baseline effective rate (User!J232), so the baseline
+    # input must carry it.
+    if (!"RG_base" %in% names(baseline_exog)) {
+      stop("baseline_exog has no RG_base column (year-specific baseline effective ",
+           "rate on debt, %); see data/blsmm_v1_8_forecast_exog.csv")
+    }
+    RG_base <- baseline_exog$RG_base[t]
 
     # For GR_LR, need growth deviations (will be computed in neutral rate block)
     # For now, compute simplified version

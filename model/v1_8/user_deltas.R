@@ -69,19 +69,17 @@ compute_user_inclusive_exog <- function(baseline_exog, user_deltas, params, hist
   # ============================================================================
   # LF_fb and PROD_fb accumulate deviations from baseline
   # psi_1 and psi_2 are negative (higher growth → lower outlay ratio)
+  # Accumulation starts from zero in the last history year and includes the
+  # first forecast year's deviation, matching the workbook (Model!O27 = 0,
+  # Model!P27 = O27 + psi_1 * deviation).
   LF_fb <- numeric(n)
   PROD_fb <- numeric(n)
 
   for (t in 1:n) {
-    if (t > 1) {
-      # Accumulate from previous period
-      LF_fb[t] <- LF_fb[t-1] + params$psi_1 * (exog$glfstar[t] - baseline_exog$glfstar[t])
-      PROD_fb[t] <- PROD_fb[t-1] + params$psi_2 * (exog$glqstar[t] - baseline_exog$glqstar[t])
-    } else {
-      # First period: initialize at 0 (no history available)
-      LF_fb[t] <- 0
-      PROD_fb[t] <- 0
-    }
+    prior_lf <- if (t > 1) LF_fb[t - 1] else 0
+    prior_prod <- if (t > 1) PROD_fb[t - 1] else 0
+    LF_fb[t] <- prior_lf + params$psi_1 * (exog$glfstar[t] - baseline_exog$glfstar[t])
+    PROD_fb[t] <- prior_prod + params$psi_2 * (exog$glqstar[t] - baseline_exog$glqstar[t])
   }
 
   exog$LF_fb <- LF_fb

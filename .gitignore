@@ -151,5 +151,5 @@ renv/staging/
 # ==============================================================================
 scenarios/figures/dashboards/
 
-# Generated plot outputs: ignore NEW figures; existing tracked ones stay tracked
+# Generated plot outputs: all figures are regenerated locally and not tracked
 scenarios/figures/
