@@ -27,7 +27,9 @@ Excel fixtures provide a separate comparison.
 `simulate_blsmm_v1_8()` defaults to the row count of `baseline_exog` and takes
 its initial conditions from the `hist_data` row for the year before the first
 baseline year. It stops if that row is missing or the baseline years are not
-consecutive. `run_scenario()` accepts optional `baseline_exog`, `baseline_resid`,
+consecutive. `year_index` counts from the first simulated year, so on a baseline
+that starts in FY2027 the κ ramp, the debt-proxy growth phase-in, and the
+cumulative fiscal feedback also start in FY2027. `run_scenario()` accepts optional `baseline_exog`, `baseline_resid`,
 `hist_data`, and `n_periods`. A scenario that passes `baseline_exog` must also
 pass `baseline_resid` and `hist_data`, and a requested horizon longer than either
 input frame stops. The app runs the canonical FY2026–2035 baseline.
@@ -57,9 +59,10 @@ The builder applies this rule before converting to fiscal years with
 `FY(t) = 0.75*CY(t) + 0.25*CY(t-1)`. Other economic rates and levels use the same
 conversion. Budget series remain fiscal-year values. The fiscal-ratio adapter
 uses the same-year calendar output gap to approximate the conversion from
-actual to potential GDP. `RG_base`, the baseline effective rate on debt that the structural `RG`
-equation uses, is net interest divided by average current and prior debt, a
-different denominator from CBO's published debt rate.
+actual to potential GDP. `RG_base`, the baseline effective rate on debt that sets the debt-proxy
+interest rate, is net interest divided by average current and prior debt, a
+different denominator from CBO's published debt rate. The structural `RG`
+equation uses lagged `RG`, `RF`, and `R10`.
 
 No Macro-Projections output is a calibration input. Rebuilt from the public
 workbooks, the calendar-year FFR is within 0.001 percentage point of

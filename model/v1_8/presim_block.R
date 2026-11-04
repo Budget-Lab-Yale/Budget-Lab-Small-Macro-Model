@@ -103,10 +103,10 @@ compute_presim_deterministic_v1_8 <- function(exog, lag_values) {
 #'
 #' Extract lag values needed for pre-sim block from historical data
 #'
-#' @param hist_data Historical data frame (must have 2025 or most recent year)
-#' @param year_lag Year to extract lags from (default 2025)
+#' @param hist_data Historical data frame
+#' @param year_lag Year to extract lags from (the year before the first simulated year)
 #' @return List with lag values for pre-sim block
-initialize_presim_lags_from_history <- function(hist_data, year_lag = 2025) {
+initialize_presim_lags_from_history <- function(hist_data, year_lag) {
 
   # Find row for lag year
   lag_row <- hist_data[hist_data$year == year_lag, ]
