@@ -81,3 +81,18 @@ test_that("simulation and scenario override infer the extended input horizon", {
   scenario$n_periods <- ci$n_periods + 1
   expect_error(run_scenario(scenario), "requests 16 periods")
 })
+
+test_that("calibration inputs stop on unread config rules and bad source values", {
+  config <- load_ltbo_config()
+  bad_rbar10 <- config
+  bad_rbar10$rates$rbar10 <- "unrecognized_rule"
+  expect_error(build_ltbo_calibration_inputs(end_year = 2040, config = bad_rbar10),
+               "rates.rbar10")
+  expect_error(build_ltbo_calibration_inputs(end_year = 2040, xgap_decay_years = -1),
+               "decay_years")
+  expect_error(build_ltbo_calibration_inputs(end_year = 2040, xgap_decay_residual = 0),
+               "decay_residual")
+  sheet <- data.frame(a = c("year", "x"), b = c("2036", "1.5"), c = c("2037", ""))
+  expect_equal(numeric_row_by_year(sheet, 2, 1, 2036), 1.5)
+  expect_error(numeric_row_by_year(sheet, 2, 1, 2036:2037), "2037")
+})

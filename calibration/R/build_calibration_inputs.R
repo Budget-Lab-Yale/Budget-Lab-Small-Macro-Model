@@ -79,8 +79,13 @@ build_ltbo_calibration_inputs <- function(end_year = 2056,
   overlap_years <- base_exog$year
   split_year <- max(overlap_years)                          # 2035
   ext_years <- (split_year + 1):end_year                    # 2036..end
-  if (is.null(rbar10_terminal))
+  if (is.null(rbar10_terminal)) {
+    if (!identical(config$rates$rbar10, "baseline")) {
+      stop("rates.rbar10 in calibration/config/cbo_ltbo_2026.yaml must be \"baseline\" ",
+           "(hold the baseline's end-of-overlap value) unless rbar10_terminal is passed")
+    }
     rbar10_terminal <- base_exog$rbar10[base_exog$year == split_year]
+  }
 
   # ---- targets over the overlap: the baseline's own solution -----------------
   overlap_targets <- data.frame(
@@ -114,6 +119,12 @@ build_ltbo_calibration_inputs <- function(end_year = 2056,
     stop("output_gap.decay_years and output_gap.decay_residual are required in ",
          "calibration/config/cbo_ltbo_2026.yaml (set decay_years: 0 to switch the decay off)")
   }
+  if (!is.numeric(xgap_decay_years) || xgap_decay_years < 0) {
+    stop("output_gap.decay_years must be zero or positive; got ", xgap_decay_years)
+  }
+  if (!is.numeric(xgap_decay_residual) || xgap_decay_residual <= 0 || xgap_decay_residual > 1) {
+    stop("output_gap.decay_residual must lie in (0, 1]; got ", xgap_decay_residual)
+  }
   if (xgap_decay_years > 0) {
     anchor <- forced_targets$xgap[forced_targets$year == split_year]
     k <- forced_targets$year - split_year
@@ -145,6 +156,15 @@ build_ltbo_calibration_inputs <- function(end_year = 2056,
 
   stopifnot(identical(names(ext_exog), names(base_exog)))
   exog <- rbind(base_exog, ext_exog)
+  stop_if_not_finite <- function(frame, what) {
+    for (column in setdiff(names(frame), "year")) {
+      bad <- !is.finite(frame[[column]])
+      if (any(bad)) stop(what, " column ", column, " is missing or non-numeric in years: ",
+                         paste(frame$year[bad], collapse = ", "))
+    }
+  }
+  stop_if_not_finite(exog, "Spliced baseline_exog")
+  stop_if_not_finite(forced_targets, "Forced targets")
 
   # zero residuals for the extension; backed out by the calibration
   ext_resid <- base_resid[rep(1, length(ext_years)), , drop = FALSE]

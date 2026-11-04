@@ -57,8 +57,9 @@ debt, a different denominator from CBO's published debt rate.
 
 No Macro-Projections output is a calibration input. Rebuilt from the public
 workbooks, the calendar-year FFR is within 0.001 percentage point of
-Macro-Projections v3/2026031112 in every year 2026–2056; the differences come
-from the three-decimal rounding of CBO's published values.
+Macro-Projections v3/2026031112 in every year 2026–2056. Macro-Projections reads
+CBO's annual calendar-year data file rather than the published workbook, which
+reports three decimals.
 C&S scenario scripts and workbooks live outside this repository in the BLSMM
 project's `scenarios/CS/` folder.
 

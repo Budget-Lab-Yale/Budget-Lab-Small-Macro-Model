@@ -43,7 +43,12 @@ numeric_row_by_year <- function(sheet, row, year_row, years) {
   source_years <- suppressWarnings(as.integer(unlist(sheet[year_row, ], use.names = FALSE)))
   columns <- match(years, source_years)
   if (anyNA(columns)) stop("Missing requested source years: ", paste(years[is.na(columns)], collapse = ", "))
-  as.numeric(unlist(sheet[row, columns], use.names = FALSE))
+  values <- suppressWarnings(as.numeric(unlist(sheet[row, columns], use.names = FALSE)))
+  if (any(!is.finite(values))) {
+    stop("Source row ", row, " has missing or non-numeric values for years: ",
+         paste(years[!is.finite(values)], collapse = ", "))
+  }
+  values
 }
 
 #' Read and transform the February 2026 CBO LTBO sources
@@ -98,7 +103,14 @@ read_cbo_ltbo_2026 <- function(years = 2026:2056,
   budget_years <- suppressWarnings(as.integer(unlist(budget_sheet[, 1], use.names = FALSE)))
   budget_rows <- match(years, budget_years)
   if (anyNA(budget_rows)) stop("Budget workbook is missing requested years")
-  b <- function(column) as.numeric(unlist(budget_sheet[budget_rows, column], use.names = FALSE))
+  b <- function(column) {
+    values <- suppressWarnings(as.numeric(unlist(budget_sheet[budget_rows, column], use.names = FALSE)))
+    if (any(!is.finite(values))) {
+      stop("Budget workbook column ", column, " has missing or non-numeric values for years: ",
+           paste(years[!is.finite(values)], collapse = ", "))
+    }
+    values
+  }
 
   budget <- data.frame(
     year = years,
