@@ -111,7 +111,7 @@ Small Macro Model/
 
 **Fiscal Block:** - Government budget identity - Debt dynamics with fiscal feedback - Net interest payments - Primary balance tracking - Real GDP growth decomposition
 
-**Neutral Rate Block (Endogenous r\*):** - r\* responds to potential growth (`kappa_1`, `kappa_2` parameters) - r\* responds to debt/GDP ratio (`kappa_3` parameter) - Gradual adjustment dynamics
+**Neutral Rate Block (Endogenous r\*):** r\* responds to potential growth (`kappa_1`, `kappa_2`) with a calendar ramp of `min(year_index/10, 1)`, reaching full pass-through in year ten and remaining capped thereafter; the timing of this pass-through is under review and may change in a later version. It also responds to the debt/GDP proxy (`kappa_3`). The command-line simulation horizon defaults to the number of `baseline_exog` rows. See [the calibration workflow](calibration/README.md) for forced solves, residual backout, and longer baselines.
 
 **Fiscal Feedback Mechanisms:** - Primary outlays as a share of potential GDP respond to cumulative deviations in potential labor-force growth (`psi_1`) and potential productivity growth (`psi_2`), using calibrated potential-growth feedback coefficients - Receipts and primary outlays scale with nominal potential GDP, so the model has no automatic stabilizers: taxes and transfers do not respond to the output gap or unemployment
 
@@ -236,7 +236,7 @@ All packages available on CRAN.
 
 ### Neutral Rate Block (r\*)
 
--   **Potential Growth Channel:** r\* responds to deviations of potential labor-force growth (`kappa_1`) and productivity growth (`kappa_2`) from baseline, phased in over ten years
+-   **Potential Growth Channel:** r\* responds to deviations of potential labor-force growth (`kappa_1`) and productivity growth (`kappa_2`) from baseline, phased in over ten years and capped at the full effect thereafter
 -   **Debt Channel:** r\* adjustment based on D/GDP via `kappa_3`
 -   **Fed Funds Response:** Taylor rule uses endogenous r\*
 

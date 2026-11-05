@@ -14,17 +14,21 @@
 #'   - Debt proxy system
 #'   - Forcing/override capability
 #'
-#' @param n_periods Number of forecast periods (default 10 for 2026-2035)
+#' @param n_periods Number of forecast periods (default baseline_exog row count)
 #' @param baseline_exog Baseline exogenous data frame
 #' @param baseline_resid Baseline residuals data frame
-#' @param hist_data Historical data (2018-2025)
+#' @param hist_data Historical data ending at least at the year before the first baseline year
 #' @param user_deltas User delta specification (NULL for baseline)
 #' @param forcing_spec Forcing specification (NULL for no forcing)
 #' @param params Parameters (NULL for defaults)
 #' @param expectations_speed Fast expectations flag
 #' @param verbose Print progress messages
+#' @param diagnostics Keep the calibration diagnostics (growth_contrib, the
+#'   *_struct structural values, and the *_final implied residuals). The
+#'   default returns the published output columns only, which the app cache,
+#'   the scenario results, and the JavaScript port's parity test rely on.
 #' @return Data frame with simulation results
-simulate_blsmm_v1_8 <- function(n_periods = 10,
+simulate_blsmm_v1_8 <- function(n_periods = nrow(baseline_exog),
                                 baseline_exog,
                                 baseline_resid,
                                 hist_data,
@@ -32,7 +36,8 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
                                 forcing_spec = NULL,
                                 params = NULL,
                                 expectations_speed = FALSE,
-                                verbose = TRUE) {
+                                verbose = TRUE,
+                                diagnostics = FALSE) {
 
   # Source all required modules
   source("model/v1_8/parameters.R", local = TRUE)
@@ -55,7 +60,8 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     cat("================================================================================\n")
     cat("  BLSMM v1.8 Simulation\n")
     cat("================================================================================\n")
-    cat(sprintf("Periods: %d (2026-2035)\n", n_periods))
+    cat(sprintf("Periods: %d (%d-%d)\n", n_periods,
+                baseline_exog$year[1], baseline_exog$year[n_periods]))
     cat(sprintf("User deltas active: %s\n",
                 ifelse(any(user_deltas != 0), "YES", "NO")))
     cat(sprintf("Forcing active: %s\n",
@@ -72,8 +78,20 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     stop("baseline_resid must have at least n_periods rows")
   }
 
+  # The lags for the first period come from history, so hist_data must hold
+  # the year before the first baseline year.
+  baseline_years <- baseline_exog$year[1:n_periods]
+  if (n_periods > 1 && any(diff(baseline_years) != 1)) {
+    stop("baseline_exog years must be consecutive")
+  }
+  anchor_year <- baseline_years[1] - 1
+  if (!any(hist_data$year == anchor_year)) {
+    stop(sprintf("hist_data has no row for %d, the year before the first baseline year (%d)",
+                 anchor_year, baseline_years[1]))
+  }
+
   # Validate forcing specification
-  validation <- validate_forcing_spec(forcing_spec)
+  validation <- validate_forcing_spec(forcing_spec, n_periods)
   if (!validation$is_valid) {
     stop(paste("Invalid forcing specification:",
                paste(validation$errors, collapse = "; ")))
@@ -137,6 +155,7 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
   # Neutral rate variables
   results$rfstar <- numeric(n_periods)
   results$rbar10 <- numeric(n_periods)
+  results$growth_contrib <- numeric(n_periods)
   results$gradual_growth <- numeric(n_periods)
   results$debt_contrib <- numeric(n_periods)
 
@@ -157,6 +176,19 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
   results$ugap <- numeric(n_periods)
   results$real_r10 <- numeric(n_periods)
 
+  # Keep input residuals separate from the residuals implied by forced paths.
+  structural_columns <- c(
+    "xgap_struct", "U_struct", "PI_struct", "PIE_struct",
+    "RF_struct", "MPE10_struct", "TP_struct", "RG_struct"
+  )
+  final_residual_columns <- c(
+    "epsxgap_final", "epsu_final", "epspi_final", "epspie_final",
+    "epsrf_final", "epsmpe_final", "epstp_final", "epsrg_final"
+  )
+  for (column in c(structural_columns, final_residual_columns)) {
+    results[[column]] <- numeric(n_periods)
+  }
+
   # Fiscal variables
   results$GDP <- numeric(n_periods)
   results$PGDP <- numeric(n_periods)
@@ -176,12 +208,12 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
   # ============================================================================
   # INITIALIZE FROM HISTORICAL DATA
   # ============================================================================
-  if (verbose) cat("Initializing from 2025 historical data...\n")
+  if (verbose) cat(sprintf("Initializing from %d historical data...\n", anchor_year))
 
-  lag_values <- initialize_all_lags_from_history(hist_data, year_lag = 2025)
+  lag_values <- initialize_all_lags_from_history(hist_data, year_lag = anchor_year)
 
   # Initialize debt proxy lags
-  debt_proxy_lags <- initialize_debt_proxy_lags_from_history(hist_data, year_lag = 2025)
+  debt_proxy_lags <- initialize_debt_proxy_lags_from_history(hist_data, year_lag = anchor_year)
   debt_proxy_user_lag <- debt_proxy_lags$debt_proxy_user_lag
   debt_proxy_base_lag <- debt_proxy_lags$debt_proxy_base_lag
 
@@ -279,6 +311,7 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
 
     results$rfstar[t] <- neutral_rates$rfstar
     results$rbar10[t] <- neutral_rates$rbar10
+    results$growth_contrib[t] <- neutral_rates$rfstar_results$growth_contrib
     results$gradual_growth[t] <- neutral_rates$rfstar_results$gradual_growth
     results$debt_contrib[t] <- neutral_rates$rfstar_results$debt_contrib
 
@@ -306,6 +339,12 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     results$RG[t] <- solved$rg
     results$ugap[t] <- solved$ugap
     results$real_r10[t] <- solved$real_r10
+    for (column in structural_columns) {
+      results[[column]][t] <- solved$structural_values[[column]]
+    }
+    for (column in final_residual_columns) {
+      results[[column]][t] <- solved$final_residuals[[column]]
+    }
     results$solver_sse[t] <- solved$solver_sse
     results$solver_converged[t] <- solved$solver_converged
     results$solver_termcd[t] <- solved$solver_termcd
@@ -364,6 +403,11 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
     cat("================================================================================\n\n")
   }
 
+  if (!diagnostics) {
+    drop <- c("growth_contrib", structural_columns, final_residual_columns)
+    results <- results[, setdiff(names(results), drop), drop = FALSE]
+  }
+
   # Add solver summary as attribute
   attr(results, "solver_summary") <- list(
     expectations_speed = expectations_speed,
@@ -385,9 +429,11 @@ simulate_blsmm_v1_8 <- function(n_periods = 10,
 #' @param params Parameters (NULL for defaults)
 #' @param expectations_speed Fast expectations flag
 #' @param verbose Verbose output
+#' @param diagnostics Keep calibration diagnostics (see simulate_blsmm_v1_8)
 #' @return Baseline simulation results
 run_baseline_v1_8 <- function(n_periods = 10, params = NULL,
-                              expectations_speed = FALSE, verbose = TRUE) {
+                              expectations_speed = FALSE, verbose = TRUE,
+                              diagnostics = FALSE) {
 
   # Load data
   baseline_exog <- read.csv("data/blsmm_v1_8_forecast_exog.csv", check.names = FALSE)
@@ -404,7 +450,8 @@ run_baseline_v1_8 <- function(n_periods = 10, params = NULL,
     forcing_spec = NULL,  # Baseline: no forcing
     params = params,
     expectations_speed = expectations_speed,
-    verbose = verbose
+    verbose = verbose,
+    diagnostics = diagnostics
   )
 
   return(results)

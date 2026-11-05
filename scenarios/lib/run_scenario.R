@@ -21,8 +21,35 @@ source("app/R/blsmm_helpers.R")
 #'   exog_override (named list, subset of baseline_exog columns)
 #'   resid_override (named list, subset of baseline_resid columns)
 #'   forcing_spec (forcing_spec object; see model/v1_8/forcing.R)
+#'   baseline_exog, baseline_resid, hist_data (optional data frames for a
+#'     noncanonical baseline, including extended horizons; a scenario that
+#'     passes baseline_exog must pass all three, because residuals and
+#'     history belong to the same vintage as the baseline)
+#'   n_periods (optional; defaults to the number of baseline_exog rows)
 run_scenario <- function(scenario) {
-  n <- 10
+  if (!is.null(scenario$baseline_exog)) {
+    missing <- c("baseline_resid", "hist_data")[
+      c(is.null(scenario$baseline_resid), is.null(scenario$hist_data))]
+    if (length(missing)) {
+      stop(sprintf(
+        "Scenario '%s' overrides baseline_exog but not %s",
+        scenario$id, paste(missing, collapse = " or ")
+      ))
+    }
+  }
+  exog <- if (is.null(scenario$baseline_exog)) .baseline_exog else scenario$baseline_exog
+  resid <- if (is.null(scenario$baseline_resid)) .baseline_resid else scenario$baseline_resid
+  hist <- if (is.null(scenario$hist_data)) .hist_data else scenario$hist_data
+  n <- if (is.null(scenario$n_periods)) nrow(exog) else scenario$n_periods
+
+  if (nrow(exog) < n || nrow(resid) < n) {
+    stop(sprintf(
+      "Scenario '%s' requests %d periods but its inputs have %d exog and %d residual rows",
+      scenario$id, n, nrow(exog), nrow(resid)
+    ))
+  }
+  exog <- exog[seq_len(n), , drop = FALSE]
+  resid <- resid[seq_len(n), , drop = FALSE]
 
   # Build user_deltas
   ud <- create_user_deltas(n_periods = n)
@@ -38,7 +65,6 @@ run_scenario <- function(scenario) {
   }
 
   # Build exog with optional overrides
-  exog <- .baseline_exog
   tp_0_original <- NULL
 
   if (!is.null(scenario$exog_override)) {
@@ -63,7 +89,6 @@ run_scenario <- function(scenario) {
   }
 
   # Build resid with optional overrides (for shocks via residual channel)
-  resid <- .baseline_resid
   if (!is.null(scenario$resid_override)) {
     for (k in names(scenario$resid_override)) {
       if (!k %in% names(resid)) {
@@ -82,10 +107,8 @@ run_scenario <- function(scenario) {
     n_periods          = n,
     baseline_exog      = exog,
     baseline_resid     = resid,
-    hist_data          = .hist_data,
+    hist_data          = hist,
     user_deltas        = if (all_zero) NULL else ud,
-    # forcing_spec is an experimental feature — see forcing.R header.
-    # All shipped scenario files leave this as NULL.
     forcing_spec       = scenario$forcing_spec,
     params             = NULL,
     expectations_speed = FALSE,

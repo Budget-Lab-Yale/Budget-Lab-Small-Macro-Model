@@ -169,9 +169,9 @@ compute_debt_proxies_v1_8 <- function(debt_proxy_user_lag, debt_proxy_base_lag,
 #' Calculated as: 100 * D(2025) / GDP$star2(2025) = 100 * 30172 / 30362.76275
 #'
 #' @param hist_data Historical data frame
-#' @param year_lag Year to extract from (default 2025)
+#' @param year_lag Year to extract from (the year before the first simulated year)
 #' @return List with debt_proxy_user_lag and debt_proxy_base_lag
-initialize_debt_proxy_lags_from_history <- function(hist_data, year_lag = 2025) {
+initialize_debt_proxy_lags_from_history <- function(hist_data, year_lag) {
 
   # Debt proxy columns should exist in historical data (model feature)
   if ("debt_proxy_user" %in% names(hist_data) && "debt_proxy_base" %in% names(hist_data)) {
@@ -181,9 +181,9 @@ initialize_debt_proxy_lags_from_history <- function(hist_data, year_lag = 2025) 
     debt_proxy_user <- as.numeric(lag_row$debt_proxy_user)
     debt_proxy_base <- as.numeric(lag_row$debt_proxy_base)
 
-    # Check for NA (which is expected for years < 2025)
+    # NA before the year the history was initialized at
     if (is.na(debt_proxy_user) || is.na(debt_proxy_base)) {
-      stop(sprintf("Debt proxy values for year %d are NA. Debt proxy is only initialized at 2025.", year_lag))
+      stop(sprintf("hist_data has NA debt proxy values for %d, the year the simulation initializes from", year_lag))
     }
 
     return(list(
@@ -191,7 +191,10 @@ initialize_debt_proxy_lags_from_history <- function(hist_data, year_lag = 2025) 
       debt_proxy_base_lag = debt_proxy_base
     ))
   } else {
-    # Fallback: use workbook-exact initialization value
+    # Fallback: the workbook-exact initialization value exists only for 2025.
+    if (year_lag != 2025) {
+      stop(sprintf("hist_data has no debt_proxy_user/debt_proxy_base columns, needed to initialize from %d", year_lag))
+    }
     warning("Debt proxy columns not found in historical data. Using workbook initialization value for 2025.")
 
     return(list(

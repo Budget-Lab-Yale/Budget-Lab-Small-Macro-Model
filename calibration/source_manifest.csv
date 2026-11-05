@@ -1,0 +1,7 @@
+source_id,path,sha256,purpose
+original_v1_8,../Model/BLSMM_1.8_20260326_links.xlsm,0980aa0073fcb23db8309862d57c7e603aa0a9715babb18f9948c7762c2fcdb8,Original BLSMM v1.8 calibration and baseline benchmark
+spf_calibration,../scenarios/SPF/spf_blsmm_calibration.xlsm,759fa83a578157dff2472cdd87dc9d2a31d9c888f88dddbe92fe2414d9993038,SPF forced-path calibration benchmark
+spf_construction,../scenarios/SPF/spf_forecast_construction.xlsx,158031b76f7875cdb5f1fdad7bcbed8f2877557666926231cef85d28ad42af4b,SPF forecast construction and output cross-check
+ltbo_economic,calibration/sources/57054-2026-02-LTBO-econ.xlsx,6f6e66d7e2aaf187e0d13aa90767a39e682a6a5ab2be87b0cc2221b7370e6929,CBO February 2026 long-term economic projections (pinned in repo; from Downloads/57054-2026-02-LTBO-econ.xlsx)
+ltbo_budget,calibration/sources/51119-2026-02-11-LTBO-Budget.xlsx,ef50f314198629c77c8bb926de6915f5a5e965ba7ce50a254cad012528370ca0,CBO February 11 2026 extended baseline budget projections (pinned in repo; reposted Feb 26 to correct Supplemental Table 1 cell M20)
+cbo_economic,calibration/sources/51135-2026-02-Economic-Projections.xlsx,ae8f4920702fabf8fb3136bc94a42c53466cff5e890dec22396d8dc49dc2f776,CBO February 11 2026 economic projections; Contents A1 identifies February 2026 outlook; 2. Calendar Year row 105 FFR percent with years C7:P7 (2023-2036)

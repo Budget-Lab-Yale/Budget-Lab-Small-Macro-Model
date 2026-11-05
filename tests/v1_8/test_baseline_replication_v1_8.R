@@ -7,9 +7,20 @@
 
 library(testthat)
 
-# Source simulation engine (use relative paths from project root)
-# Get the project root directory (2 levels up from tests/v1_8/)
-project_root <- normalizePath(file.path(dirname(sys.frame(1)$ofile), "..", ".."))
+# Locate the project root without depending on how this file was invoked.
+find_project_root <- function(start = getwd()) {
+  path <- normalizePath(start, mustWork = TRUE)
+  repeat {
+    if (file.exists(file.path(path, "model", "v1_8", "simulation.R"))) {
+      return(path)
+    }
+    parent <- dirname(path)
+    if (identical(parent, path)) stop("Could not locate BLSMM project root")
+    path <- parent
+  }
+}
+
+project_root <- find_project_root()
 setwd(project_root)
 source("model/v1_8/simulation.R")
 
