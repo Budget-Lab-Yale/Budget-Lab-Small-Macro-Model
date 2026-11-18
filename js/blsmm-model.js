@@ -104,11 +104,13 @@ function userInclusiveExog(bx, ud, params) {
   const glfstar = bx.glfstar.map((v, i) => v + ud.user_delta_lf[i]);
   const rgfr_star = bx.rgfr_star.map((v, i) => v + ud.user_delta_rgfr[i]);
 
+  // Accumulation starts from zero in the last history year and includes the
+  // first forecast year's deviation (workbook Model!O27 = 0, P27 = O27 + psi_1 * dev).
   const LF_fb = new Array(n).fill(0);
   const PROD_fb = new Array(n).fill(0);
-  for (let t = 1; t < n; t++) {
-    LF_fb[t] = LF_fb[t - 1] + params.psi_1 * (glfstar[t] - bx.glfstar[t]);
-    PROD_fb[t] = PROD_fb[t - 1] + params.psi_2 * (glqstar[t] - bx.glqstar[t]);
+  for (let t = 0; t < n; t++) {
+    LF_fb[t] = (t > 0 ? LF_fb[t - 1] : 0) + params.psi_1 * (glfstar[t] - bx.glfstar[t]);
+    PROD_fb[t] = (t > 0 ? PROD_fb[t - 1] : 0) + params.psi_2 * (glqstar[t] - bx.glqstar[t]);
   }
 
   const rgfop_star = bx.rgfop_star.map((v, i) => v + LF_fb[i] + PROD_fb[i] + ud.user_delta_rgfop[i]);
@@ -153,7 +155,8 @@ function histRow(hist, year) {
 }
 
 // build_lag_vector_8() — solver.R. Slot 0 is the current value; slots 1..7
-// come from earlier simulated periods or, before period 1, from history.
+// come from earlier simulated periods or, before period 1, from history,
+// counting back from the year before the first simulated year.
 function lagVector8(t, current, results, hist, name) {
   const vec = new Array(8);
   vec[0] = current;
@@ -162,7 +165,7 @@ function lagVector8(t, current, results, hist, name) {
     if (lagPeriod >= 1) {
       vec[i] = results[name][lagPeriod - 1];
     } else {
-      vec[i] = histRow(hist, 2025 + lagPeriod)[name];
+      vec[i] = histRow(hist, results.year[0] - 1 + lagPeriod)[name];
     }
   }
   return vec;
@@ -336,8 +339,21 @@ export function simulate(data, options = {}) {
   }
   for (const c of RESID_COLUMNS) R[c] = resid[c].slice();
 
+  // simulate_blsmm_v1_8() — simulation.R: lags for period 1 come from the year
+  // before the first baseline year.
+  for (let i = 1; i < n; i++) {
+    if (bx.year[i] - bx.year[i - 1] !== 1) throw new Error('baseline_exog years must be consecutive');
+  }
+  const anchorYear = bx.year[0] - 1;
+  if (!hist.year.includes(anchorYear)) {
+    throw new Error(`hist_data has no row for ${anchorYear}, the year before the first baseline year (${bx.year[0]})`);
+  }
+  if (!('RG_base' in bx)) {
+    throw new Error('baseline_exog has no RG_base column (year-specific baseline effective rate on debt, %)');
+  }
+
   // initialize_all_lags_from_history() — solver.R
-  const h0 = histRow(hist, 2025);
+  const h0 = histRow(hist, anchorYear);
   let lag = {
     xgap_lag: h0.xgap, u_lag: h0.U, pi_lag: h0.PI, pie_lag: h0.PIE, rf_lag: h0.RF,
     mpe10_lag: h0.MPE10, tp_lag: h0.TP, r10_lag: h0.R10, rg_lag: h0.RG,
@@ -346,15 +362,17 @@ export function simulate(data, options = {}) {
     GDPstar_lag: h0.GDPstar, GDPstar2_lag: h0['GDP$star2'],
   };
   // initialize_debt_proxy_lags_from_history() — debt_proxy.R: absent columns
-  // fall back to the workbook's 2025 value; present-but-missing values are an error.
+  // fall back to the workbook's 2025 value (2025 only); present-but-missing values are an error.
   let dpUserLag = 99.37172136945937;
   let dpBaseLag = 99.37172136945937;
   if ('debt_proxy_user' in hist && 'debt_proxy_base' in hist) {
     if (h0.debt_proxy_user == null || h0.debt_proxy_base == null) {
-      throw new Error('Debt proxy values for 2025 are NA. Debt proxy is only initialized at 2025.');
+      throw new Error(`hist_data has NA debt proxy values for ${anchorYear}, the year the simulation initializes from`);
     }
     dpUserLag = h0.debt_proxy_user;
     dpBaseLag = h0.debt_proxy_base;
+  } else if (anchorYear !== 2025) {
+    throw new Error(`hist_data has no debt_proxy_user/debt_proxy_base columns, needed to initialize from ${anchorYear}`);
   }
 
   for (let t = 1; t <= n; t++) {
@@ -390,7 +408,10 @@ export function simulate(data, options = {}) {
     const LF_rf_LR = params.kappa_1 * (ex.glfstar - ex.glfstar_base);
     const PROD_rf_LR = params.kappa_2 * (ex.glqstar - ex.glqstar_base);
     const GR_LR = LF_rf_LR + PROD_rf_LR;
-    const RG_base = params.RG_base;
+    // The workbook reads the year-specific baseline effective rate (User!J232).
+    const RG_base = bx.RG_base[i];
+    // R propagates an NA here into a solver error; JS would read null as 0.
+    if (!Number.isFinite(RG_base)) throw new Error(`baseline_exog RG_base is missing for ${bx.year[i]}`);
 
     const yearFactor = Math.min(1 / (1 - params.delta_1), t);
     const rComp = RG_base / 100 + (1 - params.delta_1) * yearFactor * GR_LR / 100;
@@ -405,7 +426,8 @@ export function simulate(data, options = {}) {
     R.debt_proxy_base[i] = dpBase;
 
     // compute_neutral_rates_v1_8() — neutral_rate.R
-    const gradualGrowth = (t / 10) * LF_rf_LR + (t / 10) * PROD_rf_LR;
+    const phaseIn = Math.min(t / 10, 1);
+    const gradualGrowth = phaseIn * LF_rf_LR + phaseIn * PROD_rf_LR;
     const debtContrib = params.kappa_3 * (dpUser - dpBase);
     const rfstar = bx.rfstar[i] + debtContrib + gradualGrowth + ud.user_delta_rfstar_direct[i];
     const rbar10 = bx.rbar10[i]

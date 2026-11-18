@@ -8,11 +8,17 @@ import { loadModelData, readRCsv, diffColumns, REPO_DIR } from './helpers.mjs';
 
 const data = loadModelData();
 
+// The committed CSV predates the year-specific RG_base anchor (PR #10), so its
+// debt-proxy columns are stale; nothing in R reads them. The regenerated R
+// fixtures (parity: baseline) cover those columns.
+const STALE_IN_BASELINE_CSV = new Set(['debt_proxy_user', 'debt_proxy_base']);
+
 test('baseline matches data/blsmm_v1_8_baseline_solution.csv', () => {
   const ref = readRCsv(path.join(REPO_DIR, 'data', 'blsmm_v1_8_baseline_solution.csv'));
   const { columns } = simulate(data);
   assert.deepEqual(Object.keys(ref), OUTPUT_COLUMNS);
-  assert.deepEqual(diffColumns(columns, ref, OUTPUT_COLUMNS), []);
+  const checked = OUTPUT_COLUMNS.filter((c) => !STALE_IN_BASELINE_CSV.has(c));
+  assert.deepEqual(diffColumns(columns, ref, checked), []);
 });
 
 test('output has every R column, one value per period', () => {
@@ -46,6 +52,14 @@ test('history without debt-proxy columns falls back to the 2025 workbook value',
   const b = simulate({ ...data, historical: hist }).columns;
   assert.deepEqual(b.D_pct_GDP, a.D_pct_GDP);
   assert.deepEqual(b.rfstar, a.rfstar);
+});
+
+test('a missing RG_base value is an error, as in R', () => {
+  const d = structuredClone(data);
+  d.forecast_exog.RG_base[3] = null;
+  assert.throws(() => simulate(d), /RG_base is missing for 2029/);
+  delete d.forecast_exog.RG_base;
+  assert.throws(() => simulate(d), /no RG_base column/);
 });
 
 test('rejects unknown delta keys and malformed paths', () => {
