@@ -2,7 +2,7 @@ scenario <- list(
   id    = "ai_s3a_prod_lf_ui",
   label = "S3a: Prod+LF+UI",
   color = "#4DAC26",
-  # user_delta_prod: Karger (2024) Moderate NFB output/hour growth (~2.5%) less the
+  # user_delta_prod: Karger et al. (2026) Moderate NFB output/hour growth (~2.5%) less the
   # CBO output/hour-vs-GDP/employed wedge (-0.319 pp, 2031-35 avg). Yields flat lq* ~2.18%.
   user_deltas = list(
     user_delta_prod = c(0.581,

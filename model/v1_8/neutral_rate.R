@@ -15,7 +15,7 @@
 #'   - Growth deviations affect rfstar over a 10-year phase-in
 #'   - Year 1: 10% of long-run effect
 #'   - Year 10: 100% of long-run effect
-#'   - Formula: (year_index / 10) * (kappa_1 * LF_growth_dev + kappa_2 * prod_growth_dev)
+#'   - Formula: min(year_index / 10, 1) * (kappa_1 * LF_growth_dev + kappa_2 * prod_growth_dev)
 #'
 #' @param baseline_exog Baseline exogenous data (must have rfstar^B)
 #' @param exog User-inclusive exogenous data (from compute_user_inclusive_exog)
@@ -47,11 +47,11 @@ compute_rfstar_v1_8 <- function(baseline_exog, exog, year_index,
   # ============================================================================
   # GRADUAL PASS-THROUGH (PDF rows 35-36)
   # ============================================================================
-  # Gradual phase-in: (year_index / 10) * long_run_effect
-  # Year 1: 10%, Year 2: 20%, ..., Year 10: 100%
+  # Year 1: 10%, Year 2: 20%, ..., Year 10 onward: 100%
 
-  gradual_LF <- (year_index / 10) * LF_rf_LR
-  gradual_prod <- (year_index / 10) * PROD_rf_LR
+  phase_in_share <- min(year_index / 10, 1)
+  gradual_LF <- phase_in_share * LF_rf_LR
+  gradual_prod <- phase_in_share * PROD_rf_LR
   gradual_growth <- gradual_LF + gradual_prod  # PDF row 34
 
   # ============================================================================
@@ -74,7 +74,9 @@ compute_rfstar_v1_8 <- function(baseline_exog, exog, year_index,
     rfstar = rfstar,
     rfstar_base = baseline_exog$rfstar,
     debt_contrib = debt_contrib,
+    growth_contrib = gradual_growth,
     gradual_growth = gradual_growth,
+    phase_in_share = phase_in_share,
     gradual_LF = gradual_LF,
     gradual_prod = gradual_prod,
     LF_rf_LR = LF_rf_LR,

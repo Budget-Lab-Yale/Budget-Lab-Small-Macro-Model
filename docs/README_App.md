@@ -128,7 +128,7 @@ Each input type has its own year-by-year table with 10 columns (FY2026-FY2035).
 
 ### 3. Receipts (% of GDP)
 
-**What it controls:** Federal government receipts as percentage of GDP
+**What it controls:** Federal government receipts as a percentage of nominal potential GDP
 
 **Use cases:**
 - Tax policy changes
@@ -139,11 +139,11 @@ Each input type has its own year-by-year table with 10 columns (FY2026-FY2035).
 - Positive delta = higher taxes (contractionary)
 - Negative delta = tax cuts (expansionary)
 
-**Example:** +1.00 in FY2026 = receipts increase by 1% of GDP (~$250 billion)
+**Example:** +1.00 in FY2026 = receipts increase by 1% of nominal potential GDP (about $316 billion in FY2026)
 
 ### 4. Outlays (% of GDP)
 
-**What it controls:** Federal government outlays as percentage of GDP
+**What it controls:** Federal primary (noninterest) outlays as a percentage of nominal potential GDP
 
 **Use cases:**
 - Spending policy changes
@@ -154,7 +154,7 @@ Each input type has its own year-by-year table with 10 columns (FY2026-FY2035).
 - Positive delta = higher spending (expansionary)
 - Negative delta = spending cuts (contractionary)
 
-**Example:** +2.00 for FY2026-FY2027 = temporary spending increase of 2% of GDP
+**Example:** +2.00 for FY2026-FY2027 = temporary spending increase of 2% of nominal potential GDP
 
 ### 5. r* Shocks (percentage points)
 
@@ -291,15 +291,13 @@ Shows monetary policy stance and neutral rate evolution.
 
 - Federal government receipts as percentage of GDP
 - Includes all revenue sources
-- Shows tax policy and automatic stabilizer effects
-- Cyclically sensitive
+- Shows tax policy effects; receipts scale with nominal potential GDP, so the ratio to actual GDP moves with the output gap only through the denominator
 
 ### 9. Total Outlays (% of GDP)
 
 - Federal government outlays as percentage of GDP
 - Includes all spending and net interest
-- Shows spending policy and automatic stabilizers
-- Cyclically sensitive
+- Shows spending policy and the response of primary outlays to potential growth (`psi_1`, `psi_2`); primary outlays do not respond to unemployment
 
 ### 10. Primary Outlays (% of GDP)
 
@@ -811,7 +809,7 @@ A: If growth response (numerator effect) exceeds deficit increase (denominator e
 A: Yes, but requires editing `model/v1_8/parameters.R` file (`mu_1`, `mu_2`, `mu_3` parameters)
 
 **Q: What determines the fiscal multiplier?**
-A: Fed response, automatic stabilizers (`psi_1`), debt feedback (`psi_2`), openness, timing, and expectations
+A: Fed response, the fiscal-impulse coefficients (`theta_i`), the r\* response to debt (`kappa_3`), timing, and expectations. The model has no automatic stabilizers
 
 **Q: How is r* determined in the model?**
 A: Endogenously responds to potential growth (`kappa_1`, `kappa_2`) and debt/GDP (`kappa_3`), plus direct r* shocks

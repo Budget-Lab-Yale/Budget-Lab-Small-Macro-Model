@@ -7,6 +7,12 @@
 
 library(nleqslv)
 
+# Load equation and forcing functions into the same environment as this solver.
+# Keeping structural evaluation outside the nleqslv closure lets calibration
+# code evaluate the exact same equations at a converged solution.
+source("model/v1_8/equations.R", local = TRUE)
+source("model/v1_8/forcing.R", local = TRUE)
+
 #' Build 8-Period Lag Vectors
 #'
 #' Constructs vectors of length 8 for variables requiring distributed lags
@@ -34,10 +40,9 @@ build_lag_vector_8 <- function(t, current_value, sim_results, hist_data, var_nam
       # Pull from simulation results
       lag_vec[i + 1] <- sim_results[[var_name]][lag_period]
     } else {
-      # Pull from historical data
-      # Historical data years: 2018-2025 (rows 1-8)
-      # When t=1 (2026), need lags from 2025, 2024, ..., 2019
-      hist_year <- 2025 + lag_period  # e.g., t=1, i=1 → 2025; i=7 → 2019
+      # Pull from historical data. The anchor is the year before the first
+      # simulated year: with a first year of 2026, t=1 needs 2025, ..., 2019.
+      hist_year <- sim_results$year[1] - 1 + lag_period
       hist_row <- hist_data[hist_data$year == hist_year, ]
 
       if (nrow(hist_row) == 0) {
@@ -50,6 +55,65 @@ build_lag_vector_8 <- function(t, current_value, sim_results, hist_data, var_nam
   }
 
   return(lag_vec)
+}
+
+#' Evaluate the Structural Simultaneous Block (v1.8)
+#'
+#' Pure structural-equation evaluation at a candidate set of endogenous values.
+#' Residuals and forcing are deliberately excluded.
+#'
+#' @param t Period index (1-based)
+#' @param candidate Named list/vector with xgap, u, pi, pie, rf, mpe10, tp, r10, rg
+#' @param sim_results Simulation results through period t - 1
+#' @param hist_data Historical data used for early distributed lags
+#' @param exog_period Exogenous values for the current period
+#' @param lag_values One-period lag values for the current period
+#' @param params Model parameters
+#' @param expectations_speed Fast expectations adjustment flag
+#' @return Named list of the eight forceable structural values
+compute_structural_values_v1_8 <- function(t, candidate, sim_results, hist_data,
+                                            exog_period, lag_values, params,
+                                            expectations_speed = FALSE) {
+  required <- c("xgap", "u", "pi", "pie", "rf", "mpe10", "tp", "r10", "rg")
+  if (is.null(names(candidate)) || !all(required %in% names(candidate))) {
+    stop("candidate must contain named values: ", paste(required, collapse = ", "))
+  }
+
+  R10_vec <- build_lag_vector_8(t, candidate[["r10"]], sim_results, hist_data, "R10")
+  PIE_vec <- build_lag_vector_8(t, candidate[["pie"]], sim_results, hist_data, "PIE")
+  rbar10_vec <- build_lag_vector_8(t, exog_period$rbar10, sim_results, hist_data, "rbar10")
+  rbudp_star_vec <- build_lag_vector_8(
+    t, exog_period$rbudp_star, sim_results, hist_data, "rbudp_star"
+  )
+
+  list(
+    xgap_struct = output_gap_struct_v1_8(
+      lag_values$xgap_lag, R10_vec, PIE_vec, rbar10_vec, rbudp_star_vec, params
+    ),
+    U_struct = unemployment_struct_v1_8(
+      exog_period$UN_path, candidate[["xgap"]], lag_values$xgap_lag, params
+    ),
+    PI_struct = inflation_struct_v1_8(
+      lag_values$pi_lag, lag_values$pie_lag, exog_period$UN_path,
+      candidate[["u"]], params
+    ),
+    PIE_struct = expected_inflation_struct_v1_8(
+      lag_values$pie_lag, candidate[["pi"]], exog_period$PISTAR,
+      params, expectations_speed
+    ),
+    RF_struct = federal_funds_struct_v1_8(
+      exog_period$rfstar, candidate[["pi"]], candidate[["pie"]],
+      exog_period$PISTAR, exog_period$UN_path, candidate[["u"]], params
+    ),
+    MPE10_struct = mpe10_struct_v1_8(
+      candidate[["rf"]], exog_period$rfstar, candidate[["pie"]],
+      exog_period$PISTAR, params
+    ),
+    TP_struct = term_premium_struct_v1_8(exog_period$tp_0),
+    RG_struct = effective_rate_struct_v1_8(
+      lag_values$rg_lag, candidate[["rf"]], candidate[["r10"]], params
+    )
+  )
 }
 
 #' Solve Simultaneous Block for One Period (v1.8)
@@ -71,84 +135,25 @@ solve_period_v1_8 <- function(t, sim_results, hist_data, exog_period, resid_peri
                               forcing_spec = NULL, lag_values, params,
                               expectations_speed = FALSE) {
 
-  # Source required functions
-  source("model/v1_8/equations.R", local = TRUE)
-  source("model/v1_8/forcing.R", local = TRUE)
+  if (is.null(forcing_spec)) forcing_spec <- create_forcing_spec(t)
 
   # ============================================================================
   # DEFINE SIMULTANEOUS SYSTEM
   # ============================================================================
   system_eqs <- function(x) {
-    # Unpack solver variables
-    xgap_guess <- x[1]
-    u_guess <- x[2]
-    pi_guess <- x[3]
-    pie_guess <- x[4]
-    rf_guess <- x[5]
-    mpe10_guess <- x[6]
-    tp_guess <- x[7]
-    r10_guess <- x[8]
-    rg_guess <- x[9]
-
-    # Build 8-period lag vectors using solver guesses for current period
-    R10_vec <- build_lag_vector_8(t, r10_guess, sim_results, hist_data, "R10")
-    PIE_vec <- build_lag_vector_8(t, pie_guess, sim_results, hist_data, "PIE")
-
-    # rbar10 vector (need current period rbar10 from exog_period)
-    rbar10_vec <- build_lag_vector_8(t, exog_period$rbar10, sim_results, hist_data, "rbar10")
-
-    # rbudp* vector (exogenous, from exog data)
-    rbudp_star_vec <- build_lag_vector_8(t, exog_period$rbudp_star, sim_results, hist_data, "rbudp_star")
-
-    # ========================================================================
-    # STRUCTURAL EQUATIONS
-    # ========================================================================
-
-    # 1. Output gap structural
-    xgap_struct <- output_gap_struct_v1_8(
-      lag_values$xgap_lag, R10_vec, PIE_vec, rbar10_vec, rbudp_star_vec, params
+    names(x) <- c("xgap", "u", "pi", "pie", "rf", "mpe10", "tp", "r10", "rg")
+    structural_values <- compute_structural_values_v1_8(
+      t, x, sim_results, hist_data, exog_period, lag_values, params,
+      expectations_speed
     )
-
-    # 2. Unemployment structural
-    U_struct <- unemployment_struct_v1_8(
-      exog_period$UN_path, xgap_guess, lag_values$xgap_lag, params
-    )
-
-    # 3. Inflation structural
-    PI_struct <- inflation_struct_v1_8(
-      lag_values$pi_lag, lag_values$pie_lag, exog_period$UN_path, u_guess, params
-    )
-
-    # 4. Expected inflation structural
-    PIE_struct <- expected_inflation_struct_v1_8(
-      lag_values$pie_lag, pi_guess, exog_period$PISTAR, params, expectations_speed
-    )
-
-    # 5. Federal funds rate structural
-    RF_struct <- federal_funds_struct_v1_8(
-      exog_period$rfstar, pi_guess, pie_guess, exog_period$PISTAR,
-      exog_period$UN_path, u_guess, params
-    )
-
-    # 6. MPE10 structural
-    MPE10_struct <- mpe10_struct_v1_8(
-      rf_guess, exog_period$rfstar, pie_guess, exog_period$PISTAR, params
-    )
-
-    # 7. Term premium structural
-    TP_struct <- term_premium_struct_v1_8(exog_period$tp_0)
-
-    # 8. Effective rate structural
-    RG_struct <- effective_rate_struct_v1_8(
-      lag_values$rg_lag, rf_guess, r10_guess, params
-    )
-
-    # Store structural values for potential forcing
-    structural_values <- list(
-      xgap_struct = xgap_struct, U_struct = U_struct, PI_struct = PI_struct,
-      PIE_struct = PIE_struct, RF_struct = RF_struct, MPE10_struct = MPE10_struct,
-      TP_struct = TP_struct, RG_struct = RG_struct
-    )
+    xgap_struct <- structural_values$xgap_struct
+    U_struct <- structural_values$U_struct
+    PI_struct <- structural_values$PI_struct
+    PIE_struct <- structural_values$PIE_struct
+    RF_struct <- structural_values$RF_struct
+    MPE10_struct <- structural_values$MPE10_struct
+    TP_struct <- structural_values$TP_struct
+    RG_struct <- structural_values$RG_struct
 
     # ========================================================================
     # APPLY FORCING (if active)
@@ -190,15 +195,15 @@ solve_period_v1_8 <- function(t, sim_results, hist_data, exog_period, resid_peri
     # ========================================================================
     eq <- numeric(9)
 
-    eq[1] <- xgap_guess - xgap_actual
-    eq[2] <- u_guess - u_actual
-    eq[3] <- pi_guess - pi_actual
-    eq[4] <- pie_guess - pie_actual
-    eq[5] <- rf_guess - rf_actual
-    eq[6] <- mpe10_guess - mpe10_actual
-    eq[7] <- tp_guess - tp_actual
-    eq[8] <- r10_guess - r10_actual
-    eq[9] <- rg_guess - rg_actual
+    eq[1] <- x[["xgap"]] - xgap_actual
+    eq[2] <- x[["u"]] - u_actual
+    eq[3] <- x[["pi"]] - pi_actual
+    eq[4] <- x[["pie"]] - pie_actual
+    eq[5] <- x[["rf"]] - rf_actual
+    eq[6] <- x[["mpe10"]] - mpe10_actual
+    eq[7] <- x[["tp"]] - tp_actual
+    eq[8] <- x[["r10"]] - r10_actual
+    eq[9] <- x[["rg"]] - rg_actual
 
     return(eq)
   }
@@ -231,6 +236,11 @@ solve_period_v1_8 <- function(t, sim_results, hist_data, exog_period, resid_peri
 
   eq_at_solution <- system_eqs(solution$x)
   sse <- sum(eq_at_solution^2)
+  names(solution$x) <- c("xgap", "u", "pi", "pie", "rf", "mpe10", "tp", "r10", "rg")
+  structural_values <- compute_structural_values_v1_8(
+    t, solution$x, sim_results, hist_data, exog_period, lag_values, params,
+    expectations_speed
+  )
 
   # ============================================================================
   # EXTRACT SOLUTION
@@ -254,22 +264,17 @@ solve_period_v1_8 <- function(t, sim_results, hist_data, exog_period, resid_peri
     solver_sse = sse,
     solver_converged = converged,
     solver_termcd = solution$termcd,
-    solver_fvec = eq_at_solution
+    solver_fvec = eq_at_solution,
+    structural_values = structural_values
   )
 
   # ============================================================================
   # RECOMPUTE RESIDUALS IF FORCING ACTIVE
   # ============================================================================
-  if (!is.null(forcing_spec) && is_forcing_active(forcing_spec)) {
-    # INCOMPLETE: recompute_all_residuals() is defined in forcing.R
-    # but is not called here. Implied residuals for the forced path
-    # are therefore NOT stored in the returned simulation output.
-    # The original baseline residuals remain in the eps* columns.
-    # See the EXPERIMENTAL header at the top of forcing.R for details.
-    result$forcing_was_active <- TRUE
-  } else {
-    result$forcing_was_active <- FALSE
-  }
+  result$final_residuals <- recompute_all_residuals(
+    result, structural_values, resid_period, forcing_spec, t
+  )
+  result$forcing_was_active <- is_forcing_active(forcing_spec)
 
   return(result)
 }
@@ -332,9 +337,9 @@ solve_fiscal_block_v1_8 <- function(solved, exog_period, presim_period, lag_valu
 #' Extract all lag values needed for first forecast period
 #'
 #' @param hist_data Historical data frame
-#' @param year_lag Year to extract lags from (default 2025)
+#' @param year_lag Year to extract lags from (the year before the first simulated year)
 #' @return List with all required lag values
-initialize_all_lags_from_history <- function(hist_data, year_lag = 2025) {
+initialize_all_lags_from_history <- function(hist_data, year_lag) {
 
   lag_row <- hist_data[hist_data$year == year_lag, ]
 

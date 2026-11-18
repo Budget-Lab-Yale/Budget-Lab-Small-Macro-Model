@@ -151,6 +151,9 @@ renv/staging/
 # ==============================================================================
 scenarios/figures/dashboards/
 
+# Generated plot outputs: all figures are regenerated locally and not tracked
+scenarios/figures/
+
 # ==============================================================================
 # JS model (js/): R reference runs are regenerated, never committed
 # ==============================================================================

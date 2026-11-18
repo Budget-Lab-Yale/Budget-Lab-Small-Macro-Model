@@ -1,0 +1,26 @@
+# Default: treat as text, normalize to LF in repo AND working tree
+* text=auto eol=lf
+
+# Source / text — always LF
+*.R    text eol=lf
+*.Rmd  text eol=lf
+*.md   text eol=lf
+*.csv  text eol=lf
+*.txt  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.lock text eol=lf
+
+# Binary — never touch EOL, never diff/merge as text
+*.rds   binary
+*.RData binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.pdf   binary
+*.xlsx  binary
+*.xlsm  binary
+*.docx  binary
+*.pptx  binary
+*.zip   binary

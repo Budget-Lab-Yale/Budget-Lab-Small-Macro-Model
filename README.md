@@ -78,7 +78,7 @@ Small Macro Model/
 |       |-- simulation.R           # Main simulation engine
 |       |-- solver.R               # Equation solver
 |       |-- equations.R            # Core equations
-|       |-- parameters.R           # Model parameters (39 total)
+|       |-- parameters.R           # Model parameters (40: 37 calibrated, 3 computed)
 |       |-- debt_proxy.R           # Debt dynamics
 |       |-- forcing.R              # Forcing variables
 |       |-- neutral_rate.R         # Endogenous r* calculations
@@ -143,9 +143,9 @@ To publish, tag the commit and copy `js/blsmm-model.js` and `js/model-data.json`
 
 **Fiscal Block:** - Government budget identity - Debt dynamics with fiscal feedback - Net interest payments - Primary balance tracking - Real GDP growth decomposition
 
-**Neutral Rate Block (Endogenous r\*):** - r\* responds to potential growth (`kappa_1`, `kappa_2` parameters) - r\* responds to debt/GDP ratio (`kappa_3` parameter) - Gradual adjustment dynamics
+**Neutral Rate Block (Endogenous r\*):** r\* responds to potential growth (`kappa_1`, `kappa_2`) with a calendar ramp of `min(year_index/10, 1)`, reaching full pass-through in year ten and remaining capped thereafter; the timing of this pass-through is under review and may change in a later version. It also responds to the debt/GDP proxy (`kappa_3`). The command-line simulation horizon defaults to the number of `baseline_exog` rows. See [the calibration workflow](calibration/README.md) for forced solves, residual backout, and longer baselines.
 
-**Fiscal Feedback Mechanisms:** - Outlays respond to unemployment gap (`psi_1` parameter) - Outlays respond to debt/GDP (`psi_2` parameter) - Automatic stabilizers and debt sustainability
+**Fiscal Feedback Mechanisms:** - Primary outlays as a share of potential GDP respond to cumulative deviations in potential labor-force growth (`psi_1`) and potential productivity growth (`psi_2`), using calibrated potential-growth feedback coefficients - Receipts and primary outlays scale with nominal potential GDP, so the model has no automatic stabilizers: taxes and transfers do not respond to the output gap or unemployment
 
 ### Policy Analysis Capabilities
 
@@ -171,12 +171,12 @@ To publish, tag the commit and copy `js/blsmm-model.js` and `js/model-data.json`
 
 ### Calibration
 
--   **39 parameters** calibrated to U.S. data and empirical literature
+-   **40 parameters** (37 calibrated, 3 computed)
 -   **Baseline validation**: High accuracy vs. official forecasts
 -   **Annual frequency** (FY2026-FY2035 baseline)
 -   **Empirically-grounded** multipliers and transmission mechanisms
 -   **Endogenous r**\* adjusts to growth and debt conditions
--   **Fiscal feedback** provides automatic stabilization
+-   **Fiscal feedback** links primary outlays to potential labor-force and productivity growth
 
 ------------------------------------------------------------------------
 
@@ -196,7 +196,7 @@ To publish, tag the commit and copy `js/blsmm-model.js` and `js/model-data.json`
 
 ### 1. Fiscal Policy Analysis
 
-**Questions BLSMM Can Answer:** - What is the output impact of a tax cut or spending increase? - How does fiscal consolidation affect unemployment? - What are the debt sustainability implications of policy changes? - How do fiscal multipliers vary with Fed response and fiscal feedback? - How does automatic stabilization work through `psi_1` and `psi_2`?
+**Questions BLSMM Can Answer:** - What is the output impact of a tax cut or spending increase? - How does fiscal consolidation affect unemployment? - What are the debt sustainability implications of policy changes? - How do fiscal multipliers vary with Fed response and fiscal feedback? - How do outlays respond to changes in potential growth through `psi_1` and `psi_2`?
 
 **Example Scenarios:** - Analyze 1% of GDP tax cut with endogenous r\* response - Model gradual fiscal consolidation with debt feedback - Assess infrastructure spending with productivity spillovers
 
@@ -210,11 +210,11 @@ To publish, tag the commit and copy `js/blsmm-model.js` and `js/model-data.json`
 
 ### 4. Scenario Analysis
 
-**Questions BLSMM Can Answer:** - What if we face another supply shock? - How bad could a fiscal crisis get with r\* rising due to high debt? - What's the growth impact of structural reforms on r\*? - How do automatic stabilizers perform in recessions?
+**Questions BLSMM Can Answer:** - What if we face another supply shock? - How bad could a fiscal crisis get with r\* rising due to high debt? - What's the growth impact of structural reforms on r\*?
 
 ### 5. Educational Applications
 
-**Topics BLSMM Illustrates:** - IS-LM dynamics with endogenous natural rate - Phillips curve trade-offs - Fiscal policy with r\* and debt feedback - Automatic stabilizers and discretionary policy - Monetary-fiscal coordination
+**Topics BLSMM Illustrates:** - IS-LM dynamics with endogenous natural rate - Phillips curve trade-offs - Fiscal policy with r\* and debt feedback - Discretionary fiscal policy - Monetary-fiscal coordination
 
 Perfect for: - Macro courses (undergraduate/graduate) - Policy analysis training - Economic literacy programs - Interactive demonstrations
 
@@ -264,18 +264,17 @@ All packages available on CRAN.
 -   **Primary Balance:** BUDP = Receipts - Primary Outlays
 -   **Net Interest:** NI = average_debt * effective_rate
 -   **Debt Dynamics:** Closed-form solution with simultaneity
--   **Fiscal Feedback:** Outlays = f(unemployment_gap, debt/GDP)
+-   **Fiscal Feedback:** Primary outlays ratio = baseline + cumulative psi response to potential labor-force and productivity growth deviations
 
 ### Neutral Rate Block (r\*)
 
--   **Potential Growth Channel:** r\* = `kappa_1` * g\* + `kappa_2` * delta_g\*
+-   **Potential Growth Channel:** r\* responds to deviations of potential labor-force growth (`kappa_1`) and productivity growth (`kappa_2`) from baseline, phased in over ten years and capped at the full effect thereafter
 -   **Debt Channel:** r\* adjustment based on D/GDP via `kappa_3`
--   **Gradual Adjustment:** Smooth transition to new equilibrium
 -   **Fed Funds Response:** Taylor rule uses endogenous r\*
 
-### Parameters (39 total)
+### Parameters
 
-Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (stabilization), `psi_2` (debt sustainability)
+Key parameters include: - **Macro dynamics:** `eta` (persistence), `sigma_0` (interest sensitivity), `theta_1`,`theta_2` (fiscal multipliers) - **Labor market:** `alpha_1`,`alpha_2` (Okun coefficients), UN (natural rate) - **Inflation:** `gamma_1` (persistence), `gamma_2` (Phillips slope) - **Monetary policy:** `mu_1`,`mu_2`,`mu_3` (Taylor rule coefficients) - **Neutral rate:** `kappa_1`,`kappa_2` (growth response), `kappa_3` (debt response) - **Fiscal feedback:** `psi_1` (outlay response to potential labor-force growth), `psi_2` (outlay response to potential productivity growth)
 
 See `model/v1_8/parameters.R` for complete list with documentation.
 

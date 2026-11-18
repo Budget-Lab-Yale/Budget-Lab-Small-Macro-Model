@@ -1,34 +1,12 @@
 # =============================================================
-# FORCING MODULE — EXPERIMENTAL / DORMANT
+# FORCING MODULE
 # =============================================================
 # This module implements a "forcing" API that allows callers
 # to override specific endogenous variables (xgap, u, pi, pie,
 # rf, mpe10, tp, rg) with user-specified paths.
 #
-# CURRENT STATUS: partially operational but not production-ready.
-#
-# Known incomplete behavior:
-#   recompute_all_residuals() is defined here but is NOT called
-#   by the solver after convergence. This means forced runs do
-#   not store the implied residuals that would produce the forced
-#   path — the returned simulation's residual columns still
-#   reflect the original baseline residuals, not the back-computed
-#   implied residuals.
-#
-# Usage in shipped code:
-#   No shipped code passes a non-NULL forcing_spec. The app,
-#   all scenario input files, all tests, and cache_baseline.R
-#   all pass forcing_spec = NULL.
-#
-# To complete this feature would require:
-#   1. solver.R to call recompute_all_residuals() after
-#      nleqslv() converges, using the converged solution values
-#   2. A decision on the output schema (overwrite original
-#      eps* columns or add eps*_final columns)
-#   3. Tests verifying the implied-residual accounting
-#
-# Do not rely on this module for production runs until the
-# above is resolved.
+# The solver stores structural values and eps*_final columns. The original
+# effective residual inputs remain in eps* so callers can audit the backout.
 # =============================================================
 # ==============================================================================
 # BLSMM Forcing (Override) System
@@ -291,31 +269,47 @@ print_forcing_summary <- function(forcing_spec, years = NULL) {
 #' Check that forcing specification is properly formatted
 #'
 #' @param forcing_spec Forcing specification
+#' @param n_periods Optional required vector length
 #' @return List with validation results (is_valid, errors)
-validate_forcing_spec <- function(forcing_spec) {
+validate_forcing_spec <- function(forcing_spec, n_periods = NULL) {
   errors <- character(0)
 
   # Check that all force flags are 0 or 1
   force_names <- c("force_xgap", "force_u", "force_pi", "force_pie",
                    "force_rf", "force_mpe", "force_tp", "force_rg")
+  forced_names <- c("forced_xgap", "forced_u", "forced_pi", "forced_pie",
+                    "forced_rf", "forced_mpe", "forced_tp", "forced_rg")
+  required_names <- c(force_names, forced_names)
+  missing_names <- setdiff(required_names, names(forcing_spec))
+  if (length(missing_names) > 0) {
+    return(list(
+      is_valid = FALSE,
+      errors = paste("missing fields:", paste(missing_names, collapse = ", "))
+    ))
+  }
+
+  lengths <- vapply(forcing_spec[required_names], length, integer(1))
+  if (length(unique(lengths)) != 1L) {
+    errors <- c(errors, "forcing fields do not all have the same length")
+  }
+  if (!is.null(n_periods) && any(lengths != n_periods)) {
+    errors <- c(errors, sprintf("forcing fields must have length %d", n_periods))
+  }
 
   for (fname in force_names) {
     flags <- forcing_spec[[fname]]
-    if (!all(flags %in% c(0, 1))) {
+    if (anyNA(flags) || !all(flags %in% c(0, 1))) {
       errors <- c(errors, sprintf("%s contains values other than 0 or 1", fname))
     }
   }
 
   # Check that forced values are provided when forcing is active
-  forced_names <- c("forced_xgap", "forced_u", "forced_pi", "forced_pie",
-                    "forced_rf", "forced_mpe", "forced_tp", "forced_rg")
-
   for (i in 1:8) {
     flags <- forcing_spec[[force_names[i]]]
     values <- forcing_spec[[forced_names[i]]]
 
-    if (any(flags == 1 & is.na(values))) {
-      errors <- c(errors, sprintf("%s has force=1 but forced value is NA", forced_names[i]))
+    if (any(flags == 1 & !is.finite(values))) {
+      errors <- c(errors, sprintf("%s has force=1 but forced value is not finite", forced_names[i]))
     }
   }
 
